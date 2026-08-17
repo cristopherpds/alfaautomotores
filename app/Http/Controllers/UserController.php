@@ -7,6 +7,7 @@ use App\Http\Requests\Users\UserStoreRequest;
 use App\Http\Requests\Users\UserUpdateRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Validation\Rules\Password;
@@ -33,25 +34,27 @@ class UserController extends Controller implements HasMiddleware
     /**
      * Show the list of registered users.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $actor = $request->user();
+
         return Inertia::render('users/index', [
             'users' => User::query()
                 ->orderBy('name')
                 ->get()
-                ->map(fn (User $user): array => $this->toListItem($user))
+                ->map(fn (User $user): array => $this->toListItem($user, $actor))
                 ->all(),
-            'roles' => UserRole::options(),
+            'roles' => UserRole::options(UserRole::assignableBy($actor)),
         ]);
     }
 
     /**
      * Show the form to register a new user.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
         return Inertia::render('users/create', [
-            'roles' => UserRole::options(),
+            'roles' => UserRole::options(UserRole::assignableBy($request->user())),
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ]);
     }
@@ -71,11 +74,17 @@ class UserController extends Controller implements HasMiddleware
     /**
      * Show the form to edit an existing user.
      */
-    public function edit(User $user): Response
+    public function edit(Request $request, User $user): Response
     {
+        $actor = $request->user();
+        $assignable = UserRole::assignableBy($actor);
+
         return Inertia::render('users/edit', [
-            'user' => $this->toListItem($user),
-            'roles' => UserRole::options(),
+            'user' => $this->toListItem($user, $actor),
+            'roles' => UserRole::options(array_values(array_filter(
+                UserRole::cases(),
+                fn (UserRole $role): bool => in_array($role, $assignable, true) || $role === $user->role,
+            ))),
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ]);
     }
@@ -117,18 +126,24 @@ class UserController extends Controller implements HasMiddleware
     }
 
     /**
-     * Format a user for the frontend.
+     * Format a user for the frontend, resolving the abilities the acting user
+     * has over them so the UI never has to duplicate the policy.
      *
-     * @return array{id: int, name: string, email: string, role: string, created_at: string|null}
+     * @return array{id: int, name: string, email: string, role: string, is_owner: bool, created_at: string|null, can: array{update: bool, delete: bool}}
      */
-    private function toListItem(User $user): array
+    private function toListItem(User $user, User $actor): array
     {
         return [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->role->value,
+            'is_owner' => $user->isOwner(),
             'created_at' => $user->created_at?->toIso8601String(),
+            'can' => [
+                'update' => $actor->can('update', $user),
+                'delete' => $actor->can('delete', $user),
+            ],
         ];
     }
 }

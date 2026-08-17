@@ -11,6 +11,7 @@ export type User = {
     name: string;
     email: string;
     role: UserRole;
+    is_owner: boolean;
     avatar?: string;
     email_verified_at: string | null;
     created_at: string;
@@ -23,7 +24,12 @@ export type ManagedUser = {
     name: string;
     email: string;
     role: UserRole;
+    is_owner: boolean;
     created_at: string | null;
+    can: {
+        update: boolean;
+        delete: boolean;
+    };
 };
 
 export type Auth = {

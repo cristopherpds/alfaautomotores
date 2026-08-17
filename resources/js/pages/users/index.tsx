@@ -1,10 +1,18 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
-import { Copy, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
+import {
+    Copy,
+    Crown,
+    MoreHorizontal,
+    Pencil,
+    Plus,
+    Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import UserController from '@/actions/App/Http/Controllers/UserController';
 import Heading from '@/components/heading';
 import RoleBadge from '@/components/role-badge';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -47,13 +55,7 @@ function formatDate(value: string | null): string {
     });
 }
 
-function UserRowActions({
-    user,
-    esActual,
-}: {
-    user: ManagedUser;
-    esActual: boolean;
-}) {
+function UserRowActions({ user }: { user: ManagedUser }) {
     /* El diálogo vive fuera del menú: si colgara del contenido del menú se
        desmontaría junto con él al elegir la opción. */
     const [confirmando, setConfirmando] = useState(false);
@@ -90,18 +92,20 @@ function UserRowActions({
                             Copiar email
                         </DropdownMenuItem>
 
-                        <DropdownMenuItem asChild>
-                            <Link
-                                href={UserController.edit(user.id)}
-                                data-test={`edit-user-${user.id}-link`}
-                            >
-                                <Pencil />
-                                Editar usuario
-                            </Link>
-                        </DropdownMenuItem>
+                        {user.can.update && (
+                            <DropdownMenuItem asChild>
+                                <Link
+                                    href={UserController.edit(user.id)}
+                                    data-test={`edit-user-${user.id}-link`}
+                                >
+                                    <Pencil />
+                                    Editar usuario
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenuGroup>
 
-                    {!esActual && (
+                    {user.can.delete && (
                         <>
                             <DropdownMenuSeparator />
 
@@ -224,16 +228,22 @@ export default function UsersIndex({ users }: { users: ManagedUser[] }) {
                                         {user.email}
                                     </TableCell>
                                     <TableCell>
-                                        <RoleBadge role={user.role} />
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <RoleBadge role={user.role} />
+
+                                            {user.is_owner && (
+                                                <Badge variant="outline">
+                                                    <Crown />
+                                                    Dueño
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </TableCell>
                                     <TableCell className="text-muted-foreground">
                                         {formatDate(user.created_at)}
                                     </TableCell>
                                     <TableCell className="px-4 text-right">
-                                        <UserRowActions
-                                            user={user}
-                                            esActual={auth.user?.id === user.id}
-                                        />
+                                        <UserRowActions user={user} />
                                     </TableCell>
                                 </TableRow>
                             ))}

@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property string $name
  * @property string $email
  * @property UserRole $role
+ * @property bool $is_owner
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $two_factor_secret
@@ -44,6 +45,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'is_owner' => 'boolean',
         ];
     }
 
@@ -61,5 +63,13 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->hasRole(UserRole::Admin);
+    }
+
+    /**
+     * Determine whether the user owns the account.
+     */
+    public function isOwner(): bool
+    {
+        return $this->is_owner;
     }
 }

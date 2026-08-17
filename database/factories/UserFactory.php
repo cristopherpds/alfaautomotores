@@ -29,6 +29,7 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'role' => UserRole::Equipo,
+            'is_owner' => false,
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
@@ -51,6 +52,16 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->role(UserRole::Admin);
+    }
+
+    /**
+     * Indicate that the model owns the account.
+     */
+    public function owner(): static
+    {
+        return $this->admin()->state(fn (array $attributes) => [
+            'is_owner' => true,
+        ]);
     }
 
     /**

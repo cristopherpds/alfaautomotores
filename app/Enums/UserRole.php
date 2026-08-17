@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use App\Models\User;
+
 enum UserRole: string
 {
     case Admin = 'admin';
@@ -33,16 +35,36 @@ enum UserRole: string
     }
 
     /**
-     * Get every role formatted for the frontend select inputs.
+     * Get the roles the given user is allowed to assign.
      *
+     * Only the account owner may hand out the administrator role.
+     *
+     * @return array<int, self>
+     */
+    public static function assignableBy(User $user): array
+    {
+        if ($user->isOwner()) {
+            return self::cases();
+        }
+
+        return array_values(array_filter(
+            self::cases(),
+            fn (self $role): bool => $role !== self::Admin,
+        ));
+    }
+
+    /**
+     * Get the given roles formatted for the frontend select inputs.
+     *
+     * @param  array<int, self>|null  $roles
      * @return array<int, array{value: string, label: string, description: string}>
      */
-    public static function options(): array
+    public static function options(?array $roles = null): array
     {
         return array_map(fn (self $role): array => [
             'value' => $role->value,
             'label' => $role->label(),
             'description' => $role->description(),
-        ], self::cases());
+        ], $roles ?? self::cases());
     }
 }

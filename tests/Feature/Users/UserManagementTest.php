@@ -5,10 +5,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 test('admins can see the user list', function () {
-    $admin = User::factory()->admin()->create();
+    $owner = User::factory()->owner()->create();
     $vendedor = User::factory()->role(UserRole::Vendedor)->create();
 
-    $this->actingAs($admin)
+    $this->actingAs($owner)
         ->get(route('users.index'))
         ->assertOk()
         ->assertInertia(fn ($page) => $page

@@ -79,7 +79,7 @@ export function SiteFooter({ site }: { site: SiteInfo }) {
                         href={auth.user ? dashboard() : login()}
                         className="footer__panel"
                     >
-                        {auth.user ? 'Panel' : 'Ingresar'}
+                        Panel
                     </Link>
                 </div>
             </div>

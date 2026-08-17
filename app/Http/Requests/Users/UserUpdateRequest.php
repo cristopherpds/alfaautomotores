@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Users;
 
 use App\Concerns\ProfileValidationRules;
+use App\Concerns\RoleAssignmentRules;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -14,7 +15,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class UserUpdateRequest extends FormRequest
 {
-    use ProfileValidationRules;
+    use ProfileValidationRules, RoleAssignmentRules;
 
     /**
      * Get the validation rules that apply to the request.
@@ -44,6 +45,8 @@ class UserUpdateRequest extends FormRequest
                 if ($this->user()->is($target) && $this->input('role') !== UserRole::Admin->value) {
                     $validator->errors()->add('role', __('No podés quitarte a vos mismo el rol de administrador.'));
                 }
+
+                $this->validateAssignableRole($validator, $target->role);
             },
         ];
     }
