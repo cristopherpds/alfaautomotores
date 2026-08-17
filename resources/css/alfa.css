@@ -1,0 +1,1036 @@
+/* ---------------------------------------------------------------------------
+   Alfa Automotores — identidad visual del sitio público
+
+   Portado desde el sistema de diseño "Catálogo Alfa" (proyecto Next
+   `alfa.automotores`, `app/globals.css`). Todo cuelga de `.alfa` a propósito:
+   los nombres de clase del sistema (`.grid`, `.card`, `.badge`, `.header`)
+   chocan con utilidades de Tailwind que usa el panel, así que quedan
+   encapsulados en el árbol de la web pública y no se filtran al resto de la
+   aplicación.
+--------------------------------------------------------------------------- */
+
+:root {
+    /* Superficies */
+    --alfa-white: #ffffff;
+    --alfa-offwhite: #f4f4f2;
+    --alfa-ink: #101012;
+
+    /* Acento */
+    --alfa-blue: #1e1ee6;
+    --alfa-blue-soft: #8a8af5;
+
+    /* Bordes */
+    --alfa-border: #e6e6e4;
+    --alfa-border-light: #eeeeec;
+    --alfa-border-input: #ddddda;
+    --alfa-border-dark: #3a3a40;
+
+    /* Texto */
+    --alfa-text: #101012;
+    --alfa-text-body: #54545a;
+    --alfa-text-muted: #6e6e73;
+    --alfa-text-faint: #8a8a90;
+    --alfa-text-on-dark: #a9a9b0;
+
+    /* Estados */
+    --alfa-reserved: #b4740b;
+    --alfa-online: #5be07a;
+
+    /* Layout */
+    --alfa-max: 1320px;
+    --alfa-gutter: clamp(18px, 4vw, 48px);
+}
+
+/*
+ * El sitio público es claro siempre: la identidad se apoya en el blanco y el
+ * bloque de tinta. `color-scheme` evita que el navegador oscurezca controles
+ * nativos cuando el panel quedó en modo oscuro.
+ */
+.alfa {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    color-scheme: light;
+    background: var(--alfa-white);
+    color: var(--alfa-ink);
+    font-family: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+
+    & a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    /* --- Primitivas de layout ------------------------------------------- */
+
+    & .shell {
+        max-width: var(--alfa-max);
+        margin: 0 auto;
+        width: 100%;
+        padding-inline: var(--alfa-gutter);
+    }
+
+    /* Etiqueta pequeña en mayúsculas: el recurso tipográfico central */
+    & .eyebrow {
+        margin: 0;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.36em;
+        text-transform: uppercase;
+        color: var(--alfa-blue);
+    }
+
+    /*
+     * Párrafo de apoyo bajo un título. Tiene clase propia a propósito: cuando
+     * esto era un selector de elemento (`.hero p`) le ganaba en especificidad a
+     * `.eyebrow`, que también es un <p>, y le pisaba color y tamaño.
+     */
+    & .lede {
+        line-height: 1.6;
+        color: var(--alfa-text-body);
+        text-wrap: pretty;
+        margin: 0;
+    }
+
+    /* --- Botones --------------------------------------------------------- */
+
+    & .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        cursor: pointer;
+        padding: 17px 30px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        background: var(--alfa-ink);
+        color: var(--alfa-white);
+        transition:
+            background 0.18s ease,
+            color 0.18s ease,
+            border-color 0.18s ease;
+
+        &:hover {
+            background: var(--alfa-blue);
+            color: var(--alfa-white);
+        }
+    }
+
+    & .btn--ghost {
+        background: var(--alfa-white);
+        color: var(--alfa-ink);
+        border: 1px solid var(--alfa-ink);
+
+        &:hover {
+            background: var(--alfa-offwhite);
+            color: var(--alfa-ink);
+        }
+    }
+
+    /* Invertido, para usar sobre la sección oscura */
+    & .btn--light {
+        background: var(--alfa-white);
+        color: var(--alfa-ink);
+        padding: 18px 32px;
+    }
+
+    & .btn--outline-dark {
+        background: transparent;
+        color: var(--alfa-white);
+        border: 1px solid var(--alfa-border-dark);
+        padding: 18px 32px;
+
+        &:hover {
+            background: transparent;
+            border-color: var(--alfa-white);
+        }
+    }
+
+    & .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--alfa-online);
+        display: inline-block;
+        flex: none;
+    }
+
+    /* --- Header ---------------------------------------------------------- */
+
+    & .header {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        background: rgb(255 255 255 / 0.94);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--alfa-border);
+    }
+
+    & .header__inner {
+        display: flex;
+        align-items: center;
+        gap: clamp(16px, 3vw, 40px);
+        flex-wrap: wrap;
+        padding-block: 14px;
+    }
+
+    & .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-right: auto;
+    }
+
+    & .brand__mark {
+        display: block;
+        flex: none;
+        overflow: hidden;
+        position: relative;
+    }
+
+    & .brand__name {
+        display: flex;
+        flex-direction: column;
+        line-height: 1;
+
+        & strong {
+            font-size: 19px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        & span {
+            font-size: 9px;
+            font-weight: 500;
+            letter-spacing: 0.34em;
+            color: var(--alfa-text-muted);
+            margin-top: 3px;
+        }
+    }
+
+    & .nav {
+        display: flex;
+        align-items: center;
+        gap: clamp(14px, 2.2vw, 30px);
+        flex-wrap: wrap;
+    }
+
+    & .nav__link {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        cursor: pointer;
+        padding: 6px 0;
+        border: none;
+        background: none;
+        color: inherit;
+        border-bottom: 1px solid transparent;
+
+        &:hover,
+        &[data-active='true'] {
+            border-bottom-color: var(--alfa-ink);
+        }
+    }
+
+    & .nav__wa {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--alfa-ink);
+        color: var(--alfa-white);
+        padding: 11px 18px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        transition: background 0.18s ease;
+
+        &:hover {
+            background: var(--alfa-blue);
+            color: var(--alfa-white);
+        }
+    }
+
+    /* --- Home ------------------------------------------------------------ */
+
+    /*
+     * El hero escala con el ancho Y con el alto. En pantallas anchas pero bajas
+     * (una laptop de 1366×768 deja ~640px útiles) sólo con `vw` el título
+     * llegaba a 76px, ocupaba cinco líneas y empujaba todo fuera de la
+     * pantalla. El término `vh` sólo llega a mandar en esas pantallas: en móvil
+     * `vw` siempre es menor, así que el tamaño no salta al aparecer y
+     * desaparecer la barra del navegador.
+     */
+    & .hero {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+        gap: clamp(28px, 4vw, 64px);
+        align-items: center;
+        padding-block: clamp(28px, min(7vw, 6vh), 96px)
+            clamp(24px, min(4vw, 4vh), 56px);
+
+        & h1 {
+            font-size: clamp(34px, min(5.6vw, 9vh), 76px);
+            font-weight: 800;
+            line-height: 0.98;
+            letter-spacing: -0.025em;
+            margin-block: clamp(14px, 2.4vh, 22px);
+            text-wrap: balance;
+        }
+
+        & .lede {
+            font-size: clamp(15px, min(1.3vw, 2.1vh), 18px);
+            max-width: 44ch;
+            margin-bottom: clamp(20px, 3.6vh, 34px);
+        }
+    }
+
+    & .hero__actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    & .hero__media {
+        position: relative;
+        /* `inline-size` y no `size`: contiene sólo el eje horizontal, así el
+           alto lo sigue resolviendo `aspect-ratio`. Es lo que mide el `cqw` del
+           marcador. */
+        container-type: inline-size;
+        aspect-ratio: 4 / 3;
+        /* Con el alto acotado el recuadro se ensancha en vez de crecer hacia
+           abajo; la foto recorta sola porque va con object-fit: cover. */
+        max-height: min(62vh, 560px);
+        background: var(--alfa-offwhite);
+        border: 1px solid var(--alfa-border);
+    }
+
+    /* Franja de argumentos de venta */
+    & .strip {
+        border-top: 1px solid var(--alfa-border);
+        border-bottom: 1px solid var(--alfa-border);
+    }
+
+    & .strip__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+        margin: 0;
+    }
+
+    & .strip__item {
+        padding: 26px 24px;
+        border-right: 1px solid var(--alfa-border);
+
+        &:first-child {
+            padding-left: 0;
+        }
+
+        &:last-child {
+            padding-right: 0;
+            border-right: none;
+        }
+
+        & dt {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 7px;
+        }
+
+        & dd {
+            font-size: 13px;
+            color: var(--alfa-text-muted);
+            line-height: 1.5;
+            margin: 0;
+        }
+    }
+
+    & .section {
+        padding-block: clamp(44px, 6vw, 84px);
+    }
+
+    & .section__head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+
+        & h2 {
+            font-size: clamp(26px, 3.2vw, 40px);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin: 12px 0 0;
+        }
+    }
+
+    & .section__link {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--alfa-ink);
+        padding-bottom: 4px;
+
+        &:hover {
+            color: var(--alfa-blue);
+            border-bottom-color: var(--alfa-blue);
+        }
+    }
+
+    /* Bloque oscuro "Alfa compra" */
+    & .pitch {
+        background: var(--alfa-ink);
+        color: var(--alfa-white);
+
+        & .eyebrow {
+            color: var(--alfa-blue-soft);
+        }
+
+        & h2 {
+            font-size: clamp(28px, 3.6vw, 46px);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            margin: 16px 0;
+        }
+
+        & .lede {
+            font-size: 16px;
+            color: var(--alfa-text-on-dark);
+            max-width: 46ch;
+        }
+    }
+
+    & .pitch__inner {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+        gap: clamp(24px, 4vw, 60px);
+        align-items: center;
+        padding-block: clamp(44px, 6vw, 80px);
+    }
+
+    & .pitch__actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    /* --- Grilla de vehículos --------------------------------------------- */
+
+    & .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 296px), 1fr));
+        gap: clamp(14px, 1.6vw, 22px);
+    }
+
+    & .card {
+        background: var(--alfa-white);
+        border: 1px solid var(--alfa-border);
+        display: flex;
+        flex-direction: column;
+        transition:
+            transform 0.18s ease,
+            border-color 0.18s ease;
+
+        &:hover {
+            border-color: var(--alfa-ink);
+            transform: translateY(-3px);
+        }
+    }
+
+    & .card__media {
+        position: relative;
+        container-type: inline-size;
+        aspect-ratio: 4 / 3;
+        background: var(--alfa-offwhite);
+        border-bottom: 1px solid var(--alfa-border-light);
+    }
+
+    & .card__body {
+        padding: 18px 18px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        flex: 1;
+    }
+
+    & .card__title {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        line-height: 1.3;
+        margin: 0;
+    }
+
+    & .card__meta {
+        font-size: 12px;
+        color: var(--alfa-text-muted);
+        letter-spacing: 0.04em;
+        margin: 0;
+    }
+
+    & .card__foot {
+        margin-top: auto;
+        padding-top: 12px;
+        border-top: 1px solid var(--alfa-border-light);
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    & .card__price {
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+    }
+
+    & .card__cta {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--alfa-blue);
+    }
+
+    & .badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        color: var(--alfa-white);
+        padding: 6px 10px;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    & .badge--reservado {
+        background: var(--alfa-reserved);
+    }
+
+    & .badge--vendido {
+        background: var(--alfa-ink);
+    }
+
+    /* --- Marcador de foto ------------------------------------------------ */
+
+    & .photo {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    /*
+     * Marcador de foto pendiente, tal como está resuelto en el sistema de
+     * diseño: el nombre en mayúsculas espaciadas, el dato secundario debajo y
+     * la leyenda al pie. Sin icono — la tipografía sola es el recurso.
+     *
+     * El tipo se dimensiona en `cqw` porque la misma pieza tiene que funcionar
+     * en la tarjeta del catálogo (~420px) y en la foto grande (~640px). Los
+     * `clamp()` ponen el piso y el techo.
+     */
+    & .photo-empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 8%;
+        text-align: center;
+        background: var(--alfa-offwhite);
+
+        /*
+         * El `text-indent` compensa el espacio que `letter-spacing` agrega
+         * detrás de la última letra: sin él, el texto centrado queda corrido
+         * media pulsación a la izquierda.
+         */
+        & p {
+            text-indent: 0.12em;
+        }
+    }
+
+    & .photo-empty__nombre {
+        margin: 0;
+        font-size: clamp(13px, 4.4cqw, 30px);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        line-height: 1.25;
+        text-transform: uppercase;
+        color: var(--alfa-ink);
+        text-wrap: balance;
+    }
+
+    & .photo-empty__detalle {
+        margin: clamp(6px, 1.6cqw, 12px) 0 0;
+        font-size: clamp(10px, 2.1cqw, 14px);
+        letter-spacing: 0.2em;
+        color: var(--alfa-text-muted);
+    }
+
+    & .photo-empty__estado {
+        margin: clamp(10px, 3.4cqw, 26px) 0 0;
+        font-size: clamp(9px, 1.5cqw, 10px);
+        font-weight: 600;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--alfa-text-faint);
+    }
+
+    /* --- Catálogo -------------------------------------------------------- */
+
+    & .field-label {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--alfa-text-muted);
+    }
+
+    & .catalog-intro {
+        padding-block: clamp(28px, 4vw, 52px) 8px;
+
+        & h1 {
+            font-size: clamp(30px, 4vw, 52px);
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            margin: 12px 0 8px;
+        }
+
+        & p:not(.eyebrow) {
+            font-size: 15px;
+            color: var(--alfa-text-muted);
+            margin: 0;
+        }
+    }
+
+    & .filters {
+        border: 1px solid var(--alfa-border);
+        padding: 16px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+
+        & label {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            flex: 1 1 150px;
+
+            &.is-wide {
+                flex: 1 1 210px;
+            }
+        }
+
+        & select {
+            appearance: none;
+            border: 1px solid var(--alfa-border-input);
+            background: var(--alfa-white);
+            padding: 12px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--alfa-ink);
+            cursor: pointer;
+            border-radius: 0;
+        }
+
+        & input[type='range'] {
+            width: 100%;
+            accent-color: var(--alfa-blue);
+            height: 40px;
+            cursor: pointer;
+        }
+    }
+
+    & .filters-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding: 18px 2px 0;
+    }
+
+    & .filters-summary__count {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--alfa-text-muted);
+    }
+
+    & .filters-summary__reset {
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--alfa-blue);
+    }
+
+    /* La grilla se desplaza sola al cambiar de página: el margen la deja debajo
+       del encabezado pegajoso en vez de tapada por él. */
+    & .catalog-grid {
+        scroll-margin-top: 84px;
+    }
+
+    & .paginacion {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: clamp(28px, 3.5vw, 44px);
+        padding-top: 22px;
+        border-top: 1px solid var(--alfa-border);
+    }
+
+    /* Los números quedan centrados en la fila, con los saltos a los extremos. */
+    & .paginacion__numeros {
+        display: flex;
+        gap: 6px;
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+
+    & .paginacion__numero,
+    & .paginacion__salto {
+        cursor: pointer;
+        background: var(--alfa-white);
+        color: var(--alfa-ink);
+        border: 1px solid var(--alfa-border-input);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        transition:
+            border-color 0.18s ease,
+            background 0.18s ease,
+            color 0.18s ease;
+    }
+
+    & .paginacion__numero {
+        min-width: 40px;
+        height: 40px;
+        padding-inline: 10px;
+        letter-spacing: 0.08em;
+
+        &:hover:not([aria-current]) {
+            border-color: var(--alfa-ink);
+        }
+
+        &[aria-current='page'] {
+            background: var(--alfa-ink);
+            border-color: var(--alfa-ink);
+            color: var(--alfa-white);
+            cursor: default;
+        }
+    }
+
+    & .paginacion__salto {
+        padding: 12px 20px;
+
+        &:hover:not(:disabled) {
+            border-color: var(--alfa-ink);
+        }
+
+        &:disabled {
+            color: var(--alfa-text-faint);
+            border-color: var(--alfa-border-light);
+            cursor: not-allowed;
+        }
+    }
+
+    & .empty {
+        border: 1px dashed var(--alfa-border-input);
+        padding: 60px 24px;
+        text-align: center;
+    }
+
+    & .empty__title {
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        margin: 0 0 10px;
+    }
+
+    & .empty__text {
+        font-size: 14px;
+        color: var(--alfa-text-muted);
+        margin: 0 0 22px;
+    }
+
+    /* --- Ficha de vehículo ----------------------------------------------- */
+
+    & .back-link {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--alfa-text-muted);
+        padding-block: 22px 0;
+
+        &:hover {
+            color: var(--alfa-ink);
+        }
+    }
+
+    & .detail {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+        gap: clamp(24px, 3vw, 52px);
+        align-items: start;
+        padding-block: 22px clamp(40px, 5vw, 64px);
+
+        & h1 {
+            font-size: clamp(26px, 3.2vw, 42px);
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            line-height: 1.1;
+            margin: 14px 0 10px;
+        }
+    }
+
+    & .detail__gallery {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    & .detail__frame {
+        position: relative;
+        container-type: inline-size;
+        aspect-ratio: 4 / 3;
+        background: var(--alfa-offwhite);
+        border: 1px solid var(--alfa-border);
+    }
+
+    & .detail__thumbs {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    & .detail__summary {
+        font-size: 14px;
+        color: var(--alfa-text-muted);
+        letter-spacing: 0.04em;
+        margin: 0 0 26px;
+    }
+
+    & .detail__price {
+        border-top: 1px solid var(--alfa-border);
+        border-bottom: 1px solid var(--alfa-border);
+        padding: 22px 0;
+        margin: 0 0 26px;
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        flex-wrap: wrap;
+
+        & strong {
+            font-size: clamp(32px, 4vw, 48px);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+
+        & span {
+            font-size: 12px;
+            color: var(--alfa-text-muted);
+        }
+    }
+
+    & .detail__desc {
+        font-size: 15px;
+        line-height: 1.65;
+        color: var(--alfa-text-body);
+        margin: 0 0 30px;
+        text-wrap: pretty;
+    }
+
+    & .detail__actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    & .detail__note {
+        font-size: 12px;
+        color: var(--alfa-text-faint);
+        margin: 16px 0 0;
+    }
+
+    /* Tabla de especificaciones: las líneas son el gap del grid */
+    & .specs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+        gap: 1px;
+        background: var(--alfa-border);
+        border: 1px solid var(--alfa-border);
+        margin: 0 0 28px;
+
+        & > div {
+            background: var(--alfa-white);
+            padding: 16px 18px;
+        }
+
+        & dt {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--alfa-text-faint);
+            margin-bottom: 8px;
+        }
+
+        & dd {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+        }
+    }
+
+    & .related {
+        padding-block: 0 clamp(56px, 7vw, 96px);
+    }
+
+    & .related__title {
+        border-top: 1px solid var(--alfa-border);
+        padding-top: 28px;
+        margin: 0 0 24px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+    }
+
+    /* --- Footer ---------------------------------------------------------- */
+
+    & .footer {
+        border-top: 1px solid var(--alfa-border);
+        background: var(--alfa-white);
+        margin-top: auto;
+    }
+
+    & .footer__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+        gap: 36px;
+        padding-block: clamp(40px, 5vw, 64px);
+    }
+
+    & .footer__blurb {
+        font-size: 13px;
+        color: var(--alfa-text-muted);
+        line-height: 1.6;
+        max-width: 30ch;
+        margin: 0;
+    }
+
+    & .footer__heading {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--alfa-text-faint);
+        margin: 0 0 14px;
+    }
+
+    & .footer__body {
+        font-size: 14px;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    & .footer__links {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 14px;
+        align-items: flex-start;
+
+        & a:hover {
+            color: var(--alfa-blue);
+        }
+    }
+
+    & .footer__legal {
+        border-top: 1px solid var(--alfa-border-light);
+    }
+
+    & .footer__legal-inner {
+        padding-block: 18px;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        color: var(--alfa-text-faint);
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    /* Acceso al panel interno. No es parte del sistema de diseño: es la puerta
+       de entrada para el equipo, discreta al pie. */
+    & .footer__panel:hover {
+        color: var(--alfa-ink);
+    }
+
+    /* La franja pierde los separadores cuando colapsa a una sola columna */
+    @media (max-width: 560px) {
+        & .strip__item {
+            padding-inline: 0;
+            border-right: none;
+            border-bottom: 1px solid var(--alfa-border);
+
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+
+        /* Sin ancho para las tres piezas en fila, los números pasan arriba y
+           los saltos quedan repartidos abajo. */
+        & .paginacion__numeros {
+            order: -1;
+            flex: 1 1 100%;
+            margin-bottom: 4px;
+        }
+
+        & .paginacion__salto {
+            flex: 1 1 auto;
+            justify-content: center;
+            display: flex;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        & .card,
+        & .btn,
+        & .nav__wa {
+            transition: none;
+        }
+
+        & .card:hover {
+            transform: none;
+        }
+    }
+}
