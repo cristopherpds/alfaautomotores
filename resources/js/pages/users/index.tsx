@@ -1,5 +1,7 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Copy, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import UserController from '@/actions/App/Http/Controllers/UserController';
 import Heading from '@/components/heading';
 import RoleBadge from '@/components/role-badge';
@@ -11,8 +13,16 @@ import {
     DialogDescription,
     DialogFooter,
     DialogTitle,
-    DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     Table,
     TableBody,
@@ -21,6 +31,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useClipboard } from '@/hooks/use-clipboard';
 import { create, index } from '@/routes/users';
 import type { ManagedUser } from '@/types';
 
@@ -36,54 +47,118 @@ function formatDate(value: string | null): string {
     });
 }
 
-function DeleteUserDialog({ user }: { user: ManagedUser }) {
+function UserRowActions({
+    user,
+    esActual,
+}: {
+    user: ManagedUser;
+    esActual: boolean;
+}) {
+    /* El diálogo vive fuera del menú: si colgara del contenido del menú se
+       desmontaría junto con él al elegir la opción. */
+    const [confirmando, setConfirmando] = useState(false);
+    const [, copy] = useClipboard();
+
+    const copiarEmail = async () => {
+        if (await copy(user.email)) {
+            toast.success('Email copiado.');
+        }
+    };
+
     return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Eliminar a ${user.name}`}
-                    data-test={`delete-user-${user.id}-button`}
-                >
-                    <Trash2 className="size-4 text-destructive" />
-                </Button>
-            </DialogTrigger>
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        data-test={`user-${user.id}-actions`}
+                    >
+                        <MoreHorizontal />
+                        <span className="sr-only">
+                            Acciones para {user.name}
+                        </span>
+                    </Button>
+                </DropdownMenuTrigger>
 
-            <DialogContent>
-                <DialogTitle>¿Eliminar a {user.name}?</DialogTitle>
-                <DialogDescription>
-                    El usuario perderá el acceso al sistema de inmediato. Esta
-                    acción no se puede deshacer.
-                </DialogDescription>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Acciones</DropdownMenuLabel>
 
-                <Form
-                    {...UserController.destroy.form(user.id)}
-                    options={{ preserveScroll: true }}
-                >
-                    {({ processing }) => (
-                        <DialogFooter className="gap-2">
-                            <DialogClose asChild>
-                                <Button variant="secondary">Cancelar</Button>
-                            </DialogClose>
+                    <DropdownMenuGroup>
+                        <DropdownMenuItem onSelect={() => void copiarEmail()}>
+                            <Copy />
+                            Copiar email
+                        </DropdownMenuItem>
 
-                            <Button
-                                variant="destructive"
-                                disabled={processing}
-                                asChild
+                        <DropdownMenuItem asChild>
+                            <Link
+                                href={UserController.edit(user.id)}
+                                data-test={`edit-user-${user.id}-link`}
                             >
-                                <button
-                                    type="submit"
-                                    data-test={`confirm-delete-user-${user.id}-button`}
+                                <Pencil />
+                                Editar usuario
+                            </Link>
+                        </DropdownMenuItem>
+                    </DropdownMenuGroup>
+
+                    {!esActual && (
+                        <>
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuGroup>
+                                <DropdownMenuItem
+                                    variant="destructive"
+                                    onSelect={() => setConfirmando(true)}
+                                    data-test={`delete-user-${user.id}-button`}
                                 >
-                                    Eliminar
-                                </button>
-                            </Button>
-                        </DialogFooter>
+                                    <Trash2 />
+                                    Eliminar usuario
+                                </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                        </>
                     )}
-                </Form>
-            </DialogContent>
-        </Dialog>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Dialog open={confirmando} onOpenChange={setConfirmando}>
+                <DialogContent>
+                    <DialogTitle>¿Eliminar a {user.name}?</DialogTitle>
+                    <DialogDescription>
+                        El usuario perderá el acceso al sistema de inmediato.
+                        Esta acción no se puede deshacer.
+                    </DialogDescription>
+
+                    <Form
+                        {...UserController.destroy.form(user.id)}
+                        options={{ preserveScroll: true }}
+                        onSuccess={() => setConfirmando(false)}
+                    >
+                        {({ processing }) => (
+                            <DialogFooter className="gap-2">
+                                <DialogClose asChild>
+                                    <Button variant="secondary">
+                                        Cancelar
+                                    </Button>
+                                </DialogClose>
+
+                                <Button
+                                    variant="destructive"
+                                    disabled={processing}
+                                    asChild
+                                >
+                                    <button
+                                        type="submit"
+                                        data-test={`confirm-delete-user-${user.id}-button`}
+                                    >
+                                        Eliminar
+                                    </button>
+                                </Button>
+                            </DialogFooter>
+                        )}
+                    </Form>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
 
@@ -103,7 +178,7 @@ export default function UsersIndex({ users }: { users: ManagedUser[] }) {
 
                     <Button asChild data-test="create-user-button">
                         <Link href={create()}>
-                            <Plus className="size-4" />
+                            <Plus />
                             Nuevo usuario
                         </Link>
                     </Button>
@@ -117,8 +192,8 @@ export default function UsersIndex({ users }: { users: ManagedUser[] }) {
                                 <TableHead>Email</TableHead>
                                 <TableHead>Rol</TableHead>
                                 <TableHead>Alta</TableHead>
-                                <TableHead className="px-4 text-right">
-                                    Acciones
+                                <TableHead className="w-12 px-4">
+                                    <span className="sr-only">Acciones</span>
                                 </TableHead>
                             </TableRow>
                         </TableHeader>
@@ -155,27 +230,10 @@ export default function UsersIndex({ users }: { users: ManagedUser[] }) {
                                         {formatDate(user.created_at)}
                                     </TableCell>
                                     <TableCell className="px-4 text-right">
-                                        <div className="flex justify-end gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                asChild
-                                            >
-                                                <Link
-                                                    href={UserController.edit(
-                                                        user.id,
-                                                    )}
-                                                    aria-label={`Editar a ${user.name}`}
-                                                    data-test={`edit-user-${user.id}-link`}
-                                                >
-                                                    <Pencil className="size-4" />
-                                                </Link>
-                                            </Button>
-
-                                            {auth.user?.id !== user.id && (
-                                                <DeleteUserDialog user={user} />
-                                            )}
-                                        </div>
+                                        <UserRowActions
+                                            user={user}
+                                            esActual={auth.user?.id === user.id}
+                                        />
                                     </TableCell>
                                 </TableRow>
                             ))}
