@@ -38,9 +38,28 @@ class VehiculoPolicy
     }
 
     /**
+     * Determine whether the user can edit vehicles in bulk.
+     *
+     * Va aparte de `update()` porque la ruta del lote no tiene un `{vehiculo}`
+     * que resolver: sin modelo, `can:update` no se puede evaluar.
+     */
+    public function updateAny(User $user): bool
+    {
+        return $this->gestiona($user);
+    }
+
+    /**
      * Determine whether the user can remove a vehicle from the stock.
      */
     public function delete(User $user, Vehiculo $vehiculo): bool
+    {
+        return $this->gestiona($user);
+    }
+
+    /**
+     * Determine whether the user can remove vehicles in bulk.
+     */
+    public function deleteAny(User $user): bool
     {
         return $this->gestiona($user);
     }

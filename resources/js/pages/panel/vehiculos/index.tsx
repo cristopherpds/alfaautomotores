@@ -1,4 +1,4 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, router } from '@inertiajs/react';
 import {
     Car,
     ExternalLink,
@@ -8,13 +8,16 @@ import {
     Plus,
     Search,
     SearchX,
+    Tags,
     Trash2,
     X,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import VehiculoController from '@/actions/App/Http/Controllers/Panel/VehiculoController';
+import VehiculoLoteController from '@/actions/App/Http/Controllers/Panel/VehiculoLoteController';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogClose,
@@ -67,7 +70,7 @@ import type { OpcionFiltro } from '@/components/vehiculo-filtro-columna';
 import { fmtKm, fmtPrecio } from '@/lib/alfa';
 import { create, index } from '@/routes/panel/vehiculos';
 import { show } from '@/routes/vehiculos';
-import type { ManagedVehiculo } from '@/types';
+import type { EstadoVehiculoAdmin, ManagedVehiculo } from '@/types';
 
 type Props = {
     vehiculos: ManagedVehiculo[];
@@ -130,6 +133,150 @@ function ventanaDePaginas(actual: number, total: number): (number | 'gap')[] {
             ? (['gap', pagina] as (number | 'gap')[])
             : [pagina];
     });
+}
+
+/**
+ * La barra que aparece al tildar filas. Cambiar estado y eliminar viajan con
+ * la lista de ids: el backend recorre los modelos de a uno, así que el lote
+ * respeta las mismas invariantes que una edición suelta.
+ */
+function VehiculoLoteAcciones({
+    seleccion,
+    onListo,
+}: {
+    seleccion: number[];
+    onListo: () => void;
+}) {
+    /* Igual que en las acciones de fila: el diálogo va fuera del menú. */
+    const [confirmando, setConfirmando] = useState(false);
+    const [enviando, setEnviando] = useState(false);
+
+    /* `preserveState` mantiene los filtros y la página, que son estado local. */
+    const comunes = {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+            setConfirmando(false);
+            onListo();
+        },
+        onFinish: () => setEnviando(false),
+    };
+
+    const cambiarEstado = (estado: EstadoVehiculoAdmin) => {
+        setEnviando(true);
+
+        router.patch(
+            VehiculoLoteController.estado.url(),
+            { vehiculos: seleccion, estado },
+            comunes,
+        );
+    };
+
+    const eliminar = () => {
+        setEnviando(true);
+
+        router.delete(VehiculoLoteController.destroy.url(), {
+            ...comunes,
+            data: { vehiculos: seleccion },
+        });
+    };
+
+    return (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
+            <p className="text-sm font-medium" aria-live="polite">
+                {seleccion.length === 1
+                    ? '1 vehículo seleccionado'
+                    : `${seleccion.length} vehículos seleccionados`}
+            </p>
+
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={enviando}
+                        data-test="lote-estado-trigger"
+                    >
+                        <Tags />
+                        Cambiar estado
+                    </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="start">
+                    <DropdownMenuLabel>Pasar a</DropdownMenuLabel>
+
+                    <DropdownMenuGroup>
+                        {Object.entries(ETIQUETAS_ESTADO).map(
+                            ([estado, etiqueta]) => (
+                                <DropdownMenuItem
+                                    key={estado}
+                                    onSelect={() =>
+                                        cambiarEstado(
+                                            estado as EstadoVehiculoAdmin,
+                                        )
+                                    }
+                                    data-test={`lote-estado-${estado}-button`}
+                                >
+                                    {etiqueta}
+                                </DropdownMenuItem>
+                            ),
+                        )}
+                    </DropdownMenuGroup>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button
+                variant="destructive"
+                size="sm"
+                disabled={enviando}
+                onClick={() => setConfirmando(true)}
+                data-test="lote-eliminar-button"
+            >
+                <Trash2 />
+                Eliminar
+            </Button>
+
+            <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto"
+                onClick={onListo}
+                data-test="lote-limpiar-button"
+            >
+                <X />
+                Quitar selección
+            </Button>
+
+            <Dialog open={confirmando} onOpenChange={setConfirmando}>
+                <DialogContent>
+                    <DialogTitle>
+                        {seleccion.length === 1
+                            ? '¿Eliminar el vehículo seleccionado?'
+                            : `¿Eliminar los ${seleccion.length} vehículos seleccionados?`}
+                    </DialogTitle>
+                    <DialogDescription>
+                        Se borran también sus fotos. Esta acción no se puede
+                        deshacer.
+                    </DialogDescription>
+
+                    <DialogFooter className="gap-2">
+                        <DialogClose asChild>
+                            <Button variant="secondary">Cancelar</Button>
+                        </DialogClose>
+
+                        <Button
+                            variant="destructive"
+                            disabled={enviando}
+                            onClick={eliminar}
+                            data-test="confirm-lote-eliminar-button"
+                        >
+                            Eliminar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
 }
 
 function VehiculoRowActions({ vehiculo }: { vehiculo: ManagedVehiculo }) {
@@ -256,12 +403,22 @@ export default function VehiculosIndex({
 
     const [filtros, setFiltros] = useState<Filtros>(SIN_FILTROS);
     const [pagina, setPagina] = useState(1);
+    const [seleccion, setSeleccion] = useState<number[]>([]);
+
+    /* La selección es de la página que se está viendo, así que se limpia cada
+       vez que cambian las filas: si no, quedarían tildados ids que ya no se ven
+       pero igual se mandarían. */
+    const irAPagina = (destino: number) => {
+        setPagina(destino);
+        setSeleccion([]);
+    };
 
     /* Cualquier cambio de filtro vuelve a la primera página: si estabas en la 3
        y el resultado ahora tiene una sola, la tabla quedaría vacía sin motivo. */
     const actualizar = (cambio: Partial<Filtros>) => {
         setFiltros((previos) => ({ ...previos, ...cambio }));
         setPagina(1);
+        setSeleccion([]);
     };
 
     /* Las opciones salen del stock real, igual que en el catálogo público: si
@@ -314,6 +471,7 @@ export default function VehiculosIndex({
     const limpiar = () => {
         setFiltros(SIN_FILTROS);
         setPagina(1);
+        setSeleccion([]);
     };
 
     /* Se acota por las dudas: si borrás un vehículo estando en la última
@@ -322,6 +480,21 @@ export default function VehiculosIndex({
     const paginaActual = Math.min(pagina, paginas);
     const desde = (paginaActual - 1) * POR_PAGINA;
     const filas = visibles.slice(desde, desde + POR_PAGINA);
+
+    /* La columna de checkboxes no tiene sentido para el rol equipo, que no
+       gestiona nada: se oculta entera en vez de mostrarla toda deshabilitada. */
+    const gestiona = vehiculos.some((vehiculo) => vehiculo.can.update);
+    const seleccionables = filas
+        .filter((vehiculo) => vehiculo.can.update)
+        .map((vehiculo) => vehiculo.id);
+    const todasTildadas =
+        seleccionables.length > 0 && seleccionables.length === seleccion.length;
+
+    const alternarFila = (id: number, tildado: boolean) => {
+        setSeleccion((previa) =>
+            tildado ? [...previa, id] : previa.filter((otro) => otro !== id),
+        );
+    };
 
     return (
         <>
@@ -379,10 +552,43 @@ export default function VehiculosIndex({
                     </p>
                 </div>
 
+                {seleccion.length > 0 && (
+                    <VehiculoLoteAcciones
+                        seleccion={seleccion}
+                        onListo={() => setSeleccion([])}
+                    />
+                )}
+
                 <div className="rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                {gestiona && (
+                                    <TableHead className="w-12 pl-4">
+                                        <Checkbox
+                                            checked={
+                                                todasTildadas
+                                                    ? true
+                                                    : seleccion.length > 0
+                                                      ? 'indeterminate'
+                                                      : false
+                                            }
+                                            disabled={
+                                                seleccionables.length === 0
+                                            }
+                                            onCheckedChange={(tildado) =>
+                                                setSeleccion(
+                                                    tildado
+                                                        ? seleccionables
+                                                        : [],
+                                                )
+                                            }
+                                            aria-label="Seleccionar los vehículos de esta página"
+                                            data-test="seleccionar-todos-checkbox"
+                                        />
+                                    </TableHead>
+                                )}
+
                                 <TableHead className="w-20 px-4">
                                     Foto
                                 </TableHead>
@@ -434,7 +640,7 @@ export default function VehiculosIndex({
                         <TableBody>
                             {filas.length === 0 && (
                                 <TableRow className="hover:bg-transparent">
-                                    <TableCell colSpan={8}>
+                                    <TableCell colSpan={gestiona ? 9 : 8}>
                                         <Empty>
                                             <EmptyHeader>
                                                 <EmptyMedia variant="icon">
@@ -486,7 +692,33 @@ export default function VehiculosIndex({
                             )}
 
                             {filas.map((vehiculo) => (
-                                <TableRow key={vehiculo.id}>
+                                <TableRow
+                                    key={vehiculo.id}
+                                    data-state={
+                                        seleccion.includes(vehiculo.id)
+                                            ? 'selected'
+                                            : undefined
+                                    }
+                                >
+                                    {gestiona && (
+                                        <TableCell className="pl-4">
+                                            <Checkbox
+                                                checked={seleccion.includes(
+                                                    vehiculo.id,
+                                                )}
+                                                disabled={!vehiculo.can.update}
+                                                onCheckedChange={(tildado) =>
+                                                    alternarFila(
+                                                        vehiculo.id,
+                                                        tildado === true,
+                                                    )
+                                                }
+                                                aria-label={`Seleccionar ${vehiculo.titulo}`}
+                                                data-test={`seleccionar-vehiculo-${vehiculo.id}-checkbox`}
+                                            />
+                                        </TableCell>
+                                    )}
+
                                     <TableCell className="px-4">
                                         {vehiculo.portada ? (
                                             <img
@@ -567,7 +799,7 @@ export default function VehiculosIndex({
                                 <PaginationItem>
                                     <PaginationPrevious
                                         onClick={() =>
-                                            setPagina(paginaActual - 1)
+                                            irAPagina(paginaActual - 1)
                                         }
                                         disabled={paginaActual === 1}
                                     />
@@ -590,7 +822,7 @@ export default function VehiculosIndex({
                                                         pagina === paginaActual
                                                     }
                                                     onClick={() =>
-                                                        setPagina(pagina)
+                                                        irAPagina(pagina)
                                                     }
                                                     aria-label={`Ir a la página ${pagina}`}
                                                 >
@@ -604,7 +836,7 @@ export default function VehiculosIndex({
                                 <PaginationItem>
                                     <PaginationNext
                                         onClick={() =>
-                                            setPagina(paginaActual + 1)
+                                            irAPagina(paginaActual + 1)
                                         }
                                         disabled={paginaActual === paginas}
                                     />

@@ -3,6 +3,7 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Panel\VehiculoController as PanelVehiculoController;
 use App\Http\Controllers\Panel\VehiculoImagenController;
+use App\Http\Controllers\Panel\VehiculoLoteController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehiculoController;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     /* El panel va bajo `panel/` porque `vehiculos.show` y `/vehiculos/{slug}`
        ya son del sitio público. */
     Route::prefix('panel')->name('panel.')->group(function () {
+        /* Antes del resource a propósito: `vehiculos/{vehiculo}` matchea
+           `vehiculos/lote`, y como el binding es por id daría 404. */
+        Route::patch('vehiculos/lote/estado', [VehiculoLoteController::class, 'estado'])
+            ->name('vehiculos.lote.estado');
+        Route::delete('vehiculos/lote', [VehiculoLoteController::class, 'destroy'])
+            ->name('vehiculos.lote.destroy');
+
         Route::resource('vehiculos', PanelVehiculoController::class)->except('show');
 
         Route::patch('vehiculos/{vehiculo}/destacado', [PanelVehiculoController::class, 'destacado'])
