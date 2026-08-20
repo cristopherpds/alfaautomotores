@@ -19,6 +19,7 @@ export function VehicleCard({ vehiculo }: { vehiculo: Vehiculo }) {
                 )}
 
                 <Photo
+                    src={vehiculo.imagenes[0]}
                     alt={nombre}
                     placeholder={nombre}
                     detalle={String(vehiculo.anio)}

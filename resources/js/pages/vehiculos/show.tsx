@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Photo } from '@/components/alfa/photo';
+import { Galeria } from '@/components/alfa/galeria';
 import { VehicleGrid } from '@/components/alfa/vehicle-card';
 import { fmtKm, fmtPrecio, titulo, whatsapp } from '@/lib/alfa';
 import { estadoLegible, mensajeConsulta } from '@/lib/catalogo';
@@ -11,9 +11,6 @@ type Props = {
     vehiculo: Vehiculo;
     similares: Vehiculo[];
 };
-
-/** Las tres fotos secundarias de la galería, todavía sin archivo cargado. */
-const VISTAS = ['Interior', 'Trasera', 'Motor'];
 
 export default function VehiculoShow({ site, vehiculo, similares }: Props) {
     const nombre = titulo(vehiculo);
@@ -43,26 +40,11 @@ export default function VehiculoShow({ site, vehiculo, similares }: Props) {
             </div>
 
             <article className="shell detail">
-                <div className="detail__gallery">
-                    <div className="detail__frame">
-                        <Photo
-                            alt={nombre}
-                            placeholder={nombre}
-                            detalle={String(vehiculo.anio)}
-                        />
-                    </div>
-
-                    <div className="detail__thumbs">
-                        {VISTAS.map((vista) => (
-                            <div className="detail__frame" key={vista}>
-                                <Photo
-                                    alt={`${nombre} — ${vista.toLowerCase()}`}
-                                    placeholder={vista}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                <Galeria
+                    fotos={vehiculo.imagenes}
+                    nombre={nombre}
+                    anio={vehiculo.anio}
+                />
 
                 <div>
                     <p className="eyebrow">{estadoLegible(vehiculo.estado)}</p>

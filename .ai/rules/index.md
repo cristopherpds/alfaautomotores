@@ -9,4 +9,5 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/css/alfa.css | .ai/rules/css.md |
 | resources/js/** | .ai/rules/js.md |
 | app/Models/Vehiculo.php | .ai/rules/models.md |
+| app/Http/Controllers/Panel/** | .ai/rules/panel.md |
 | app/Policies/** | .ai/rules/policies.md |

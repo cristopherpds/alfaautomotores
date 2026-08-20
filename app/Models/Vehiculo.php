@@ -2,47 +2,167 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Collection;
-use JsonSerializable;
+use App\Enums\Combustible;
+use App\Enums\EstadoVehiculo;
+use App\Enums\Moneda;
+use App\Enums\TipoVehiculo;
+use App\Enums\Transmision;
+use Database\Factories\VehiculoFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Vehículo del stock en venta.
  *
- * Provisorio: todavía no hay tabla. Las filas salen de
- * `database/data/vehiculos.json`, el stock mockeado que se trajo del proyecto
- * Next (`scripts/vehiculos-mock.ts`). Cuando exista la migración esta clase
- * pasa a ser el modelo Eloquent: las páginas consumen estos mismos métodos y
- * no cambian.
+ * La API estática — `publicos()`, `destacados()`, `buscar()`, `similares()`,
+ * `contar()` — es el contrato que consumen `HomeController` y
+ * `VehiculoController`: devuelve siempre vehículos ya listos para el sitio
+ * público, con sus fotos precargadas.
+ *
+ * `#[Hidden]` deja la serialización en los mismos campos que espera el tipo
+ * `Vehiculo` de `resources/js/types/alfa.ts`; el panel no depende de eso, mapea
+ * a mano en `Panel\VehiculoController::toListItem()`.
+ *
+ * @property int $id
+ * @property string $slug
+ * @property string $marca
+ * @property string $modelo
+ * @property string|null $version
+ * @property int $anio
+ * @property int $km
+ * @property int $precio
+ * @property Moneda $moneda
+ * @property Combustible $comb
+ * @property Transmision $trans
+ * @property TipoVehiculo $tipo
+ * @property EstadoVehiculo $estado
+ * @property bool $destacado
+ * @property string $desc
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, VehiculoImagen> $fotos
+ * @property-read array<int, string> $imagenes
  */
-class Vehiculo implements JsonSerializable
+#[Fillable([
+    'slug', 'marca', 'modelo', 'version', 'anio', 'km', 'precio',
+    'moneda', 'comb', 'trans', 'tipo', 'estado', 'desc',
+])]
+#[Hidden(['id', 'destacado', 'fotos', 'created_at', 'updated_at'])]
+class Vehiculo extends Model
 {
-    /**
-     * Estado interno de un vehículo a medio cargar: nunca sale al público.
-     */
-    public const ESTADO_BORRADOR = 'borrador';
+    /** @use HasFactory<VehiculoFactory> */
+    use HasFactory;
 
     /**
-     * Todo el stock del archivo, cacheado por request.
+     * Cuántos vehículos se pueden destacar a la vez en la portada.
+     */
+    public const MAX_DESTACADOS = 6;
+
+    /**
+     * Cuántas fotos admite la galería de un vehículo.
+     */
+    public const MAX_IMAGENES = 12;
+
+    /**
+     * @var list<string>
+     */
+    protected $appends = ['imagenes'];
+
+    /**
+     * Dos invariantes que no se delegan al controlador.
      *
-     * @var Collection<int, self>|null
+     * Al borrar el vehículo se van también los archivos de su galería: las
+     * filas las arrastra la foreign key, los archivos no.
+     *
+     * Y un borrador nunca queda destacado: se limpia acá y no en
+     * `Panel\VehiculoController` para que valga también cuando el estado
+     * cambia desde un seeder, una factory o tinker.
      */
-    private static ?Collection $stock = null;
+    protected static function booted(): void
+    {
+        static::saving(function (self $vehiculo): void {
+            if (! $vehiculo->esDestacable()) {
+                $vehiculo->destacado = false;
+            }
+        });
 
-    public function __construct(
-        public readonly string $slug,
-        public readonly string $marca,
-        public readonly string $modelo,
-        public readonly ?string $version,
-        public readonly int $anio,
-        public readonly int $km,
-        public readonly int $precio,
-        public readonly string $moneda,
-        public readonly string $comb,
-        public readonly string $trans,
-        public readonly string $tipo,
-        public readonly string $estado,
-        public readonly string $desc,
-    ) {}
+        static::deleting(function (self $vehiculo): void {
+            Storage::disk('public')->deleteDirectory($vehiculo->carpetaDeFotos());
+        });
+    }
+
+    /**
+     * Si el vehículo puede ir a la portada.
+     *
+     * Es la única definición de la regla: la consultan el hook de arriba,
+     * `DestacarVehiculoRequest` y los payloads del panel. Destacar un borrador
+     * ocuparía uno de los `MAX_DESTACADOS` lugares que nadie llega a ver.
+     */
+    public function esDestacable(): bool
+    {
+        return $this->estado !== EstadoVehiculo::Borrador;
+    }
+
+    /**
+     * Carpeta del disco `public` donde viven las fotos del vehículo.
+     */
+    public function carpetaDeFotos(): string
+    {
+        return 'vehiculos/'.$this->getKey();
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'anio' => 'integer',
+            'km' => 'integer',
+            'precio' => 'integer',
+            'moneda' => Moneda::class,
+            'comb' => Combustible::class,
+            'trans' => Transmision::class,
+            'tipo' => TipoVehiculo::class,
+            'estado' => EstadoVehiculo::class,
+            'destacado' => 'boolean',
+        ];
+    }
+
+    /**
+     * Las fotos del vehículo, de la portada a la última.
+     *
+     * @return HasMany<VehiculoImagen, $this>
+     */
+    public function fotos(): HasMany
+    {
+        return $this->hasMany(VehiculoImagen::class)->orderBy('orden')->orderBy('id');
+    }
+
+    /**
+     * Las URLs de las fotos, que es lo único que necesita el sitio público.
+     *
+     * Se llama distinto que la relación a propósito: un accessor y una relación
+     * no pueden compartir nombre.
+     *
+     * @return Attribute<array<int, string>, never>
+     */
+    protected function imagenes(): Attribute
+    {
+        return Attribute::get(
+            fn (): array => $this->fotos->map(fn (VehiculoImagen $foto): string => $foto->url())->all(),
+        );
+    }
 
     /**
      * Nombre comercial: marca, modelo y versión cuando la hay.
@@ -59,27 +179,51 @@ class Vehiculo implements JsonSerializable
      */
     public static function publicos(): Collection
     {
-        return self::stock()
-            ->reject(fn (self $vehiculo): bool => $vehiculo->estado === self::ESTADO_BORRADOR)
-            ->values();
+        return self::query()
+            ->whereNot('estado', EstadoVehiculo::Borrador)
+            ->with('fotos')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
     }
 
     /**
-     * Los destacados de la portada: lo último que entró y está a la venta.
+     * Los destacados de la portada.
+     *
+     * Primero los marcados a mano; si no llegan a `$cantidad`, la lista se
+     * completa sola con los publicados más recientes.
+     *
+     * El filtro tiene que dar el mismo conjunto que cuenta
+     * `contarDestacados()`, o el panel diría "6 de 6" mientras la portada
+     * muestra menos: un marcado a mano entra en cualquier estado público
+     * (reservado y vendido incluidos), y el relleno automático sigue siendo
+     * sólo de publicados.
      *
      * @return Collection<int, self>
      */
-    public static function destacados(int $cantidad = 6): Collection
+    public static function destacados(int $cantidad = self::MAX_DESTACADOS): Collection
     {
-        return self::publicos()
-            ->filter(fn (self $vehiculo): bool => $vehiculo->estado === 'publicado')
+        return self::query()
+            ->whereNot('estado', EstadoVehiculo::Borrador)
+            ->where(function (Builder $query): void {
+                $query->where('destacado', true)
+                    ->orWhere('estado', EstadoVehiculo::Publicado);
+            })
+            ->with('fotos')
+            ->orderByDesc('destacado')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->take($cantidad)
-            ->values();
+            ->get();
     }
 
     public static function buscar(string $slug): ?self
     {
-        return self::publicos()->first(fn (self $vehiculo): bool => $vehiculo->slug === $slug);
+        return self::query()
+            ->whereNot('estado', EstadoVehiculo::Borrador)
+            ->where('slug', $slug)
+            ->with('fotos')
+            ->first();
     }
 
     /**
@@ -89,86 +233,38 @@ class Vehiculo implements JsonSerializable
      */
     public static function similares(self $vehiculo, int $cantidad = 3): Collection
     {
-        return self::publicos()
-            ->filter(fn (self $otro): bool => $otro->estado === 'publicado'
-                && $otro->tipo === $vehiculo->tipo
-                && $otro->slug !== $vehiculo->slug)
+        return self::query()
+            ->where('estado', EstadoVehiculo::Publicado)
+            ->where('tipo', $vehiculo->tipo)
+            ->whereKeyNot($vehiculo->getKey())
+            ->with('fotos')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->take($cantidad)
-            ->values();
+            ->get();
     }
 
+    /**
+     * Cuántos vehículos ve el público.
+     */
     public static function contar(): int
     {
-        return self::publicos()->count();
+        return self::query()
+            ->whereNot('estado', EstadoVehiculo::Borrador)
+            ->count();
     }
 
     /**
-     * @return array<string, mixed>
+     * Cuántos de los `MAX_DESTACADOS` lugares de la portada están ocupados.
+     *
+     * Excluye borradores: el hook `saving` ya impide dejarlos destacados, pero
+     * el filtro también cubre las filas que quedaron marcadas de antes.
      */
-    public function jsonSerialize(): array
+    public static function contarDestacados(): int
     {
-        return [
-            'slug' => $this->slug,
-            'marca' => $this->marca,
-            'modelo' => $this->modelo,
-            'version' => $this->version,
-            'anio' => $this->anio,
-            'km' => $this->km,
-            'precio' => $this->precio,
-            'moneda' => $this->moneda,
-            'comb' => $this->comb,
-            'trans' => $this->trans,
-            'tipo' => $this->tipo,
-            'estado' => $this->estado,
-            'desc' => $this->desc,
-        ];
-    }
-
-    /**
-     * @return Collection<int, self>
-     */
-    private static function stock(): Collection
-    {
-        if (self::$stock instanceof Collection) {
-            return self::$stock;
-        }
-
-        $filas = json_decode(
-            (string) file_get_contents(database_path('data/vehiculos.json')),
-            true,
-            flags: JSON_THROW_ON_ERROR,
-        );
-
-        $stock = new Collection;
-
-        foreach (is_array($filas) ? $filas : [] as $fila) {
-            if (is_array($fila)) {
-                $stock->push(self::desdeFila($fila));
-            }
-        }
-
-        return self::$stock = $stock;
-    }
-
-    /**
-     * @param  array<mixed, mixed>  $fila
-     */
-    private static function desdeFila(array $fila): self
-    {
-        return new self(
-            slug: (string) $fila['slug'],
-            marca: (string) $fila['marca'],
-            modelo: (string) $fila['modelo'],
-            version: isset($fila['version']) ? (string) $fila['version'] : null,
-            anio: (int) $fila['anio'],
-            km: (int) $fila['km'],
-            precio: (int) $fila['precio'],
-            moneda: (string) $fila['moneda'],
-            comb: (string) $fila['comb'],
-            trans: (string) $fila['trans'],
-            tipo: (string) $fila['tipo'],
-            estado: (string) $fila['estado'],
-            desc: (string) $fila['desc'],
-        );
+        return self::query()
+            ->where('destacado', true)
+            ->whereNot('estado', EstadoVehiculo::Borrador)
+            ->count();
     }
 }

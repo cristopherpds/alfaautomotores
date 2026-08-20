@@ -1,5 +1,4 @@
 import { Head, Link } from '@inertiajs/react';
-import { Photo } from '@/components/alfa/photo';
 import { VehicleGrid } from '@/components/alfa/vehicle-card';
 import { whatsapp } from '@/lib/alfa';
 import { catalogo } from '@/routes';
@@ -33,8 +32,27 @@ export default function Welcome({ site, destacados, totalStock }: Props) {
                 />
             </Head>
 
-            <section className="shell hero">
-                <div>
+            <section className="hero">
+                {/*
+                 * Fondo decorativo: va con `aria-hidden` y sin controles porque
+                 * no aporta contenido. `muted` + `playsInline` son los dos
+                 * requisitos para que el navegador (sobre todo iOS) deje
+                 * arrancar el autoplay.
+                 */}
+                <video
+                    className="hero__video"
+                    src="/assets/hero-ruta.mp4"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="auto"
+                    aria-hidden="true"
+                    tabIndex={-1}
+                />
+                <div className="hero__velo" aria-hidden="true" />
+
+                <div className="shell hero__inner">
                     <p className="eyebrow">
                         {site.ciudad} · {site.pais}
                     </p>
@@ -54,26 +72,18 @@ export default function Welcome({ site, destacados, totalStock }: Props) {
                     </p>
 
                     <div className="hero__actions">
-                        <Link href={catalogo()} className="btn">
+                        <Link href={catalogo()} className="btn btn--light">
                             Ver catálogo
                         </Link>
                         <a
                             href={cotizar}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="btn btn--ghost"
+                            className="btn btn--outline-light"
                         >
                             Cotizá tu auto
                         </a>
                     </div>
-                </div>
-
-                <div className="hero__media">
-                    <Photo
-                        alt={`Salón de ${site.nombre} en ${site.ciudad}`}
-                        placeholder={`Salón ${site.nombre}`}
-                        detalle={`${site.ciudad} · ${site.pais}`}
-                    />
                 </div>
             </section>
 

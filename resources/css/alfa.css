@@ -39,6 +39,42 @@
     /* Layout */
     --alfa-max: 1320px;
     --alfa-gutter: clamp(18px, 4vw, 48px);
+
+    /*
+     * Alto del header. Lo necesita el hero de la home para ocupar exactamente
+     * lo que queda de pantalla (`100dvh - var(--alfa-header)`) sin dejar
+     * asomar la franja de argumentos que viene abajo.
+     *
+     * Va a mano porque el header es sticky —ocupa lugar en el flujo— y su alto
+     * sale del contenido: `.header__inner` es flex con `flex-wrap`, así que al
+     * angostarse el nav baja a una segunda fila y después a una tercera. Los
+     * cortes de abajo están medidos en el navegador sobre el nav actual.
+     *
+     * **Si cambia el contenido del header (links del nav, tamaño del logo) hay
+     * que volver a medir.** Cuando dentro de un tramo el alto no es constante
+     * hay que tomar el mínimo: quedarse por debajo del alto real deja el borde
+     * inferior del hero apenas fuera de la pantalla, que no se nota; pasarse
+     * muestra una tira de la sección siguiente.
+     */
+    --alfa-header: 73px;
+}
+
+/*
+ * El nav baja a una segunda fila. En este tramo el alto va de 127.5px a
+ * 132.6px —el `gap` del header es un `clamp()` con `vw`, así que crece con el
+ * ancho—; va el mínimo, redondeado hacia abajo.
+ */
+@media (max-width: 704px) {
+    :root {
+        --alfa-header: 127px;
+    }
+}
+
+/* ...y a una tercera */
+@media (max-width: 504px) {
+    :root {
+        --alfa-header: 171px;
+    }
 }
 
 /*
@@ -144,6 +180,20 @@
 
         &:hover {
             background: transparent;
+            border-color: var(--alfa-white);
+        }
+    }
+
+    /* Como el anterior pero para fondos con imagen o video, donde el borde
+       tiene que leerse sobre cualquier fotograma. */
+    & .btn--outline-light {
+        background: transparent;
+        color: var(--alfa-white);
+        border: 1px solid rgb(255 255 255 / 0.6);
+
+        &:hover {
+            background: rgb(255 255 255 / 0.12);
+            color: var(--alfa-white);
             border-color: var(--alfa-white);
         }
     }
@@ -265,12 +315,27 @@
      * desaparecer la barra del navegador.
      */
     & .hero {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
-        gap: clamp(28px, 4vw, 64px);
-        align-items: center;
-        padding-block: clamp(28px, min(7vw, 6vh), 96px)
-            clamp(24px, min(4vw, 4vh), 56px);
+        position: relative;
+        isolation: isolate;
+        /* Ancho completo: el `shell` pasa al interior para que el video sangre
+           de borde a borde y el texto siga alineado con el resto de la
+           página. */
+        display: flex;
+        align-items: flex-end;
+        /* Lo que queda de pantalla debajo del header, para que el video llene
+           la primera vista completa. `dvh` y no `vh`/`svh`: en móvil el alto
+           útil cambia al esconderse la barra del navegador, y es la única
+           unidad que acompaña ese cambio —con las otras dos la franja de
+           argumentos asoma o el hero se pasa de largo. La línea con `vh` queda
+           de respaldo. */
+        min-height: calc(100vh - var(--alfa-header));
+        min-height: calc(100dvh - var(--alfa-header));
+        background: var(--alfa-ink);
+        overflow: hidden;
+
+        & .eyebrow {
+            color: var(--alfa-white);
+        }
 
         & h1 {
             font-size: clamp(34px, min(5.6vw, 9vh), 76px);
@@ -285,27 +350,49 @@
             font-size: clamp(15px, min(1.3vw, 2.1vh), 18px);
             max-width: 44ch;
             margin-bottom: clamp(20px, 3.6vh, 34px);
+            color: rgb(255 255 255 / 0.82);
         }
+    }
+
+    & .hero__video,
+    & .hero__velo {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+    }
+
+    & .hero__video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /*
+     * Velo sobre el video. Es un degradado y no un color plano porque el texto
+     * vive abajo a la izquierda: así esa esquina queda bien oscura para el
+     * contraste y el resto del plano se sigue viendo.
+     */
+    & .hero__velo {
+        background:
+            linear-gradient(
+                to top,
+                rgb(16 16 18 / 0.88) 0%,
+                rgb(16 16 18 / 0.55) 45%,
+                rgb(16 16 18 / 0.2) 100%
+            ),
+            linear-gradient(to right, rgb(16 16 18 / 0.55), transparent 70%);
+    }
+
+    & .hero__inner {
+        width: 100%;
+        padding-block: clamp(40px, min(8vw, 8vh), 96px);
+        color: var(--alfa-white);
     }
 
     & .hero__actions {
         display: flex;
         gap: 12px;
         flex-wrap: wrap;
-    }
-
-    & .hero__media {
-        position: relative;
-        /* `inline-size` y no `size`: contiene sólo el eje horizontal, así el
-           alto lo sigue resolviendo `aspect-ratio`. Es lo que mide el `cqw` del
-           marcador. */
-        container-type: inline-size;
-        aspect-ratio: 4 / 3;
-        /* Con el alto acotado el recuadro se ensancha en vez de crecer hacia
-           abajo; la foto recorta sola porque va con object-fit: cover. */
-        max-height: min(62vh, 560px);
-        background: var(--alfa-offwhite);
-        border: 1px solid var(--alfa-border);
     }
 
     /* Franja de argumentos de venta */
@@ -828,6 +915,122 @@
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 10px;
+    }
+
+    /* Cualquier foto de la ficha abre el visor: el marco es el botón. */
+    & .detail__shot {
+        display: block;
+        width: 100%;
+        padding: 0;
+        font: inherit;
+        color: inherit;
+        cursor: zoom-in;
+
+        & .photo {
+            transition: opacity 0.2s ease;
+        }
+
+        &:hover .photo {
+            opacity: 0.88;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--alfa-ink);
+            outline-offset: 2px;
+        }
+    }
+
+    /* --- Visor a pantalla completa --------------------------------------- */
+
+    & .lightbox {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        padding: 0;
+        border: 0;
+        /* El velo va en el dialog y no sólo en `::backdrop`: el dialog cubre
+           todo el viewport, así que no depende de cómo pinte el pseudo. */
+        background: rgb(0 0 0 / 0.92);
+        color: var(--alfa-white);
+
+        &::backdrop {
+            background: rgb(0 0 0 / 0.92);
+        }
+    }
+
+    & .lightbox__figure {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: clamp(12px, 5vw, 56px);
+    }
+
+    & .lightbox__img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    & .lightbox__close,
+    & .lightbox__nav {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 48px;
+        min-height: 48px;
+        padding: 0;
+        border: 1px solid rgb(255 255 255 / 0.25);
+        background: rgb(0 0 0 / 0.4);
+        color: var(--alfa-white);
+        line-height: 1;
+        cursor: pointer;
+
+        &:hover {
+            background: rgb(255 255 255 / 0.14);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--alfa-white);
+            outline-offset: 2px;
+        }
+    }
+
+    & .lightbox__close {
+        top: 14px;
+        right: 14px;
+        font-size: 26px;
+    }
+
+    & .lightbox__nav {
+        top: 50%;
+        translate: 0 -50%;
+        font-size: 34px;
+        padding-bottom: 4px;
+    }
+
+    & .lightbox__nav--prev {
+        left: 14px;
+    }
+
+    & .lightbox__nav--next {
+        right: 14px;
+    }
+
+    & .lightbox__counter {
+        position: absolute;
+        bottom: 18px;
+        left: 50%;
+        translate: -50% 0;
+        margin: 0;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        color: rgb(255 255 255 / 0.75);
     }
 
     & .detail__summary {
