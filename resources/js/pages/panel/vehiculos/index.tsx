@@ -12,6 +12,7 @@ import {
     Trash2,
     X,
 } from 'lucide-react';
+import type { MouseEvent } from 'react';
 import { useMemo, useState } from 'react';
 import VehiculoController from '@/actions/App/Http/Controllers/Panel/VehiculoController';
 import VehiculoLoteController from '@/actions/App/Http/Controllers/Panel/VehiculoLoteController';
@@ -111,6 +112,35 @@ function normalizar(texto: string): string {
 
 function unicos(valores: string[]): string[] {
     return Array.from(new Set(valores)).sort();
+}
+
+/**
+ * Controles que ya hacen lo suyo al hacerles click: el tilde de la fila, el
+ * switch de destacado, el menú de acciones y sus items. `closest` los reconoce
+ * aunque el click haya caído sobre un icono de adentro.
+ */
+const CONTROLES_DE_FILA =
+    'a, button, input, label, [role="checkbox"], [role="switch"], [role="menuitem"]';
+
+/**
+ * Si el click de la fila tiene que abrir el editor. Se descarta cuando salió de
+ * un control propio, cuando viene con modificador —ahí el navegador espera
+ * abrir en otra pestaña, cosa que un `router.visit` no hace— y cuando el
+ * usuario venía seleccionando texto, para no navegar al soltar el mouse.
+ */
+function abreElEditor(evento: MouseEvent<HTMLElement>): boolean {
+    if (evento.metaKey || evento.ctrlKey || evento.shiftKey || evento.altKey) {
+        return false;
+    }
+
+    if (
+        evento.target instanceof Element &&
+        evento.target.closest(CONTROLES_DE_FILA)
+    ) {
+        return false;
+    }
+
+    return (window.getSelection()?.toString() ?? '') === '';
 }
 
 /**
@@ -697,6 +727,27 @@ export default function VehiculosIndex({
                                     data-state={
                                         seleccion.includes(vehiculo.id)
                                             ? 'selected'
+                                            : undefined
+                                    }
+                                    /* Atajo de mouse: el editor sigue estando en
+                                       el menú de acciones, que es por donde
+                                       llega el teclado. */
+                                    className={
+                                        vehiculo.can.update
+                                            ? 'cursor-pointer'
+                                            : undefined
+                                    }
+                                    onClick={
+                                        vehiculo.can.update
+                                            ? (evento) => {
+                                                  if (abreElEditor(evento)) {
+                                                      router.visit(
+                                                          VehiculoController.edit(
+                                                              vehiculo.id,
+                                                          ),
+                                                      );
+                                                  }
+                                              }
                                             : undefined
                                     }
                                 >
