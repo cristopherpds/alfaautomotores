@@ -46,13 +46,15 @@
      * asomar la franja de argumentos que viene abajo.
      *
      * Va a mano porque el header es sticky —ocupa lugar en el flujo— y su alto
-     * sale del contenido: `.header__inner` es flex con `flex-wrap`, así que al
-     * angostarse el nav baja a una segunda fila y después a una tercera. Los
-     * cortes de abajo están medidos en el navegador sobre el nav actual.
+     * sale del contenido: 44px de la marca (o del botón hamburguesa, que mide
+     * lo mismo a propósito) + 14px de padding arriba y abajo + el borde.
      *
-     * **Si cambia el contenido del header (links del nav, tamaño del logo) hay
-     * que volver a medir.** Cuando dentro de un tramo el alto no es constante
-     * hay que tomar el mínimo: quedarse por debajo del alto real deja el borde
+     * El valor es único para todos los anchos porque el nav nunca envuelve: de
+     * 768px para arriba entra en línea y por debajo se va al panel desplegable,
+     * que se posiciona sobre el contenido y no empuja nada.
+     *
+     * **Si cambia el contenido del header (tamaño del logo, alto del botón) hay
+     * que volver a medir.** Quedarse por debajo del alto real deja el borde
      * inferior del hero apenas fuera de la pantalla, que no se nota; pasarse
      * muestra una tira de la sección siguiente.
      */
@@ -60,20 +62,14 @@
 }
 
 /*
- * El nav baja a una segunda fila. En este tramo el alto va de 127.5px a
- * 132.6px —el `gap` del header es un `clamp()` con `vw`, así que crece con el
- * ancho—; va el mínimo, redondeado hacia abajo.
+ * Entrada del panel de navegación móvil. Va acá afuera y no dentro de `.alfa`
+ * porque los nombres de `@keyframes` son globales: anidarlos no los encapsula y
+ * el soporte del anidado sobre at-rules con nombre es despareja.
  */
-@media (max-width: 704px) {
-    :root {
-        --alfa-header: 127px;
-    }
-}
-
-/* ...y a una tercera */
-@media (max-width: 504px) {
-    :root {
-        --alfa-header: 171px;
+@keyframes alfa-nav-desplegar {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
     }
 }
 
@@ -218,11 +214,12 @@
         border-bottom: 1px solid var(--alfa-border);
     }
 
+    /* Sin `flex-wrap`: el nav que no entra en línea se va al panel móvil, así
+       el alto del header es constante (ver `--alfa-header`). */
     & .header__inner {
         display: flex;
         align-items: center;
         gap: clamp(16px, 3vw, 40px);
-        flex-wrap: wrap;
         padding-block: 14px;
     }
 
@@ -264,7 +261,90 @@
         display: flex;
         align-items: center;
         gap: clamp(14px, 2.2vw, 30px);
-        flex-wrap: wrap;
+    }
+
+    /*
+     * Botón hamburguesa. Sólo aparece en móvil, pero el tamaño se declara acá
+     * porque marca el alto del header: 44px, lo mismo que el isotipo, que es
+     * además el mínimo cómodo para el dedo.
+     */
+    & .nav__toggle {
+        display: none;
+        flex: none;
+        width: 44px;
+        height: 44px;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 1px solid var(--alfa-border);
+        background: none;
+        color: inherit;
+        cursor: pointer;
+        transition: border-color 0.18s ease;
+
+        &:hover {
+            border-color: var(--alfa-ink);
+        }
+    }
+
+    /* Las tres barras: la del medio es el elemento y las otras dos sus
+       pseudoelementos. Abierto, la del medio se apaga y las otras cruzan. */
+    & .nav__toggle-icon {
+        position: relative;
+        display: block;
+        width: 18px;
+        height: 2px;
+        background-color: currentColor;
+        transition:
+            background-color 0.18s ease,
+            transform 0.18s ease;
+
+        &::before,
+        &::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 18px;
+            height: 2px;
+            background-color: currentColor;
+            transition: transform 0.18s ease;
+        }
+
+        &::before {
+            top: -6px;
+        }
+
+        &::after {
+            top: 6px;
+        }
+    }
+
+    & .nav__toggle[aria-expanded='true'] .nav__toggle-icon {
+        background-color: transparent;
+
+        &::before {
+            transform: translateY(6px) rotate(45deg);
+        }
+
+        &::after {
+            transform: translateY(-6px) rotate(-45deg);
+        }
+    }
+
+    /*
+     * Capta el toque fuera del panel para cerrarlo. Es un `<button>` sin
+     * contenido: arranca bajo la cabecera y cubre el resto de la pantalla.
+     * Va justo por debajo del `z-index: 40` del header —y por lo tanto del
+     * panel, que cuelga de él— y por encima del resto de la página.
+     */
+    & .nav__scrim {
+        display: none;
+        position: fixed;
+        inset: var(--alfa-header) 0 0;
+        z-index: 39;
+        border: none;
+        background: rgb(16 16 18 / 0.28);
+        cursor: default;
     }
 
     & .nav__link {
@@ -301,6 +381,65 @@
         &:hover {
             background: var(--alfa-blue);
             color: var(--alfa-white);
+        }
+    }
+
+    /*
+     * Header en móvil: por debajo de este ancho los cuatro items del nav ya no
+     * entran junto a la marca, así que el nav pasa a ser un panel que despliega
+     * el botón hamburguesa. Se posiciona contra `.header` —sticky, o sea
+     * contenedor posicionado—, de manera que baja con la cabecera y se apoya
+     * sobre el contenido en vez de empujarlo.
+     */
+    @media (max-width: 767px) {
+        & .nav__toggle {
+            display: inline-flex;
+        }
+
+        & .nav__scrim {
+            display: block;
+        }
+
+        & .nav {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            /* Por encima del velo, que viene después en el DOM. */
+            z-index: 1;
+            display: none;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0;
+            padding: 6px var(--alfa-gutter) 24px;
+            background: var(--alfa-white);
+            border-bottom: 1px solid var(--alfa-border);
+            box-shadow: 0 20px 40px rgb(16 16 18 / 0.1);
+
+            &[data-abierto='true'] {
+                display: flex;
+                animation: alfa-nav-desplegar 0.18s ease-out;
+            }
+        }
+
+        /* En columna el subrayado ocupa todo el ancho y se lee como separador,
+           así que el link activo se marca con color. */
+        & .nav__link {
+            padding: 16px 0;
+            font-size: 12px;
+            border-bottom: 1px solid var(--alfa-border-light);
+
+            &:hover,
+            &[data-active='true'] {
+                border-bottom-color: var(--alfa-border-light);
+                color: var(--alfa-blue);
+            }
+        }
+
+        & .nav__wa {
+            margin-top: 20px;
+            justify-content: center;
+            padding-block: 15px;
         }
     }
 
@@ -1228,12 +1367,20 @@
     @media (prefers-reduced-motion: reduce) {
         & .card,
         & .btn,
-        & .nav__wa {
+        & .nav__wa,
+        & .nav__toggle,
+        & .nav__toggle-icon,
+        & .nav__toggle-icon::before,
+        & .nav__toggle-icon::after {
             transition: none;
         }
 
         & .card:hover {
             transform: none;
+        }
+
+        & .nav[data-abierto='true'] {
+            animation: none;
         }
     }
 }
