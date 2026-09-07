@@ -1,69 +1,61 @@
-// Components
-import { Form, Head } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Form, Head, Link } from '@inertiajs/react';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
+/**
+ * Pedido del enlace de recuperación. Comparte el chrome público con `login`.
+ */
 export default function ForgotPassword({ status }: { status?: string }) {
     return (
-        <>
-            <Head title="Forgot password" />
+        <section className="shell auth">
+            <Head title="Recuperar contraseña">
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+            <p className="eyebrow">Uso interno</p>
+            <h1>Recuperar contraseña</h1>
+            <p className="lede">
+                Dejanos tu correo y te mandamos un enlace para elegir una nueva.
+            </p>
 
-            <div className="space-y-6">
-                <Form {...email.form()}>
-                    {({ processing, errors }) => (
-                        <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    autoComplete="off"
-                                    autoFocus
-                                    placeholder="email@example.com"
-                                />
+            {status && <p className="auth__aviso">{status}</p>}
 
-                                <InputError message={errors.email} />
-                            </div>
+            <Form {...email.form()} className="auth__form">
+                {({ processing, errors }) => (
+                    <>
+                        <div className="auth__field">
+                            <label className="field-label" htmlFor="email">
+                                Correo
+                            </label>
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                className="auth__input"
+                                required
+                                autoFocus
+                                autoComplete="username"
+                            />
+                            {errors.email && (
+                                <p className="auth__error">{errors.email}</p>
+                            )}
+                        </div>
 
-                            <div className="my-6 flex items-center justify-start">
-                                <Button
-                                    className="w-full"
-                                    disabled={processing}
-                                    data-test="email-password-reset-link-button"
-                                >
-                                    {processing && (
-                                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                                    )}
-                                    Email password reset link
-                                </Button>
-                            </div>
-                        </>
-                    )}
-                </Form>
+                        <button
+                            type="submit"
+                            className="btn"
+                            disabled={processing}
+                            data-test="email-password-reset-link-button"
+                        >
+                            {processing ? 'Enviando…' : 'Enviar enlace'}
+                        </button>
+                    </>
+                )}
+            </Form>
 
-                <div className="space-x-1 text-center text-sm text-muted-foreground">
-                    <span>Or, return to</span>
-                    <TextLink href={login()}>log in</TextLink>
-                </div>
-            </div>
-        </>
+            <p className="auth__volver">
+                <Link href={login()}>Volver a ingresar</Link>
+            </p>
+        </section>
     );
 }
-
-ForgotPassword.layout = {
-    title: 'Forgot password',
-    description: 'Enter your email to receive a password reset link',
-};

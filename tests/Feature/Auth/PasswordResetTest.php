@@ -15,6 +15,12 @@ test('reset password link screen can be rendered', function () {
     $response->assertOk();
 });
 
+test('the reset password link screen renders the alfa page', function () {
+    $this->get(route('password.request'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('auth/forgot-password'));
+});
+
 test('reset password link can be requested', function () {
     Notification::fake();
 
@@ -35,7 +41,9 @@ test('reset password screen can be rendered', function () {
     Notification::assertSentTo($user, ResetPassword::class, function ($notification) {
         $response = $this->get(route('password.reset', $notification->token));
 
-        $response->assertOk();
+        $response
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('auth/reset-password'));
 
         return true;
     });

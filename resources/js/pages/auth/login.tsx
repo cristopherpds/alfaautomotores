@@ -1,12 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
-import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
+import { Form, Head, Link } from '@inertiajs/react';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
@@ -15,92 +7,98 @@ type Props = {
     canResetPassword: boolean;
 };
 
+/**
+ * Acceso al panel. Es parte del sitio público —lleva su cabecera y su pie— así
+ * que se arma con el sistema de diseño de `alfa.css`, sin shadcn ni Tailwind.
+ */
 export default function Login({ status, canResetPassword }: Props) {
     return (
-        <>
-            <Head title="Log in" />
+        <section className="shell auth">
+            <Head title="Ingresar">
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
+
+            <p className="eyebrow">Uso interno</p>
+            <h1>Panel Administrativo</h1>
+            <p className="lede">Acceso para el equipo de Alfa Automotores.</p>
+
+            {status && <p className="auth__aviso">{status}</p>}
 
             <Form
                 {...store.form()}
                 resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
+                className="auth__form"
             >
                 {({ processing, errors }) => (
                     <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    required
-                                    autoFocus
-                                    tabIndex={1}
-                                    autoComplete="email"
-                                    placeholder="email@example.com"
-                                />
-                                <InputError message={errors.email} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
-                                    {canResetPassword && (
-                                        <TextLink
-                                            href={request()}
-                                            className="ml-auto text-sm"
-                                            tabIndex={5}
-                                        >
-                                            Forgot your password?
-                                        </TextLink>
-                                    )}
-                                </div>
-                                <PasswordInput
-                                    id="password"
-                                    name="password"
-                                    required
-                                    tabIndex={2}
-                                    autoComplete="current-password"
-                                    placeholder="Password"
-                                />
-                                <InputError message={errors.password} />
-                            </div>
-
-                            <div className="flex items-center space-x-3">
-                                <Checkbox
-                                    id="remember"
-                                    name="remember"
-                                    tabIndex={3}
-                                />
-                                <Label htmlFor="remember">Remember me</Label>
-                            </div>
-
-                            <Button
-                                type="submit"
-                                className="mt-4 w-full"
-                                tabIndex={4}
-                                disabled={processing}
-                                data-test="login-button"
-                            >
-                                {processing && <Spinner />}
-                                Log in
-                            </Button>
+                        <div className="auth__field">
+                            <label className="field-label" htmlFor="email">
+                                Correo
+                            </label>
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                className="auth__input"
+                                required
+                                autoFocus
+                                autoComplete="username"
+                            />
+                            {errors.email && (
+                                <p className="auth__error">{errors.email}</p>
+                            )}
                         </div>
+
+                        <div className="auth__field">
+                            <div className="auth__label-row">
+                                <label
+                                    className="field-label"
+                                    htmlFor="password"
+                                >
+                                    Contraseña
+                                </label>
+                                {canResetPassword && (
+                                    <Link
+                                        href={request()}
+                                        className="auth__link"
+                                    >
+                                        ¿Olvidaste tu contraseña?
+                                    </Link>
+                                )}
+                            </div>
+                            <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                className="auth__input"
+                                required
+                                autoComplete="current-password"
+                            />
+                            {errors.password && (
+                                <p className="auth__error">{errors.password}</p>
+                            )}
+                        </div>
+
+                        <label className="auth__remember">
+                            <input
+                                id="remember"
+                                name="remember"
+                                type="checkbox"
+                            />
+                            <span className="field-label">Recordarme</span>
+                        </label>
+
+                        <button
+                            type="submit"
+                            className="btn"
+                            disabled={processing}
+                            data-test="login-button"
+                        >
+                            {processing ? 'Ingresando…' : 'Ingresar'}
+                        </button>
                     </>
                 )}
             </Form>
-
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
-        </>
+        </section>
     );
 }
-
-Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
-};

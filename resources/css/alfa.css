@@ -1266,6 +1266,148 @@
         text-transform: uppercase;
     }
 
+    /* --- Acceso al panel -------------------------------------------------- */
+
+    /*
+     * `AlfaAuthLayout` no pone cabecera ni pie, así que el bloque se centra a
+     * mano en lo que queda de pantalla. El relleno vertical vive acá y no en
+     * `.auth` para que en pantallas bajas el contenido siga respirando en vez
+     * de quedar pegado a los bordes.
+     */
+    & .auth-page {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-block: clamp(40px, 8vw, 72px);
+
+        & .auth {
+            padding-block: 0;
+        }
+    }
+
+    & .auth-page__marca {
+        margin-bottom: 40px;
+    }
+
+    /*
+     * Portado del prototipo Next (`app/ingresar`). La columna es angosta a
+     * propósito: `.auth` va junto a `.shell` en el mismo elemento y le pisa el
+     * `max-width` —gana por orden de fuente, misma especificidad—, así que este
+     * bloque tiene que quedar después de las primitivas de layout.
+     */
+    & .auth {
+        max-width: 460px;
+        padding-block: clamp(56px, 10vw, 112px);
+
+        & h1 {
+            margin: 10px 0 0;
+            font-size: clamp(28px, 4vw, 38px);
+            letter-spacing: -0.02em;
+        }
+
+        & .lede {
+            margin-bottom: 32px;
+        }
+    }
+
+    & .auth__form {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    & .auth__field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    & .auth__input {
+        width: 100%;
+        padding: 14px;
+        font-size: 14px;
+        color: var(--alfa-ink);
+        background: var(--alfa-white);
+        border: 1px solid var(--alfa-border-input);
+        border-radius: 0;
+
+        &:focus-visible {
+            outline: 2px solid var(--alfa-blue);
+            outline-offset: -1px;
+        }
+
+        /* El correo llega fijado desde el enlace en `restablecer contraseña`. */
+        &:read-only {
+            background: var(--alfa-offwhite);
+            color: var(--alfa-text-muted);
+        }
+    }
+
+    /*
+     * Etiqueta del campo y su acción secundaria en la misma línea. Envuelve a
+     * propósito: abajo de ~360px el enlace no entra al lado de la etiqueta y
+     * cae entero a la línea siguiente en vez de partirse en dos.
+     */
+    & .auth__label-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+    }
+
+    /* Botón de texto, calcado de `.filters-summary__reset` */
+    & .auth__link {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--alfa-blue);
+    }
+
+    & .auth__remember {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+
+        & input[type='checkbox'] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--alfa-blue);
+            cursor: pointer;
+        }
+    }
+
+    & .auth__error {
+        margin: 0;
+        font-size: 13px;
+        color: var(--alfa-reserved);
+    }
+
+    /* Mensaje de sesión (`status`): "te enviamos el enlace", etc. */
+    & .auth__aviso {
+        margin: 0 0 24px;
+        padding: 14px 16px;
+        font-size: 13px;
+        color: var(--alfa-text-body);
+        background: var(--alfa-offwhite);
+        border-left: 2px solid var(--alfa-blue);
+    }
+
+    & .auth__volver {
+        margin-top: 28px;
+        font-size: 13px;
+        color: var(--alfa-text-muted);
+
+        & a {
+            border-bottom: 1px solid var(--alfa-border-input);
+        }
+    }
+
     /* --- Footer ---------------------------------------------------------- */
 
     & .footer {

@@ -2,6 +2,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
+import AlfaAuthLayout from '@/layouts/alfa-auth-layout';
 import AlfaLayout from '@/layouts/alfa-layout';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
@@ -18,6 +19,12 @@ createInertiaApp({
             case name === 'catalogo':
             case name.startsWith('vehiculos/'):
                 return AlfaLayout;
+            // Acceso al panel: mismo sistema de diseño que el sitio público,
+            // pero sin chrome. `auth/verify-email` sigue con AuthLayout.
+            case name === 'auth/login':
+            case name === 'auth/forgot-password':
+            case name === 'auth/reset-password':
+                return AlfaAuthLayout;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):

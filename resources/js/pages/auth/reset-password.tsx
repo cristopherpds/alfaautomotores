@@ -1,10 +1,5 @@
-import { Form, Head } from '@inertiajs/react';
-import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
+import { Form, Head, Link } from '@inertiajs/react';
+import { login } from '@/routes';
 import { update } from '@/routes/password';
 
 type Props = {
@@ -13,84 +8,104 @@ type Props = {
     passwordRules: string;
 };
 
+/**
+ * Alta de la contraseña nueva. El correo llega fijado desde el enlace del mail,
+ * así que va de sólo lectura y viaja por `transform` junto al token.
+ */
 export default function ResetPassword({ token, email, passwordRules }: Props) {
     return (
-        <>
-            <Head title="Reset password" />
+        <section className="shell auth">
+            <Head title="Nueva contraseña">
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
+
+            <p className="eyebrow">Uso interno</p>
+            <h1>Nueva contraseña</h1>
+            <p className="lede">Elegí la contraseña con la que vas a entrar.</p>
 
             <Form
                 {...update.form()}
                 transform={(data) => ({ ...data, token, email })}
                 resetOnSuccess={['password', 'password_confirmation']}
+                className="auth__form"
             >
                 {({ processing, errors }) => (
-                    <div className="grid gap-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
+                    <>
+                        <div className="auth__field">
+                            <label className="field-label" htmlFor="email">
+                                Correo
+                            </label>
+                            <input
                                 id="email"
-                                type="email"
                                 name="email"
-                                autoComplete="email"
+                                type="email"
+                                className="auth__input"
                                 value={email}
-                                className="mt-1 block w-full"
+                                autoComplete="username"
                                 readOnly
                             />
-                            <InputError
-                                message={errors.email}
-                                className="mt-2"
-                            />
+                            {errors.email && (
+                                <p className="auth__error">{errors.email}</p>
+                            )}
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
-                            <PasswordInput
+                        <div className="auth__field">
+                            <label className="field-label" htmlFor="password">
+                                Contraseña
+                            </label>
+                            <input
                                 id="password"
                                 name="password"
-                                autoComplete="new-password"
-                                className="mt-1 block w-full"
+                                type="password"
+                                className="auth__input"
+                                required
                                 autoFocus
-                                placeholder="Password"
+                                autoComplete="new-password"
                                 passwordrules={passwordRules}
                             />
-                            <InputError message={errors.password} />
+                            {errors.password && (
+                                <p className="auth__error">{errors.password}</p>
+                            )}
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="password_confirmation">
-                                Confirm password
-                            </Label>
-                            <PasswordInput
+                        <div className="auth__field">
+                            <label
+                                className="field-label"
+                                htmlFor="password_confirmation"
+                            >
+                                Repetir contraseña
+                            </label>
+                            <input
                                 id="password_confirmation"
                                 name="password_confirmation"
+                                type="password"
+                                className="auth__input"
+                                required
                                 autoComplete="new-password"
-                                className="mt-1 block w-full"
-                                placeholder="Confirm password"
                                 passwordrules={passwordRules}
                             />
-                            <InputError
-                                message={errors.password_confirmation}
-                                className="mt-2"
-                            />
+                            {errors.password_confirmation && (
+                                <p className="auth__error">
+                                    {errors.password_confirmation}
+                                </p>
+                            )}
                         </div>
 
-                        <Button
+                        <button
                             type="submit"
-                            className="mt-4 w-full"
+                            className="btn"
                             disabled={processing}
                             data-test="reset-password-button"
                         >
-                            {processing && <Spinner />}
-                            Reset password
-                        </Button>
-                    </div>
+                            {processing ? 'Guardando…' : 'Guardar contraseña'}
+                        </button>
+                    </>
                 )}
             </Form>
-        </>
+
+            <p className="auth__volver">
+                <Link href={login()}>Volver a ingresar</Link>
+            </p>
+        </section>
     );
 }
-
-ResetPassword.layout = {
-    title: 'Reset password',
-    description: 'Please enter your new password below',
-};
