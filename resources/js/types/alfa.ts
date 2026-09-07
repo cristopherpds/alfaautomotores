@@ -20,6 +20,24 @@ export type Vehiculo = {
     imagenes: string[];
 };
 
+/**
+ * Una foto de la tira de «Nuestros clientes» de la portada, servida por
+ * `App\Models\Entrega::paraLaTira()`.
+ */
+export type Entrega = {
+    /** Ruta pública del archivo. */
+    url: string;
+    /** Fecha en ISO, para el `datetime` del `<time>`. */
+    fecha: string;
+    /** La fecha como se imprime sobre la foto: `14.11.25`. */
+    etiqueta: string;
+    /** La fecha en palabras, para el texto alternativo. */
+    legible: string;
+};
+
+/** La fila que arma `Panel\EntregaController::index()`. */
+export type ManagedEntrega = Entrega & { id: number };
+
 /** Datos del local, servidos desde `config/alfa.php`. */
 export type SiteInfo = {
     nombre: string;

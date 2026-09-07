@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Concerns\ProvidesSiteInfo;
+use App\Models\Entrega;
 use App\Models\Vehiculo;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,6 +21,7 @@ class HomeController extends Controller
             'site' => $this->siteInfo(),
             'destacados' => Vehiculo::destacados(),
             'totalStock' => Vehiculo::contar(),
+            'entregas' => Entrega::paraLaTira(),
         ]);
     }
 }

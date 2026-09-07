@@ -1,5 +1,12 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Car, FolderGit2, LayoutGrid, Users } from 'lucide-react';
+import {
+    BookOpen,
+    Car,
+    FolderGit2,
+    Images,
+    LayoutGrid,
+    Users,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -14,6 +21,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as entregasIndex } from '@/routes/panel/entregas';
 import { index as vehiculosIndex } from '@/routes/panel/vehiculos';
 import { index as usersIndex } from '@/routes/users';
 import type { NavItem } from '@/types';
@@ -31,6 +39,11 @@ const catalogoNavItems: NavItem[] = [
         title: 'Vehículos',
         href: vehiculosIndex(),
         icon: Car,
+    },
+    {
+        title: 'Entregas',
+        href: entregasIndex(),
+        icon: Images,
     },
 ];
 

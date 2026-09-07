@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Panel\EntregaController;
 use App\Http\Controllers\Panel\VehiculoController as PanelVehiculoController;
 use App\Http\Controllers\Panel\VehiculoImagenController;
 use App\Http\Controllers\Panel\VehiculoLoteController;
@@ -38,6 +39,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('vehiculos.imagenes.orden');
         Route::delete('vehiculos/{vehiculo}/imagenes/{imagen}', [VehiculoImagenController::class, 'destroy'])
             ->name('vehiculos.imagenes.destroy');
+
+        /* Las fotos de la tira «Nuestros clientes» de la portada. No hay `create`
+           ni `edit`: se suben y se corrigen desde el índice. */
+        Route::resource('entregas', EntregaController::class)
+            ->only(['index', 'store', 'update', 'destroy']);
     });
 });
 

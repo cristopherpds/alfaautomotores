@@ -14,6 +14,8 @@
     --alfa-white: #ffffff;
     --alfa-offwhite: #f4f4f2;
     --alfa-ink: #101012;
+    /* Fondo de los recuadros vacíos sobre tinta (las fotos de entregas). */
+    --alfa-ink-soft: #1c1c20;
 
     /* Acento */
     --alfa-blue: #1e1ee6;
@@ -70,6 +72,17 @@
     from {
         opacity: 0;
         transform: translateY(-6px);
+    }
+}
+
+/*
+ * Tira de entregas. El riel lleva el mismo juego de fotos dos veces, así que
+ * correrlo exactamente la mitad deja el segundo juego donde arrancó el primero
+ * y el bucle no tiene costura. Ver `resources/js/components/alfa/entregas.tsx`.
+ */
+@keyframes alfa-entregas-correr {
+    to {
+        transform: translateX(-50%);
     }
 }
 
@@ -645,6 +658,148 @@
         display: flex;
         gap: 12px;
         flex-wrap: wrap;
+    }
+
+    /* --- Tira de entregas ------------------------------------------------ */
+
+    /*
+     * Prueba social: las fotos de cada entrega corriendo en bucle.
+     *
+     * Va sobre `.pitch`, que comparte el fondo oscuro, así que el filete de
+     * abajo es lo único que separa los dos bloques.
+     */
+    & .entregas {
+        background: var(--alfa-ink);
+        color: var(--alfa-white);
+        border-bottom: 1px solid var(--alfa-border-dark);
+        padding-top: clamp(44px, 6vw, 84px);
+
+        & .eyebrow {
+            color: var(--alfa-blue-soft);
+        }
+
+        & .section__link {
+            border-bottom-color: var(--alfa-white);
+
+            &:hover {
+                color: var(--alfa-blue-soft);
+                border-bottom-color: var(--alfa-blue-soft);
+            }
+        }
+    }
+
+    & .entregas__titular {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+
+        & h2 {
+            font-size: clamp(26px, 3.2vw, 40px);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin: 0;
+            max-width: 620px;
+        }
+
+        & .lede {
+            font-size: 14px;
+            color: var(--alfa-text-on-dark);
+            max-width: 400px;
+        }
+    }
+
+    /*
+     * La tira sangra hasta los dos bordes: no lleva `.shell`, y el recorte es
+     * lo que esconde el riel que sobra a cada lado.
+     */
+    & .entregas__pista {
+        overflow: hidden;
+        margin-top: clamp(28px, 3.5vw, 44px);
+        padding-bottom: clamp(28px, 3vw, 40px);
+
+        /* Detener el riel para poder mirar una foto. */
+        &:hover .entregas__riel,
+        &:focus-within .entregas__riel {
+            animation-play-state: paused;
+        }
+    }
+
+    & .entregas__riel {
+        display: flex;
+        width: max-content;
+        animation: alfa-entregas-correr linear infinite;
+        /* De respaldo: la duración real la calcula el componente a partir de
+           cuántas fotos hay, para que la velocidad no cambie al sumar
+           entregas. */
+        animation-duration: 48s;
+    }
+
+    /*
+     * La separación va como margen del recuadro y no como `gap` del riel: con
+     * `gap`, entre los dos juegos de fotos habría una separación de más y la
+     * vuelta saltaría medio hueco al reiniciarse.
+     */
+    & .entregas__toma {
+        position: relative;
+        flex: none;
+        width: 232px;
+        aspect-ratio: 9 / 16;
+        margin-right: 18px;
+        background: var(--alfa-ink-soft);
+        overflow: hidden;
+
+        & img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /*
+         * Las fotos vienen de las historias de Instagram y traen su propia
+         * firma abajo —el recuadro blanco con el logo y el arroba—, justo donde
+         * va la fecha. La sombra del texto sola no alcanza contra el blanco:
+         * hace falta oscurecer la franja.
+         */
+        &::after {
+            content: '';
+            position: absolute;
+            inset: auto 0 0;
+            height: 30%;
+            background: linear-gradient(
+                to top,
+                rgb(0 0 0 / 0.85),
+                rgb(0 0 0 / 0)
+            );
+            pointer-events: none;
+        }
+    }
+
+    & .entregas__fecha {
+        position: absolute;
+        left: 10px;
+        bottom: 10px;
+        /* Por encima del degradado, que se pinta después por ser un ::after. */
+        z-index: 1;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        color: var(--alfa-white);
+        text-shadow: 0 1px 6px rgb(0 0 0 / 0.8);
+    }
+
+    & .entregas__pie {
+        padding-bottom: clamp(44px, 6vw, 84px);
+    }
+
+    @media (max-width: 700px) {
+        & .entregas__toma {
+            width: 150px;
+            margin-right: 10px;
+        }
     }
 
     /* --- Grilla de vehículos --------------------------------------------- */
@@ -1523,6 +1678,24 @@
 
         & .nav[data-abierto='true'] {
             animation: none;
+        }
+
+        /*
+         * La tira de entregas queda quieta, pero frenarla y nada más dejaría
+         * fuera de alcance todo lo que no entra en pantalla: pasa a ser un
+         * carrusel que se arrastra a mano. El juego repetido de fotos, que sólo
+         * existía para cerrar el bucle, sobra.
+         */
+        & .entregas__riel {
+            animation: none;
+        }
+
+        & .entregas__pista {
+            overflow-x: auto;
+        }
+
+        & .entregas__toma[aria-hidden] {
+            display: none;
         }
     }
 }

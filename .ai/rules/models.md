@@ -1,6 +1,7 @@
 ---
 paths:
   - app/Models/Vehiculo.php
+  - app/Models/Entrega.php
 ---
 
 # Models
@@ -24,3 +25,10 @@ Regla: se puede destacar cualquier vehículo que llegue al público (publicado, 
 Trampa que ya se pagó una vez: `contarDestacados()` y `destacados()` tienen que filtrar el MISMO conjunto. Cuando `contarDestacados()` contaba todo y `destacados()` filtraba sólo `publicado`, el panel decía "6 de 6" mientras la portada mostraba 5 y el lugar libre se lo comía el relleno automático. Si tocás una, tocá la otra.
 
 `destacados()` = (destacado OR publicado) AND no borrador: los fijados a mano entran en cualquier estado público, el relleno automático sigue siendo sólo de publicados.
+
+## La tira de la portada ya es una tabla; `public/entregas/` dejó de ser el dato
+`App\Models\Entrega` (tabla `entregas`, archivos en el disco `public` bajo `entregas/`) reemplaza al viejo `ProvidesEntregas`, que listaba `public/entregas/`. Las 40 fotos históricas quedaron como semilla en `database/data/entregas/` y las carga `EntregaSeeder` (idempotente por `ruta`, que es unique; conserva el nombre original en vez del hash de `store()`). En un entorno nuevo hace falta `php artisan db:seed --class=EntregaSeeder` y `php artisan storage:link`: sin el symlink la tira sale con recuadros grises y sin error visible.
+
+`paraLaTira()` es el contrato de `HomeController`: devuelve `{url, fecha, etiqueta, legible}`, los mismos cuatro campos del tipo `Entrega` de `resources/js/types/alfa.ts`. No se cambia de firma. `ordenadas()` es la única definición del orden (fecha desc, id desc) y la consultan la portada y el panel; el id desempata las del mismo día, que es lo que antes hacía el número de adelante en el nombre del archivo (por eso el seeder importa en orden ascendente).
+
+Los meses en español van a mano en `Entrega::MESES`, no por locale de Carbon: el local escribe «setiembre», no «septiembre». Hay un test dedicado en `HomePageTest` porque es justo el detalle que un refactor prolijo rompe en silencio.

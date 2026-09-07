@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Entrega;
 use App\Models\Vehiculo;
 
 test('the landing page renders for guests', function () {
@@ -78,4 +79,68 @@ test('sold and reserved vehicles never make the landing page', function () {
  */
 test('the hero background video ships with the public assets', function () {
     expect(public_path('assets/hero-ruta.mp4'))->toBeFile();
+});
+
+/*
+ * La tira de «Nuestros clientes» sale de la tabla `entregas`; los archivos viven
+ * en el disco `public`. Ver `App\Models\Entrega::paraLaTira()`.
+ */
+test('the deliveries strip lists the photos newest first', function () {
+    $vieja = Entrega::factory()->fecha('2025-10-28')->create();
+    $primeraDelDia = Entrega::factory()->fecha('2025-11-18')->create();
+    $segundaDelDia = Entrega::factory()->fecha('2025-11-18')->create();
+    $nueva = Entrega::factory()->fecha('2026-08-18')->create();
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('entregas', 4)
+            ->where('entregas.0.url', $nueva->url())
+            // El id desempata las del mismo día, como antes el número del archivo.
+            ->where('entregas.1.url', $segundaDelDia->url())
+            ->where('entregas.2.url', $primeraDelDia->url())
+            ->where('entregas.3.url', $vieja->url())
+        );
+});
+
+test('each delivery carries the file and the date the strip prints', function () {
+    $foto = Entrega::factory()->create([
+        'ruta' => 'entregas/una-entrega.jpg',
+        'fecha' => '2025-11-14',
+    ]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('entregas.0', fn ($entrega) => $entrega
+                // Absoluta: `config/filesystems.php` arma la url con APP_URL.
+                ->where('url', $foto->url())
+                ->where('fecha', '2025-11-14')
+                ->where('etiqueta', '14.11.25')
+                ->where('legible', '14 de noviembre de 2025')
+            )
+            ->etc()
+        );
+});
+
+/*
+ * El local escribe «setiembre», no «septiembre»: por eso los meses van a mano en
+ * el modelo y no salen del locale de Carbon.
+ */
+test('september is spelled the way the shop spells it', function () {
+    Entrega::factory()->fecha('2025-09-14')->create();
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('entregas.0.legible', '14 de setiembre de 2025')
+            ->etc()
+        );
+});
+
+/* Sin fotos la sección entera no se dibuja: `entregas.tsx` devuelve `null`. */
+test('the strip is empty when there are no deliveries', function () {
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->has('entregas', 0));
 });
