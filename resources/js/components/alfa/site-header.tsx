@@ -124,14 +124,6 @@ export function SiteHeader({ site }: { site: SiteInfo }) {
                         </a>
 
                         <a
-                            href="#contacto"
-                            className="nav__link"
-                            onClick={cerrarMenu}
-                        >
-                            Contacto
-                        </a>
-
-                        <a
                             href={whatsapp(site.whatsapp)}
                             target="_blank"
                             rel="noopener noreferrer"
