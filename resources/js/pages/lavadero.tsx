@@ -115,11 +115,6 @@ export default function Lavadero({ site, servicios, ventana, huecos }: Props) {
                         <p className="eyebrow">Precios</p>
                         <h2>Según el tamaño del vehículo</h2>
                     </div>
-
-                    <p className="section__nota">
-                        El trabajo es el mismo en los dos: lo que cambia es el
-                        tiempo que lleva.
-                    </p>
                 </div>
 
                 {servicios.length === 0 ? (
