@@ -168,7 +168,7 @@ return [
     'string' => 'El campo :attribute debe ser una cadena de texto.',
     'timezone' => 'El campo :attribute debe ser una zona horaria válida.',
     'unique' => 'El valor de :attribute ya está en uso.',
-    'uploaded' => 'No se pudo subir :attribute. Puede que el archivo sea más pesado de lo que acepta el servidor.',
+    'uploaded' => 'No se pudo subir el archivo. Puede que pese más de lo que acepta el servidor.',
     'uppercase' => 'El campo :attribute debe estar en mayúsculas.',
     'url' => 'El campo :attribute debe ser una URL válida.',
     'ulid' => 'El campo :attribute debe ser un ULID válido.',
@@ -180,6 +180,27 @@ return [
         ],
     ],
 
-    'attributes' => [],
+    /*
+    | Sólo los campos cuyo nombre técnico no se lee bien tal cual. Laravel ya
+    | cambia los guiones bajos por espacios, así que «nombre» o «apellido» no
+    | necesitan entrada: alcanza con los abreviados y los compuestos.
+    */
+    'attributes' => [
+        'vehiculo_marca' => 'marca',
+        'vehiculo_modelo' => 'modelo',
+        'vehiculo_anio' => 'año',
+        'anio' => 'año',
+        'comb' => 'combustible',
+        'trans' => 'transmisión',
+        'desc' => 'descripción',
+        'km' => 'kilometraje',
+        'slug' => 'enlace',
+        'orden' => 'orden en la grilla',
+        'agendable' => 'reserva online',
+        'fotos.*' => 'foto',
+        'imagenes.*' => 'imagen',
+        'vehiculos.*' => 'vehículo',
+        'password_confirmation' => 'confirmación de la contraseña',
+    ],
 
 ];
