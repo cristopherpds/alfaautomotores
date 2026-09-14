@@ -805,13 +805,31 @@
     /* --- Taller ----------------------------------------------------------- */
 
     /*
-     * La página del taller (dirección «Tarjetas claras» del material): clara y
-     * comercial, con la grilla de servicios reusando `.grid` y `.card` del
-     * catálogo y un formulario de reserva propio.
+     * La página del taller: grilla de servicios reusando `.grid` y `.card` del
+     * catálogo, formulario de reserva propio y un hero de foto a sangre como el
+     * de la portada.
+     *
+     * La tinta de abajo es el fondo mientras la imagen carga (y el respaldo si
+     * falla), y el velo la oscurece para que el texto blanco tenga contraste
+     * sin apagar la foto.
      */
     & .taller-hero {
-        background: var(--alfa-offwhite);
-        border-bottom: 1px solid var(--alfa-border);
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        /* El texto se apoya abajo a la izquierda, como en el hero de la
+           portada. */
+        display: flex;
+        align-items: flex-end;
+        /* Lo que queda de pantalla debajo del header, igual que el hero de la
+           portada: la foto llena la primera vista completa. `dvh` y no
+           `vh`/`svh` porque en móvil el alto útil cambia al esconderse la barra
+           del navegador y es la única unidad que acompaña ese cambio. La línea
+           con `vh` queda de respaldo. */
+        min-height: calc(100vh - var(--alfa-header));
+        min-height: calc(100dvh - var(--alfa-header));
+        background: var(--alfa-ink);
+        color: var(--alfa-white);
 
         /* Sin volanta arriba: el título abre el bloque, así que no lleva
            margen superior o se sumaría al padding del hero. */
@@ -827,35 +845,69 @@
         & .lede {
             max-width: 46ch;
             margin-bottom: clamp(20px, 3vw, 30px);
+            color: rgb(255 255 255 / 0.82);
         }
+    }
+
+    & .taller-hero__foto,
+    & .taller-hero__velo {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+    }
+
+    /*
+     * El encuadre se corre a la derecha y hacia arriba a propósito: es donde
+     * está el mecánico. Con el centro, en los recortes anchos queda sólo el
+     * motor.
+     */
+    & .taller-hero__foto {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 62% 35%;
+    }
+
+    /*
+     * Dos degradados: el horizontal apaga la izquierda, que es donde va el
+     * título; el vertical asienta el conjunto y deja la parte de arriba —el
+     * capó abierto, ya oscuro— más limpia.
+     */
+    & .taller-hero__velo {
+        background:
+            linear-gradient(
+                to right,
+                rgb(16 16 18 / 0.92) 0%,
+                rgb(16 16 18 / 0.62) 50%,
+                rgb(16 16 18 / 0.38) 100%
+            ),
+            linear-gradient(to top, rgb(16 16 18 / 0.6), rgb(16 16 18 / 0.15));
     }
 
     & .taller-hero__inner {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-        gap: clamp(28px, 4vw, 64px);
-        align-items: center;
-        padding-block: clamp(44px, 6vw, 88px);
+        padding-block: clamp(40px, 6vw, 88px);
     }
 
-    & .taller-hero__nota {
-        background: var(--alfa-white);
-        border: 1px solid var(--alfa-border);
-        padding: clamp(22px, 3vw, 32px);
-
-        & p {
-            font-size: 14px;
-            line-height: 1.6;
-            color: var(--alfa-text-body);
-            margin: 12px 0 0;
+    /*
+     * En pantallas angostas el texto ocupa todo el ancho y el degradado
+     * horizontal deja de servir: el final de cada línea cae sobre la parte
+     * clara de la foto —el hombro del mecánico, el motor iluminado— y pierde
+     * contraste. Ahí el velo pasa a ser parejo, y el encuadre se corre para
+     * que en el recorte vertical siga entrando la cara.
+     */
+    @media (max-width: 767px) {
+        & .taller-hero__velo {
+            background: linear-gradient(
+                to top,
+                rgb(16 16 18 / 0.88) 0%,
+                rgb(16 16 18 / 0.68) 55%,
+                rgb(16 16 18 / 0.45) 100%
+            );
         }
-    }
 
-    & .taller-hero__horario {
-        border-top: 1px solid var(--alfa-border-light);
-        padding-top: 14px;
-        font-size: 12px !important;
-        color: var(--alfa-text-muted) !important;
+        & .taller-hero__foto {
+            object-position: 56% 30%;
+        }
     }
 
     /* Filtros por área: los mismos chips que ordena la grilla de abajo. */

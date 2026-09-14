@@ -120,3 +120,12 @@ test('slots are only computed inside the booking window', function (string $cuan
     'pasado el mes' => '2026-10-20',
     'una fecha inventada' => 'no-es-una-fecha',
 ]);
+
+/*
+ * El hero del taller usa esta foto de fondo por ruta fija (ver
+ * `resources/js/pages/taller.tsx`). Si falta, la sección no se rompe —queda el
+ * fondo tinta— así que el fallo pasaría desapercibido sin esta comprobación.
+ */
+test('the hero background photo ships with the public assets', function () {
+    expect(public_path('assets/hero-taller.jpg'))->toBeFile();
+});

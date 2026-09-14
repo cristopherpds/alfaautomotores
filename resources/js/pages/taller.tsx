@@ -92,41 +92,38 @@ export default function Taller({
             </Head>
 
             <section className="taller-hero">
+                {/* Fondo decorativo: no aporta contenido, así que va con
+                    `aria-hidden` y sin texto alternativo. */}
+                <img
+                    className="taller-hero__foto"
+                    src="/assets/hero-taller.jpg"
+                    alt=""
+                    aria-hidden="true"
+                    fetchPriority="high"
+                />
+                <div className="taller-hero__velo" aria-hidden="true" />
+
                 <div className="shell taller-hero__inner">
-                    <div>
-                        <h1>
-                            El taller de confianza
-                            <br />
-                            para tu auto.
-                        </h1>
+                    <h1>
+                        El taller de confianza
+                        <br />
+                        para tu auto.
+                    </h1>
 
-                        <p className="lede">
-                            Service, frenos, motor, diagnóstico y clima en{' '}
-                            {site.direccion}, {site.ciudad}. Reservás online y
-                            te confirmamos el presupuesto por WhatsApp.
-                        </p>
+                    <p className="lede">
+                        Service, frenos, motor, diagnóstico y clima en{' '}
+                        {site.direccion}, {site.ciudad}. Reservás online y te
+                        confirmamos el presupuesto por WhatsApp.
+                    </p>
 
-                        <div className="hero__actions">
-                            <a href="#reservar" className="btn">
-                                Reservar turno
-                            </a>
-                            <a href="#servicios" className="btn btn--ghost">
-                                Ver servicios
-                            </a>
-                        </div>
+                    <div className="hero__actions">
+                        <a href="#reservar" className="btn btn--light">
+                            Reservar turno
+                        </a>
+                        <a href="#servicios" className="btn btn--outline-light">
+                            Ver servicios
+                        </a>
                     </div>
-
-                    <aside className="taller-hero__nota">
-                        <p className="eyebrow">Diagnóstico sin cargo</p>
-                        <p>
-                            Revisamos el auto, te explicamos qué tiene y recién
-                            ahí decidís. El trabajo se presupuesta y se aprueba
-                            con vos antes de tocar nada.
-                        </p>
-                        <p className="taller-hero__horario">
-                            {site.horarios.corto}
-                        </p>
-                    </aside>
                 </div>
             </section>
 
