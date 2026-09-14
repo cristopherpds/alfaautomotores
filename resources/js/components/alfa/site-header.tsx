@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { BrandLockup } from '@/components/alfa/brand';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { whatsapp } from '@/lib/alfa';
-import { catalogo, home, taller } from '@/routes';
+import { catalogo, home, lavadero, taller } from '@/routes';
 import type { SiteInfo } from '@/types';
 
 /** El `aria-controls` del botón hamburguesa apunta acá. */
@@ -27,6 +27,7 @@ export function SiteHeader({ site }: { site: SiteInfo }) {
         currentUrl.startsWith('/vehiculos');
 
     const enTaller = currentUrl.startsWith('/taller');
+    const enLavadero = currentUrl.startsWith('/lavadero');
 
     const cerrarMenu = () => setMenuAbierto(false);
 
@@ -108,6 +109,16 @@ export function SiteHeader({ site }: { site: SiteInfo }) {
                             onClick={cerrarMenu}
                         >
                             Taller
+                        </Link>
+
+                        <Link
+                            href={lavadero()}
+                            className="nav__link"
+                            data-active={enLavadero}
+                            aria-current={enLavadero ? 'page' : undefined}
+                            onClick={cerrarMenu}
+                        >
+                            Lavadero
                         </Link>
 
                         <a

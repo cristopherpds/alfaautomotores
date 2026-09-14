@@ -88,6 +88,16 @@
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
+
+    /*
+     * Barra que identifica el negocio de un turno en la agenda. Tono propio y
+     * no un `--chart-*`: esos cambian de matiz entre claro y oscuro, y acá el
+     * color significa algo —de qué negocio es el turno— así que tiene que ser
+     * el mismo en los dos modos. Azul el taller, verde agua el lavadero.
+     */
+    --rubro-taller: oklch(0.5 0.16 255);
+    --rubro-lavadero: oklch(0.62 0.13 195);
+
     --radius: 0.625rem;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
@@ -124,6 +134,11 @@
     --chart-3: oklch(0.769 0.188 70.08);
     --chart-4: oklch(0.627 0.265 303.9);
     --chart-5: oklch(0.645 0.246 16.439);
+
+    /* Los mismos tonos, aclarados para que se lean sobre el fondo oscuro. */
+    --rubro-taller: oklch(0.68 0.16 255);
+    --rubro-lavadero: oklch(0.75 0.13 195);
+
     --sidebar: oklch(0.205 0 0);
     --sidebar-foreground: oklch(0.985 0 0);
     --sidebar-primary: oklch(0.985 0 0);
@@ -196,14 +211,16 @@
 }
 
 /*
- * Un turno pendiente todavía no está confirmado con el cliente: se distingue a
- * simple vista del que ya está cerrado. El cancelado queda tachado en vez de
- * desaparecer, porque el hueco ya volvió a la web y conviene ver por qué.
+ * Dos señales sobre el mismo evento, en canales distintos para que no se pisen:
+ * el FONDO dice el estado y la BARRA IZQUIERDA dice el rubro.
+ *
+ * El borde lo tenía «pendiente», pero ese estado ya se distingue de sobra por
+ * su fondo, y el rubro necesitaba una marca que funcionara en los cuatro
+ * estados. Ver `Panel\TurnoController::toEvento()`.
  */
 .fc .turno--pendiente {
     background: var(--secondary);
     color: var(--secondary-foreground);
-    border-left: 3px solid var(--muted-foreground);
 }
 
 .fc .turno--confirmado {
@@ -220,4 +237,12 @@
     background: transparent;
     color: var(--muted-foreground);
     text-decoration: line-through;
+}
+
+.fc .turno--taller {
+    border-left: 3px solid var(--rubro-taller);
+}
+
+.fc .turno--lavadero {
+    border-left: 3px solid var(--rubro-lavadero);
 }

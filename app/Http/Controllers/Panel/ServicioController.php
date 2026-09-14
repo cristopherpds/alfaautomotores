@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Enums\AreaServicio;
+use App\Enums\Rubro;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Taller\ServicioRequest;
+use App\Http\Requests\Servicios\ServicioRequest;
 use App\Models\Servicio;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -51,6 +52,9 @@ class ServicioController extends Controller implements HasMiddleware
         return Inertia::render('panel/servicios/index', [
             'servicios' => Servicio::query()
                 ->withCount('turnos')
+                /* Por rubro primero: la tabla mezcla los dos negocios y el
+                   `orden` se numera dentro de cada uno. */
+                ->orderBy('rubro')
                 ->orderBy('orden')
                 ->orderBy('nombre')
                 ->get()
@@ -67,6 +71,7 @@ class ServicioController extends Controller implements HasMiddleware
     {
         return Inertia::render('panel/servicios/create', [
             'areas' => AreaServicio::options(),
+            'rubros' => Rubro::options(),
         ]);
     }
 
@@ -99,6 +104,7 @@ class ServicioController extends Controller implements HasMiddleware
                 'descripcion' => $servicio->descripcion,
             ],
             'areas' => AreaServicio::options(),
+            'rubros' => Rubro::options(),
         ]);
     }
 
@@ -166,7 +172,7 @@ class ServicioController extends Controller implements HasMiddleware
     /**
      * La fila que consume la tabla del panel.
      *
-     * @return array{id: int, slug: string, nombre: string, area: string, areaLabel: string, duracion: int, duracionLegible: string, foto: string|null, activo: bool, agendable: bool, orden: int, turnos_count: int}
+     * @return array{id: int, slug: string, nombre: string, rubro: string, rubroLabel: string, area: string|null, areaLabel: string|null, duracion: int, duracionLegible: string, precio: int|null, precioLegible: string|null, foto: string|null, activo: bool, agendable: bool, orden: int, turnos_count: int}
      */
     private function toListItem(Servicio $servicio): array
     {
@@ -174,10 +180,16 @@ class ServicioController extends Controller implements HasMiddleware
             'id' => $servicio->id,
             'slug' => $servicio->slug,
             'nombre' => $servicio->nombre,
-            'area' => $servicio->area->value,
-            'areaLabel' => $servicio->area->label(),
+            'rubro' => $servicio->rubro->value,
+            'rubroLabel' => $servicio->rubro->label(),
+            /* Nulos en el lavadero: sus servicios son tamaños de vehículo y no
+               se clasifican por área. */
+            'area' => $servicio->area?->value,
+            'areaLabel' => $servicio->area?->label(),
             'duracion' => $servicio->duracion,
             'duracionLegible' => $servicio->duracionLegible(),
+            'precio' => $servicio->precio,
+            'precioLegible' => $servicio->precioLegible(),
             'foto' => $servicio->url(),
             'activo' => $servicio->activo,
             'agendable' => $servicio->agendable,

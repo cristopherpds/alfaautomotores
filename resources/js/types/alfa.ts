@@ -38,21 +38,35 @@ export type Entrega = {
 /** La fila que arma `Panel\EntregaController::index()`. */
 export type ManagedEntrega = Entrega & { id: number };
 
-/** Un servicio del taller, tal como lo manda `TallerController::index()`. */
-export type ServicioTaller = {
+/** Lo que comparten los servicios de los dos negocios en el sitio público. */
+export type ServicioPublico = {
     slug: string;
     nombre: string;
-    /** Valor del enum `AreaServicio`; `areaLabel` es lo que se muestra. */
-    area: string;
-    areaLabel: string;
     /** Minutos que lleva el trabajo: es el largo del turno. */
     duracion: number;
     duracionLegible: string;
+    /** Sólo el lavadero tiene precio de lista; el taller cotiza. */
+    precioLegible: string | null;
     descripcion: string;
     foto: string | null;
     /** Los trabajos mayores se cotizan en el taller: no se reservan online. */
     agendable: boolean;
 };
+
+/** Un servicio del taller, tal como lo manda `TallerController::index()`. */
+export type ServicioTaller = ServicioPublico & {
+    /** Valor del enum `AreaServicio`; `areaLabel` es lo que se muestra. */
+    area: string;
+    areaLabel: string;
+};
+
+/**
+ * Un lavado, tal como lo manda `LavaderoController::index()`.
+ *
+ * Va sin área a propósito: los servicios del lavadero son tamaños de vehículo,
+ * no especialidades, y lo que los diferencia es el precio.
+ */
+export type ServicioLavadero = ServicioPublico;
 
 /** Datos del local, servidos desde `config/alfa.php`. */
 export type SiteInfo = {
@@ -77,11 +91,18 @@ export type ManagedServicio = {
     id: number;
     slug: string;
     nombre: string;
-    area: string;
-    areaLabel: string;
+    /** Valor del enum `Rubro`: de qué negocio es el servicio. */
+    rubro: string;
+    rubroLabel: string;
+    /** Nulos en el lavadero, que no clasifica por área. */
+    area: string | null;
+    areaLabel: string | null;
     /** Minutos: es el largo del turno que genera este servicio. */
     duracion: number;
     duracionLegible: string;
+    /** Sólo el lavadero tiene precio de lista. */
+    precio: number | null;
+    precioLegible: string | null;
     foto: string | null;
     activo: boolean;
     agendable: boolean;

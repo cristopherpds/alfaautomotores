@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\AreaServicio;
+use App\Enums\Rubro;
 use App\Enums\UserRole;
 use App\Models\Puesto;
 use App\Models\Servicio;
@@ -29,6 +30,7 @@ function datosDelServicio(array $extra = []): array
     return [
         'slug' => 'service-completo',
         'nombre' => 'Service completo',
+        'rubro' => Rubro::Taller->value,
         'area' => AreaServicio::Mantenimiento->value,
         'duracion' => 90,
         'descripcion' => 'Aceite, cuatro filtros y revisión de 30 puntos.',
@@ -188,4 +190,53 @@ test('a service with appointments is kept', function () {
         ->assertRedirect(route('panel.servicios.index'));
 
     expect(Servicio::count())->toBe(1);
+});
+
+/*
+ * El ABM maneja los dos rubros. El lavado va sin área y con precio; el área
+ * sólo se exige cuando el rubro es el taller.
+ */
+test('a wash is created without an area and with a list price', function () {
+    $this->actingAs(User::factory()->role(UserRole::Vendedor)->create())
+        ->post(route('panel.servicios.store'), datosDelServicio([
+            'slug' => 'lavado-auto',
+            'nombre' => 'Auto',
+            'rubro' => Rubro::Lavadero->value,
+            'area' => '',
+            'precio' => 500,
+        ]))
+        ->assertSessionHasNoErrors();
+
+    $servicio = Servicio::where('slug', 'lavado-auto')->sole();
+
+    expect($servicio->rubro)->toBe(Rubro::Lavadero)
+        ->and($servicio->area)->toBeNull()
+        ->and($servicio->precio)->toBe(500)
+        ->and($servicio->precioLegible())->toBe('$ 500');
+});
+
+test('a workshop job still needs its area', function () {
+    $this->actingAs(User::factory()->role(UserRole::Vendedor)->create())
+        ->from(route('panel.servicios.create'))
+        ->post(route('panel.servicios.store'), datosDelServicio(['area' => '']))
+        ->assertSessionHasErrors('area');
+});
+
+test('the list shows both lines of business', function () {
+    Servicio::factory()->create(['slug' => 'service']);
+    Servicio::factory()->lavadero(700)->create(['slug' => 'lavado-camioneta']);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('panel.servicios.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('servicios', 2)
+            // Ordenados por rubro: primero el lavadero, después el taller.
+            ->where('servicios.0.rubroLabel', 'Lavadero')
+            ->where('servicios.0.precioLegible', '$ 700')
+            ->where('servicios.0.areaLabel', null)
+            ->where('servicios.1.rubroLabel', 'Taller')
+            ->where('servicios.1.precioLegible', null)
+            ->etc()
+        );
 });

@@ -2,6 +2,7 @@
 
 use App\Enums\EstadoTurno;
 use App\Enums\OrigenTurno;
+use App\Enums\Rubro;
 use App\Enums\UserRole;
 use App\Models\Puesto;
 use App\Models\Servicio;
@@ -55,7 +56,7 @@ test('the calendar lists the appointments of the visible range as events', funct
             ->has('turnos', 1)
             ->where('turnos.0.id', (string) $dentro->id)
             ->where('turnos.0.title', 'Service completo · Pérez')
-            ->where('turnos.0.classNames', ['turno--pendiente'])
+            ->where('turnos.0.classNames', ['turno--pendiente', 'turno--taller'])
             ->where('turnos.0.extendedProps.cliente', $dentro->cliente())
             ->where('puedeGestionar', true)
         );
@@ -203,6 +204,118 @@ test('the panel offers the free slots of the chosen day', function () {
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->where('huecos', ['08:30', '10:00', '14:00', '15:30'])
+            ->etc()
+        );
+});
+
+/*
+ * La agenda es una sola para los dos negocios: el filtro es lo que deja ver un
+ * rubro a la vez, y sin él se ven todos.
+ */
+test('the calendar filters by line of business', function () {
+    $lunes = abrirElTaller();
+    abrirElLavadero();
+
+    $service = Servicio::factory()->create(['nombre' => 'Service completo']);
+    $lavado = Servicio::factory()->lavadero()->create(['nombre' => 'Auto']);
+
+    Turno::factory()
+        ->for($service)->for(Puesto::query()->where('rubro', Rubro::Taller)->firstOrFail())
+        ->inicia($lunes->copy()->setTime(10, 0))
+        ->create(['apellido' => 'Pérez']);
+
+    Turno::factory()
+        ->for($lavado)->for(Puesto::query()->where('rubro', Rubro::Lavadero)->firstOrFail())
+        ->inicia($lunes->copy()->setTime(11, 0))
+        ->create(['apellido' => 'Gómez']);
+
+    $rango = [
+        'desde' => $lunes->copy()->startOfMonth()->toDateString(),
+        'hasta' => $lunes->copy()->endOfMonth()->toDateString(),
+    ];
+
+    $admin = User::factory()->admin()->create();
+
+    // Sin filtro entran los dos, y cada uno trae la clase de su rubro.
+    $this->actingAs($admin)
+        ->get(route('panel.turnos.index', $rango))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('turnos', 2)
+            ->where('rubro', null)
+            ->has('rubros', count(Rubro::cases()))
+            ->etc()
+        );
+
+    $this->actingAs($admin)
+        ->get(route('panel.turnos.index', [...$rango, 'rubro' => Rubro::Lavadero->value]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('turnos', 1)
+            ->where('turnos.0.title', 'Auto · Gómez')
+            ->where('turnos.0.classNames', ['turno--pendiente', 'turno--lavadero'])
+            ->where('turnos.0.extendedProps.rubroLabel', 'Lavadero')
+            ->where('rubro', Rubro::Lavadero->value)
+            ->etc()
+        );
+
+    $this->actingAs($admin)
+        ->get(route('panel.turnos.index', [...$rango, 'rubro' => Rubro::Taller->value]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('turnos', 1)
+            ->where('turnos.0.title', 'Service completo · Pérez')
+            ->etc()
+        );
+});
+
+test('an invalid line of business filter shows everything instead of nothing', function () {
+    $lunes = abrirElTaller();
+
+    $servicio = Servicio::factory()->create();
+
+    Turno::factory()->for($servicio)->for(Puesto::query()->firstOrFail())
+        ->inicia($lunes->copy()->setTime(10, 0))
+        ->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('panel.turnos.index', [
+            'desde' => $lunes->copy()->startOfMonth()->toDateString(),
+            'hasta' => $lunes->copy()->endOfMonth()->toDateString(),
+            'rubro' => 'kiosco',
+        ]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->has('turnos', 1)->where('rubro', null)->etc());
+});
+
+/*
+ * La matrícula es opcional y va en los dos rubros: se guarda y viaja al detalle
+ * del calendario.
+ */
+test('the plate number is stored and travels with the event', function () {
+    abrirElTaller();
+
+    $servicio = Servicio::factory()->duracion(90)->create(['slug' => 'service']);
+
+    $this->actingAs(User::factory()->role(UserRole::Vendedor)->create())
+        ->post(route('panel.turnos.store'), datosDelTurnoInterno([
+            'servicio' => $servicio->slug,
+            'fecha' => '2026-09-14',
+            'hora' => '14:00',
+            'matricula' => 'ABC 1234',
+        ]))
+        ->assertSessionHasNoErrors();
+
+    expect(Turno::sole()->matricula)->toBe('ABC 1234');
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('panel.turnos.index', [
+            'desde' => '2026-09-01',
+            'hasta' => '2026-09-30',
+        ]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('turnos.0.extendedProps.matricula', 'ABC 1234')
             ->etc()
         );
 });

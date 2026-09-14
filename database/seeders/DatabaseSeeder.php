@@ -27,8 +27,10 @@ class DatabaseSeeder extends Seeder
         $this->call(EntregaSeeder::class);
         $this->call(ServicioSeeder::class);
 
-        /* La agenda del taller no es una tabla de datos: son los horarios que
-           le cuelgan a cada puesto. Los crea el comando, que es idempotente. */
+        /* Las agendas no son tablas de datos: son los horarios que le cuelgan
+           a cada puesto. Los crean los comandos, que son idempotentes. Van uno
+           por rubro porque las capacidades son independientes. */
         Artisan::call('taller:agenda');
+        Artisan::call('lavadero:agenda');
     }
 }

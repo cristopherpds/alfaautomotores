@@ -1,53 +1,32 @@
 import { Form, Head, router } from '@inertiajs/react';
-import { useMemo, useRef, useState } from 'react';
-import { whatsapp } from '@/lib/alfa';
-import { store } from '@/routes/taller/turnos';
-import type { OpcionSelect, ServicioTaller, SiteInfo } from '@/types';
+import { useRef, useState } from 'react';
+import { store } from '@/routes/lavadero/turnos';
+import type { ServicioLavadero, SiteInfo } from '@/types';
 
 type Props = {
     site: SiteInfo;
-    servicios: ServicioTaller[];
-    areas: OpcionSelect[];
+    servicios: ServicioLavadero[];
     ventana: { desde: string; hasta: string };
     huecos: string[];
 };
 
-/** El chip que muestra todos los servicios juntos. */
-const TODAS = 'todas';
-
 /**
- * La página del taller.
+ * La página del lavadero.
  *
- * Los horarios libres los calcula el servidor: cada vez que cambia el servicio
- * o el día se pide una recarga parcial de `huecos`. Así la disponibilidad tiene
- * una sola definición —`Puesto::huecosDelDia()`— y el navegador no adivina.
+ * Es la hermana de `taller.tsx` y comparte con ella el formulario de reserva:
+ * los horarios libres los calcula el servidor y cada cambio de servicio o de
+ * día pide una recarga parcial de `huecos`, así la disponibilidad tiene una
+ * sola definición —`Puesto::huecosDelDia()`— y el navegador no adivina.
+ *
+ * Lo propio de acá es que los servicios son tamaños de vehículo: no se filtran
+ * por área y lo que los distingue es el precio.
  */
-export default function Taller({
-    site,
-    servicios,
-    areas,
-    ventana,
-    huecos,
-}: Props) {
-    const [area, setArea] = useState(TODAS);
+export default function Lavadero({ site, servicios, ventana, huecos }: Props) {
     const [servicio, setServicio] = useState('');
     const [fecha, setFecha] = useState('');
     const [hora, setHora] = useState('');
 
     const reserva = useRef<HTMLElement>(null);
-
-    const agendables = useMemo(
-        () => servicios.filter((uno) => uno.agendable),
-        [servicios],
-    );
-
-    const visibles = useMemo(
-        () =>
-            area === TODAS
-                ? servicios
-                : servicios.filter((uno) => uno.area === area),
-        [servicios, area],
-    );
 
     const elegido = servicios.find((uno) => uno.slug === servicio) ?? null;
 
@@ -84,92 +63,77 @@ export default function Taller({
 
     return (
         <>
-            <Head title="Taller mecánico multimarca">
+            <Head title="Lavadero">
                 <meta
                     name="description"
-                    content="Service, frenos, motor, diagnóstico y clima en Rivera. Reservá tu turno online y te confirmamos el presupuesto por WhatsApp."
+                    content="Lavado exterior y aspirado interior en Rivera. Reservá el horario online y dejá el auto sólo el rato que lleva el trabajo."
                 />
             </Head>
 
-            <section className="taller-hero">
-                {/* Fondo decorativo: no aporta contenido, así que va con
-                    `aria-hidden` y sin texto alternativo. */}
-                <img
-                    className="taller-hero__foto"
-                    src="/assets/hero-taller.jpg"
-                    alt=""
-                    aria-hidden="true"
-                    fetchPriority="high"
-                />
-                <div className="taller-hero__velo" aria-hidden="true" />
+            <section className="lavadero-hero">
+                <div className="shell lavadero-hero__inner">
+                    <div>
+                        <h1>
+                            Tu auto limpio,
+                            <br />
+                            sin perder el día.
+                        </h1>
 
-                <div className="shell taller-hero__inner">
-                    <h1>
-                        El taller de confianza
-                        <br />
-                        para tu auto.
-                    </h1>
+                        <p className="lede">
+                            Lavado exterior y aspirado interior en{' '}
+                            {site.direccion}, {site.ciudad}. Reservás el horario
+                            online y lo dejás solamente el rato que lleva el
+                            trabajo.
+                        </p>
 
-                    <p className="lede">
-                        Service, frenos, motor, diagnóstico y clima en{' '}
-                        {site.direccion}, {site.ciudad}. Reservás online y te
-                        confirmamos el presupuesto por WhatsApp.
-                    </p>
-
-                    <div className="hero__actions">
-                        <a href="#reservar" className="btn btn--light">
-                            Reservar turno
-                        </a>
-                        <a href="#servicios" className="btn btn--outline-light">
-                            Ver servicios
-                        </a>
+                        <div className="hero__actions">
+                            <a href="#reservar" className="btn">
+                                Reservar lavado
+                            </a>
+                            <a href="#precios" className="btn btn--ghost">
+                                Ver precios
+                            </a>
+                        </div>
                     </div>
+
+                    <aside className="lavadero-hero__nota">
+                        <p className="eyebrow">Mientras esperás</p>
+                        <p>
+                            Lo podés esperar acá o dejarlo y seguir con tus
+                            cosas: te avisamos por WhatsApp apenas está pronto.
+                        </p>
+                        <p className="lavadero-hero__horario">
+                            {site.horarios.corto}
+                        </p>
+                    </aside>
                 </div>
             </section>
 
-            <section className="shell section" id="servicios">
+            <section className="shell section" id="precios">
                 <div className="section__head">
                     <div>
-                        <p className="eyebrow">Servicios</p>
-                        <h2>Todo lo que resolvemos</h2>
+                        <p className="eyebrow">Precios</p>
+                        <h2>Según el tamaño del vehículo</h2>
                     </div>
+
+                    <p className="section__nota">
+                        El trabajo es el mismo en los dos: lo que cambia es el
+                        tiempo que lleva.
+                    </p>
                 </div>
 
-                <div className="taller-areas" role="group" aria-label="Áreas">
-                    <button
-                        type="button"
-                        className="taller-areas__chip"
-                        data-activo={area === TODAS}
-                        onClick={() => setArea(TODAS)}
-                    >
-                        Todos
-                    </button>
-
-                    {areas.map((una) => (
-                        <button
-                            key={una.value}
-                            type="button"
-                            className="taller-areas__chip"
-                            data-activo={area === una.value}
-                            onClick={() => setArea(una.value)}
-                        >
-                            {una.label}
-                        </button>
-                    ))}
-                </div>
-
-                {visibles.length === 0 ? (
+                {servicios.length === 0 ? (
                     <div className="empty">
                         <p className="empty__title">Nada por acá</p>
                         <p className="empty__text">
-                            No hay servicios cargados en esa área.
+                            Todavía no hay lavados cargados.
                         </p>
                     </div>
                 ) : (
-                    <div className="grid">
-                        {visibles.map((uno) => (
+                    <div className="grid--duo grid">
+                        {servicios.map((uno) => (
                             <article
-                                className="card card--servicio"
+                                className="card card--lavado"
                                 key={uno.slug}
                             >
                                 <div className="card__media">
@@ -203,48 +167,33 @@ export default function Taller({
                                 </div>
 
                                 <div className="card__body">
-                                    <p className="card__meta">
-                                        {uno.areaLabel}
-                                    </p>
                                     <h3 className="card__title">
                                         {uno.nombre}
                                     </h3>
+
+                                    {uno.precioLegible && (
+                                        <p className="card__precio">
+                                            {uno.precioLegible}
+                                        </p>
+                                    )}
+
                                     <p className="card__desc">
                                         {uno.descripcion}
                                     </p>
 
-                                    {/* El pie va dentro del cuerpo, como en la
-                                        tarjeta de vehículo: es de ahí que saca
-                                        el padding lateral. */}
                                     <div className="card__foot">
                                         <span className="card__duracion">
                                             {uno.duracionLegible}
                                         </span>
 
-                                        {uno.agendable ? (
-                                            <button
-                                                type="button"
-                                                className="card__cta"
-                                                onClick={() =>
-                                                    agendar(uno.slug)
-                                                }
-                                                data-test={`agendar-${uno.slug}`}
-                                            >
-                                                Agendar
-                                            </button>
-                                        ) : (
-                                            <a
-                                                className="card__cta"
-                                                href={whatsapp(
-                                                    site.whatsapp,
-                                                    `Hola, quiero consultar por ${uno.nombre}.`,
-                                                )}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                Consultar
-                                            </a>
-                                        )}
+                                        <button
+                                            type="button"
+                                            className="card__cta"
+                                            onClick={() => agendar(uno.slug)}
+                                            data-test={`agendar-${uno.slug}`}
+                                        >
+                                            Reservar lavado
+                                        </button>
                                     </div>
                                 </div>
                             </article>
@@ -258,7 +207,7 @@ export default function Taller({
                     <div className="section__head">
                         <div>
                             <p className="eyebrow">Reservá tu turno</p>
-                            <h2>Elegí el servicio y el horario</h2>
+                            <h2>Elegí el vehículo y el horario</h2>
                         </div>
                     </div>
 
@@ -276,7 +225,7 @@ export default function Taller({
                                             className="field-label"
                                             htmlFor="servicio"
                                         >
-                                            Servicio
+                                            Vehículo
                                         </label>
 
                                         <select
@@ -292,15 +241,17 @@ export default function Taller({
                                             required
                                         >
                                             <option value="">
-                                                Elegí un servicio
+                                                Elegí el tamaño
                                             </option>
-                                            {agendables.map((uno) => (
+                                            {servicios.map((uno) => (
                                                 <option
                                                     key={uno.slug}
                                                     value={uno.slug}
                                                 >
-                                                    {uno.nombre} ·{' '}
-                                                    {uno.duracionLegible}
+                                                    {uno.nombre}
+                                                    {uno.precioLegible
+                                                        ? ` · ${uno.precioLegible}`
+                                                        : ''}
                                                 </option>
                                             ))}
                                         </select>
@@ -349,7 +300,7 @@ export default function Taller({
 
                                     {!elegido || !fecha ? (
                                         <p className="turno__aviso">
-                                            Elegí el servicio y el día para ver
+                                            Elegí el vehículo y el día para ver
                                             qué horarios quedan.
                                         </p>
                                     ) : huecos.length === 0 ? (
@@ -557,14 +508,14 @@ export default function Taller({
                                         className="field-label"
                                         htmlFor="comentario"
                                     >
-                                        ¿Qué le pasa? (opcional)
+                                        ¿Algo para avisar? (opcional)
                                     </label>
                                     <textarea
                                         id="comentario"
                                         name="comentario"
                                         className="turno__input"
                                         rows={3}
-                                        placeholder="Hace un ruido al frenar…"
+                                        placeholder="Tiene pelo de perro en el baúl…"
                                     />
                                     {errors.comentario && (
                                         <p className="turno__error">
@@ -587,8 +538,7 @@ export default function Taller({
 
                                     <p className="turno__nota">
                                         Sin costo de reserva. Te confirmamos por
-                                        WhatsApp con el presupuesto antes de que
-                                        traigas el auto.
+                                        WhatsApp y se paga al retirar el auto.
                                     </p>
                                 </div>
                             </>

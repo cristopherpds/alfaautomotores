@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Requests\Taller;
+namespace App\Http\Requests\Turnos;
 
+use App\Enums\Rubro;
 use App\Models\Puesto;
 use App\Models\Servicio;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -10,8 +11,21 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-class TurnoStoreRequest extends FormRequest
+/**
+ * La reserva de un turno desde el sitio público.
+ *
+ * Las reglas son las mismas en los dos negocios; lo único que cambia es el
+ * rubro, que acota los servicios reservables y direcciona la ventana de
+ * reserva a su propia configuración. Por eso la clase es abstracta y cada
+ * rubro tiene una hija de tres líneas.
+ */
+abstract class TurnoPublicoRequest extends FormRequest
 {
+    /**
+     * El negocio al que pertenece esta reserva.
+     */
+    abstract protected function rubro(): Rubro;
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -21,11 +35,17 @@ class TurnoStoreRequest extends FormRequest
      */
     public function rules(): array
     {
-        $desde = now()->addDays((int) config('taller.anticipacion_dias'))->toDateString();
-        $hasta = now()->addDays((int) config('taller.horizonte_dias'))->toDateString();
+        $rubro = $this->rubro();
+
+        $desde = now()->addDays((int) $rubro->config('anticipacion_dias'))->toDateString();
+        $hasta = now()->addDays((int) $rubro->config('horizonte_dias'))->toDateString();
 
         return [
-            'servicio' => ['required', 'string', Rule::exists('servicios', 'slug')->where('activo', true)],
+            /* Acotado al rubro: desde `/lavadero` no se reserva un service, ni
+               al revés, aunque el slug exista y esté activo. */
+            'servicio' => ['required', 'string', Rule::exists('servicios', 'slug')
+                ->where('activo', true)
+                ->where('rubro', $rubro->value)],
             /* `date_format` y no `date`: es lo que manda un `<input type="date">`
                y evita que entre `14/09/2026` y se guarde otra cosa. */
             'fecha' => ['required', 'date_format:Y-m-d', 'after_or_equal:'.$desde, 'before_or_equal:'.$hasta],
@@ -41,6 +61,7 @@ class TurnoStoreRequest extends FormRequest
             'vehiculo_marca' => ['nullable', 'string', 'max:60'],
             'vehiculo_modelo' => ['nullable', 'string', 'max:60'],
             'vehiculo_anio' => ['nullable', 'integer', 'between:1950,'.(now()->year + 1)],
+            'matricula' => ['nullable', 'string', 'max:12'],
             'comentario' => ['nullable', 'string', 'max:500'],
         ];
     }
@@ -58,7 +79,9 @@ class TurnoStoreRequest extends FormRequest
                     return;
                 }
 
-                $servicio = Servicio::where('slug', $this->string('servicio')->value())->first();
+                $servicio = Servicio::where('slug', $this->string('servicio')->value())
+                    ->where('rubro', $this->rubro())
+                    ->first();
 
                 if ($servicio === null) {
                     return;

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\AreaServicio;
+use App\Enums\Rubro;
 use App\Models\Servicio;
 use Illuminate\Database\Seeder;
 
@@ -88,7 +89,34 @@ class ServicioSeeder extends Seeder
     ];
 
     /**
-     * Cargar los servicios del taller.
+     * Los lavados, por tamaño de vehículo.
+     *
+     * El trabajo es el mismo en los dos: lo que cambia es el tiempo que lleva,
+     * y de ahí sale la diferencia de precio. Van sin área —el lavadero no se
+     * clasifica por especialidad— y con precio de lista, que es lo que la
+     * página muestra en cada tarjeta.
+     *
+     * @var list<array{slug: string, nombre: string, duracion: int, precio: int, descripcion: string}>
+     */
+    private const LAVADOS = [
+        [
+            'slug' => 'lavado-auto',
+            'nombre' => 'Auto',
+            'duracion' => 45,
+            'precio' => 500,
+            'descripcion' => 'Hatchback, sedán y utilitarios chicos. Lavado exterior + aspirado interior.',
+        ],
+        [
+            'slug' => 'lavado-camioneta',
+            'nombre' => 'Camioneta',
+            'duracion' => 60,
+            'precio' => 700,
+            'descripcion' => 'SUV, pick-up y camionetas. Lavado exterior + aspirado interior.',
+        ],
+    ];
+
+    /**
+     * Cargar los servicios de los dos rubros.
      *
      * Idempotente por slug: correrlo de nuevo actualiza los textos y no
      * duplica. No pisa `activo` ni la foto, que se editan desde el panel.
@@ -96,9 +124,8 @@ class ServicioSeeder extends Seeder
     public function run(): void
     {
         foreach (self::SERVICIOS as $orden => $datos) {
-            $servicio = Servicio::firstOrNew(['slug' => $datos['slug']]);
-
-            $servicio->fill([
+            $this->guardar($datos['slug'], [
+                'rubro' => Rubro::Taller,
                 'nombre' => $datos['nombre'],
                 'area' => $datos['area'],
                 'duracion' => $datos['duracion'],
@@ -106,8 +133,31 @@ class ServicioSeeder extends Seeder
                 'agendable' => $datos['agendable'] ?? true,
                 'orden' => $orden,
             ]);
-
-            $servicio->save();
         }
+
+        foreach (self::LAVADOS as $orden => $datos) {
+            $this->guardar($datos['slug'], [
+                'rubro' => Rubro::Lavadero,
+                'nombre' => $datos['nombre'],
+                'area' => null,
+                'duracion' => $datos['duracion'],
+                'precio' => $datos['precio'],
+                'descripcion' => $datos['descripcion'],
+                'agendable' => true,
+                'orden' => $orden,
+            ]);
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $datos
+     */
+    private function guardar(string $slug, array $datos): void
+    {
+        $servicio = Servicio::firstOrNew(['slug' => $slug]);
+
+        $servicio->fill($datos);
+
+        $servicio->save();
     }
 }

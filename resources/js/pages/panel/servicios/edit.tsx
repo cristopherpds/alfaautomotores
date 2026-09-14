@@ -9,10 +9,11 @@ import type { OpcionSelect, ServicioEditable } from '@/types';
 type Props = {
     servicio: ServicioEditable;
     areas: OpcionSelect[];
+    rubros: OpcionSelect[];
 };
 
 /** Edición de un servicio. La foto sólo se reemplaza si se elige una nueva. */
-export default function EditServicio({ servicio, areas }: Props) {
+export default function EditServicio({ servicio, areas, rubros }: Props) {
     return (
         <>
             <Head title={servicio.nombre} />
@@ -35,6 +36,7 @@ export default function EditServicio({ servicio, areas }: Props) {
                         <>
                             <ServicioFormFields
                                 areas={areas}
+                                rubros={rubros}
                                 errors={errors}
                                 servicio={servicio}
                             />

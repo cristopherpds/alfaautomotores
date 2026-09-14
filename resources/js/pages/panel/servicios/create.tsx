@@ -8,10 +8,11 @@ import type { OpcionSelect } from '@/types';
 
 type Props = {
     areas: OpcionSelect[];
+    rubros: OpcionSelect[];
 };
 
-/** Alta de un servicio del taller. */
-export default function CreateServicio({ areas }: Props) {
+/** Alta de un servicio: el rubro decide en qué página aparece. */
+export default function CreateServicio({ areas, rubros }: Props) {
     return (
         <>
             <Head title="Nuevo servicio" />
@@ -19,7 +20,7 @@ export default function CreateServicio({ areas }: Props) {
             <div className="flex h-full flex-1 flex-col gap-6 p-4">
                 <Heading
                     title="Nuevo servicio"
-                    description="Se muestra en la página del taller apenas quede visible."
+                    description="Se muestra en la página de su rubro apenas quede visible."
                 />
 
                 <Form
@@ -28,7 +29,11 @@ export default function CreateServicio({ areas }: Props) {
                 >
                     {({ processing, errors }) => (
                         <>
-                            <ServicioFormFields areas={areas} errors={errors} />
+                            <ServicioFormFields
+                                areas={areas}
+                                rubros={rubros}
+                                errors={errors}
+                            />
 
                             <div className="flex gap-2">
                                 <Button

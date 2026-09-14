@@ -18,6 +18,7 @@ createInertiaApp({
             case name === 'welcome':
             case name === 'catalogo':
             case name === 'taller':
+            case name === 'lavadero':
             case name.startsWith('vehiculos/'):
                 return AlfaLayout;
             // Acceso al panel: mismo sistema de diseño que el sitio público,

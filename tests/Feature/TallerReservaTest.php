@@ -197,3 +197,45 @@ test('an inactive service cannot be booked', function () {
 
     expect(Turno::count())->toBe(0);
 });
+
+/*
+ * La matrícula es opcional y va en los dos rubros: sirve para reconocer el auto
+ * en el patio, no para identificar al cliente.
+ */
+test('the plate number is optional and gets stored when given', function () {
+    $lunes = abrirElTaller();
+
+    $servicio = Servicio::factory()->duracion(90)->create(['slug' => 'service']);
+
+    $this->post(route('taller.turnos.store'), datosDelTurno([
+        'servicio' => $servicio->slug,
+        'fecha' => $lunes->toDateString(),
+        'hora' => '10:00',
+    ]))->assertSessionHasNoErrors();
+
+    expect(Turno::sole()->matricula)->toBeNull();
+
+    $this->post(route('taller.turnos.store'), datosDelTurno([
+        'servicio' => $servicio->slug,
+        'fecha' => $lunes->toDateString(),
+        'hora' => '14:00',
+        'matricula' => 'ABC 1234',
+    ]))->assertSessionHasNoErrors();
+
+    expect(Turno::where('matricula', 'ABC 1234')->sole())->not->toBeNull();
+});
+
+test('an overlong plate number is rejected', function () {
+    $lunes = abrirElTaller();
+
+    $servicio = Servicio::factory()->duracion(90)->create(['slug' => 'service']);
+
+    $this->from(route('taller'))
+        ->post(route('taller.turnos.store'), datosDelTurno([
+            'servicio' => $servicio->slug,
+            'fecha' => $lunes->toDateString(),
+            'hora' => '10:00',
+            'matricula' => str_repeat('A', 13),
+        ]))
+        ->assertSessionHasErrors('matricula');
+});

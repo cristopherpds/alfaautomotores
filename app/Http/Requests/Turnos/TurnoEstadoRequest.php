@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Taller;
+namespace App\Http\Requests\Turnos;
 
 use App\Enums\EstadoTurno;
 use Illuminate\Contracts\Validation\ValidationRule;

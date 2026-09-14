@@ -51,7 +51,9 @@ const catalogoNavItems: NavItem[] = [
     },
 ];
 
-const tallerNavItems: NavItem[] = [
+/* Una sola agenda y un solo ABM para los dos negocios: el turno filtra por
+   rubro y el servicio lo lleva como columna. */
+const agendaNavItems: NavItem[] = [
     {
         title: 'Turnos',
         href: turnosIndex(),
@@ -107,7 +109,7 @@ export function AppSidebar() {
                 <NavMain items={mainNavItems} />
 
                 <NavMain items={catalogoNavItems} label="Catálogo" />
-                <NavMain items={tallerNavItems} label="Taller" />
+                <NavMain items={agendaNavItems} label="Taller y lavadero" />
 
                 {isAdmin && (
                     <NavMain items={adminNavItems} label="Administración" />

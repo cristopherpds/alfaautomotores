@@ -608,6 +608,15 @@
         }
     }
 
+    /* La aclaración que acompaña al título, a la derecha del bloque. */
+    & .section__nota {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--alfa-text-muted);
+        max-width: 32ch;
+        margin: 0;
+    }
+
     & .section__link {
         font-size: 11px;
         font-weight: 700;
@@ -1082,6 +1091,112 @@
         font-size: 12px;
         color: var(--alfa-text-muted);
         max-width: 44ch;
+        margin: 0;
+    }
+
+    /* --- Lavadero --------------------------------------------------------- */
+
+    /*
+     * El hero del lavadero es claro y no de foto como el del taller: acá lo que
+     * vende es el precio y el rato que lleva, no el oficio, así que el bloque
+     * se apoya en el papel y deja la nota al lado del título.
+     */
+    & .lavadero-hero {
+        background: var(--alfa-offwhite);
+        border-bottom: 1px solid var(--alfa-border);
+
+        /* Sin volanta arriba: el título abre el bloque, así que no lleva
+           margen superior o se sumaría al padding del hero. */
+        & h1 {
+            font-size: clamp(32px, 4.4vw, 58px);
+            font-weight: 800;
+            line-height: 1.02;
+            letter-spacing: -0.025em;
+            margin: 0 0 clamp(14px, 2.2vw, 22px);
+            text-wrap: balance;
+        }
+
+        & .lede {
+            max-width: 46ch;
+            margin-bottom: clamp(20px, 3vw, 30px);
+        }
+    }
+
+    & .lavadero-hero__inner {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+        gap: clamp(28px, 4vw, 64px);
+        align-items: center;
+        padding-block: clamp(44px, 6vw, 88px);
+    }
+
+    & .lavadero-hero__nota {
+        background: var(--alfa-white);
+        border: 1px solid var(--alfa-border);
+        padding: clamp(22px, 3vw, 32px);
+
+        /*
+         * La volanta también es un <p>, así que `& p` le ganaría por
+         * especificidad (0,2,1 contra 0,2,0) y le pisaría tamaño y color. Va
+         * declarada aparte para que no pase.
+         */
+        & .eyebrow {
+            font-size: 10px;
+            color: var(--alfa-blue);
+            margin: 0;
+        }
+
+        & p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--alfa-text-body);
+            margin: 12px 0 0;
+        }
+    }
+
+    & .lavadero-hero__horario {
+        border-top: 1px solid var(--alfa-border-light);
+        padding-top: 14px;
+        font-size: 12px !important;
+        color: var(--alfa-text-muted) !important;
+    }
+
+    /*
+     * Dos columnas exactas y no las que entren: son dos tamaños de vehículo que
+     * se comparan entre sí, y `.grid` —que llena con lo que quepa— los dejaría
+     * angostos y sueltos en pantallas anchas.
+     */
+    /* Doble selector para ganarle a `.grid`, que se define más abajo y con la
+       misma especificidad le pisaría las columnas. */
+    & .grid.grid--duo {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: clamp(14px, 1.8vw, 22px);
+
+        @media (max-width: 700px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    & .card--lavado {
+        /* Más apaisada que la tarjeta de vehículo: la foto es del auto entero
+           saliendo del box, no de un detalle. */
+        & .card__media {
+            aspect-ratio: 16 / 9;
+        }
+
+        & .card__desc {
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--alfa-text-body);
+            margin: 0;
+        }
+    }
+
+    & .card__precio {
+        font-size: clamp(26px, 3vw, 32px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1;
         margin: 0;
     }
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LavaderoController;
 use App\Http\Controllers\Panel\EntregaController;
 use App\Http\Controllers\Panel\ServicioController;
 use App\Http\Controllers\Panel\TurnoController;
@@ -16,10 +17,14 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('catalogo', [VehiculoController::class, 'index'])->name('catalogo');
 Route::get('vehiculos/{slug}', [VehiculoController::class, 'show'])->name('vehiculos.show');
 
-/* El taller: la grilla de servicios y la reserva de turnos. Los horarios libres
-   se piden con una recarga parcial de `huecos` sobre la misma ruta. */
+/* Los dos negocios que agendan. Cada uno ofrece los servicios de su rubro y
+   calcula los horarios contra sus propios puestos; los huecos se piden con una
+   recarga parcial sobre la misma ruta. */
 Route::get('taller', [TallerController::class, 'index'])->name('taller');
 Route::post('taller/turnos', [TallerController::class, 'store'])->name('taller.turnos.store');
+
+Route::get('lavadero', [LavaderoController::class, 'index'])->name('lavadero');
+Route::post('lavadero/turnos', [LavaderoController::class, 'store'])->name('lavadero.turnos.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');

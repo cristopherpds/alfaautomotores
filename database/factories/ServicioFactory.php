@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\AreaServicio;
+use App\Enums\Rubro;
 use App\Models\Servicio;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -23,6 +24,7 @@ class ServicioFactory extends Factory
         return [
             'slug' => str($nombre)->slug()->value(),
             'nombre' => ucfirst($nombre),
+            'rubro' => Rubro::Taller,
             'area' => fake()->randomElement(AreaServicio::cases()),
             /* Múltiplo de 30: es como se reparten las ventanas del taller. */
             'duracion' => fake()->randomElement([30, 45, 60, 90]),
@@ -31,6 +33,21 @@ class ServicioFactory extends Factory
             'agendable' => true,
             'orden' => 0,
         ];
+    }
+
+    /**
+     * Indicate a car wash service: no area, and a list price.
+     *
+     * El lavadero no clasifica por área —sus servicios son tamaños de
+     * vehículo— así que `area` va en null a propósito.
+     */
+    public function lavadero(?int $precio = null): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'rubro' => Rubro::Lavadero,
+            'area' => null,
+            'precio' => $precio ?? fake()->randomElement([500, 700, 900]),
+        ]);
     }
 
     /**

@@ -71,8 +71,10 @@ export default function ServiciosIndex({ servicios, puedeGestionar }: Props) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Servicio</TableHead>
+                                <TableHead>Rubro</TableHead>
                                 <TableHead>Área</TableHead>
                                 <TableHead>Duración</TableHead>
+                                <TableHead>Precio</TableHead>
                                 <TableHead>Turnos</TableHead>
                                 <TableHead>Estado</TableHead>
                                 <TableHead className="w-24" />
@@ -82,7 +84,7 @@ export default function ServiciosIndex({ servicios, puedeGestionar }: Props) {
                         <TableBody>
                             {servicios.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6}>
+                                    <TableCell colSpan={8}>
                                         <Empty>
                                             <EmptyHeader>
                                                 <EmptyMedia variant="icon">
@@ -92,9 +94,9 @@ export default function ServiciosIndex({ servicios, puedeGestionar }: Props) {
                                                     Todavía no hay servicios
                                                 </EmptyTitle>
                                                 <EmptyDescription>
-                                                    Sin servicios cargados, la
-                                                    página del taller queda sin
-                                                    nada para reservar.
+                                                    Sin servicios cargados, el
+                                                    taller y el lavadero quedan
+                                                    sin nada para reservar.
                                                 </EmptyDescription>
                                             </EmptyHeader>
                                         </Empty>
@@ -107,12 +109,22 @@ export default function ServiciosIndex({ servicios, puedeGestionar }: Props) {
                                             {servicio.nombre}
                                         </TableCell>
 
+                                        <TableCell>
+                                            <Badge variant="outline">
+                                                {servicio.rubroLabel}
+                                            </Badge>
+                                        </TableCell>
+
                                         <TableCell className="text-muted-foreground">
-                                            {servicio.areaLabel}
+                                            {servicio.areaLabel ?? '—'}
                                         </TableCell>
 
                                         <TableCell>
                                             {servicio.duracionLegible}
+                                        </TableCell>
+
+                                        <TableCell className="text-muted-foreground">
+                                            {servicio.precioLegible ?? '—'}
                                         </TableCell>
 
                                         <TableCell className="text-muted-foreground">

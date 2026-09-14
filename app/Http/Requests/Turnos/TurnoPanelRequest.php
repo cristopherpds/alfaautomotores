@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Taller;
+namespace App\Http\Requests\Turnos;
 
 use App\Models\Puesto;
 use App\Models\Servicio;
@@ -35,6 +35,7 @@ class TurnoPanelRequest extends FormRequest
             'vehiculo_marca' => ['nullable', 'string', 'max:60'],
             'vehiculo_modelo' => ['nullable', 'string', 'max:60'],
             'vehiculo_anio' => ['nullable', 'integer', 'between:1950,'.(now()->year + 1)],
+            'matricula' => ['nullable', 'string', 'max:12'],
             'comentario' => ['nullable', 'string', 'max:500'],
         ];
     }

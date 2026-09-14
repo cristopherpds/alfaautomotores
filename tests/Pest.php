@@ -59,11 +59,44 @@ expect()->extend('toBeOne', function () {
  */
 function abrirElTaller(int $puestos = 2): CarbonInterface
 {
-    test()->travelTo(Date::parse('2026-09-14 09:00'));
+    congelarElReloj();
 
     config()->set('taller.puestos', $puestos);
 
     test()->artisan('taller:agenda');
 
+    return elLunes();
+}
+
+/**
+ * Lo mismo para el lavadero, que tiene sus propios boxes.
+ *
+ * Se puede llamar junto con `abrirElTaller()` en un mismo test: las dos
+ * capacidades son independientes y es justamente lo que hay que poder probar.
+ */
+function abrirElLavadero(int $puestos = 1): CarbonInterface
+{
+    congelarElReloj();
+
+    config()->set('lavadero.puestos', $puestos);
+
+    test()->artisan('lavadero:agenda');
+
+    return elLunes();
+}
+
+/**
+ * El lunes que usan los tests de agenda: el siguiente al reloj congelado.
+ */
+function elLunes(): CarbonInterface
+{
     return Date::parse('2026-09-21')->startOfDay();
+}
+
+/**
+ * Congelar el reloj. Llamarlo dos veces es inofensivo: viaja al mismo instante.
+ */
+function congelarElReloj(): void
+{
+    test()->travelTo(Date::parse('2026-09-14 09:00'));
 }

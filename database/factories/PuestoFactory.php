@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Rubro;
 use App\Models\Puesto;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -19,8 +20,20 @@ class PuestoFactory extends Factory
     {
         return [
             'nombre' => 'Puesto '.fake()->unique()->numberBetween(1, 1000),
+            'rubro' => Rubro::Taller,
             'activo' => true,
         ];
+    }
+
+    /**
+     * Indicate a wash bay: its own capacity, separate from the workshop's.
+     */
+    public function deLavadero(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'nombre' => 'Box de lavado '.fake()->unique()->numberBetween(1, 1000),
+            'rubro' => Rubro::Lavadero,
+        ]);
     }
 
     /**

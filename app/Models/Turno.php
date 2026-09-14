@@ -42,6 +42,7 @@ use Zap\Facades\Zap;
  * @property string|null $vehiculo_marca
  * @property string|null $vehiculo_modelo
  * @property int|null $vehiculo_anio
+ * @property string|null $matricula
  * @property string|null $comentario
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -51,7 +52,7 @@ use Zap\Facades\Zap;
 #[Fillable([
     'servicio_id', 'puesto_id', 'schedule_id', 'estado', 'origen',
     'inicia_at', 'termina_at', 'nombre', 'apellido', 'email', 'celular',
-    'vehiculo_marca', 'vehiculo_modelo', 'vehiculo_anio', 'comentario',
+    'vehiculo_marca', 'vehiculo_modelo', 'vehiculo_anio', 'matricula', 'comentario',
 ])]
 class Turno extends Model
 {
@@ -131,8 +132,14 @@ class Turno extends Model
     ): ?self {
         return DB::transaction(function () use ($servicio, $inicio, $datos, $estado, $origen): ?self {
             /* El bloqueo no hace nada en SQLite, pero la transacción igual
-               serializa las escrituras; en MySQL sí frena la carrera. */
-            Puesto::query()->where('activo', true)->lockForUpdate()->get();
+               serializa las escrituras; en MySQL sí frena la carrera. Se acota
+               al rubro del servicio: un lavado y un service no compiten por el
+               mismo puesto, así que tampoco tienen por qué esperarse. */
+            Puesto::query()
+                ->where('activo', true)
+                ->where('rubro', $servicio->rubro)
+                ->lockForUpdate()
+                ->get();
 
             $puesto = Puesto::libreEn($inicio, $servicio);
 

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,17 +8,33 @@ import type { OpcionSelect, ServicioEditable } from '@/types';
 
 type Props = {
     areas: OpcionSelect[];
+    rubros: OpcionSelect[];
     errors: Partial<Record<string, string>>;
     servicio?: ServicioEditable;
 };
 
+/** El rubro que clasifica por área; el otro va sin ella. */
+const TALLER = 'taller';
+
 /**
- * Los campos de un servicio del taller, compartidos por el alta y la edición.
+ * Los campos de un servicio, compartidos por el alta y la edición.
  *
  * `duracion` no es un dato más: es el largo del turno, así que cambiarla mueve
  * los horarios que la web ofrece a partir de la próxima consulta.
+ *
+ * El rubro decide qué campos tienen sentido: el taller clasifica por área y no
+ * lleva precio de lista; el lavadero, al revés.
  */
-export default function ServicioFormFields({ areas, errors, servicio }: Props) {
+export default function ServicioFormFields({
+    areas,
+    rubros,
+    errors,
+    servicio,
+}: Props) {
+    const [rubro, setRubro] = useState(servicio?.rubro ?? TALLER);
+
+    const esTaller = rubro === TALLER;
+
     return (
         <>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -45,21 +62,66 @@ export default function ServicioFormFields({ areas, errors, servicio }: Props) {
                 </div>
 
                 <div className="grid gap-2">
-                    <Label htmlFor="area">Área</Label>
+                    <Label htmlFor="rubro">Rubro</Label>
                     <select
-                        id="area"
-                        name="area"
-                        defaultValue={servicio?.area ?? areas[0]?.value}
+                        id="rubro"
+                        name="rubro"
+                        value={rubro}
+                        onChange={(evento) => setRubro(evento.target.value)}
                         className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
                     >
-                        {areas.map((area) => (
-                            <option key={area.value} value={area.value}>
-                                {area.label}
+                        {rubros.map((uno) => (
+                            <option key={uno.value} value={uno.value}>
+                                {uno.label}
                             </option>
                         ))}
                     </select>
-                    <InputError message={errors.area} />
+                    <p className="text-sm text-muted-foreground">
+                        Decide en qué página se muestra y contra qué puestos se
+                        calculan sus horarios.
+                    </p>
+                    <InputError message={errors.rubro} />
                 </div>
+
+                {esTaller ? (
+                    <div className="grid gap-2">
+                        <Label htmlFor="area">Área</Label>
+                        <select
+                            id="area"
+                            name="area"
+                            defaultValue={servicio?.area ?? areas[0]?.value}
+                            className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
+                        >
+                            {areas.map((area) => (
+                                <option key={area.value} value={area.value}>
+                                    {area.label}
+                                </option>
+                            ))}
+                        </select>
+                        <p className="text-sm text-muted-foreground">
+                            El filtro de la grilla del taller.
+                        </p>
+                        <InputError message={errors.area} />
+                    </div>
+                ) : (
+                    <div className="grid gap-2">
+                        <Label htmlFor="precio">Precio</Label>
+                        <Input
+                            id="precio"
+                            name="precio"
+                            type="number"
+                            min={0}
+                            step={10}
+                            defaultValue={servicio?.precio ?? ''}
+                            placeholder="500"
+                        />
+                        <p className="text-sm text-muted-foreground">
+                            En pesos y sin centavos. Se muestra en la tarjeta
+                            del lavadero.
+                        </p>
+                        <InputError message={errors.precio} />
+                    </div>
+                )}
 
                 <div className="grid gap-2">
                     <Label htmlFor="duracion">Duración (minutos)</Label>

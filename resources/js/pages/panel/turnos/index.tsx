@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { index } from '@/routes/panel/turnos';
 import type { OpcionSelect } from '@/types';
 
@@ -35,6 +36,8 @@ type EventoTurno = EventInput & {
         estado: string;
         estadoLabel: string;
         origen: string;
+        rubro: string;
+        rubroLabel: string;
         servicio: string;
         duracionLegible: string;
         puesto: string;
@@ -42,17 +45,32 @@ type EventoTurno = EventInput & {
         email: string;
         celular: string;
         vehiculo: string | null;
+        matricula: string | null;
         comentario: string | null;
     };
 };
 
+type ServicioAgendable = {
+    slug: string;
+    nombre: string;
+    rubro: string;
+    rubroLabel: string;
+    duracionLegible: string;
+};
+
 type Props = {
     turnos: EventoTurno[];
-    servicios: { slug: string; nombre: string; duracionLegible: string }[];
+    servicios: ServicioAgendable[];
     estados: OpcionSelect[];
+    rubros: OpcionSelect[];
+    /** El filtro activo; `null` es «todos». */
+    rubro: string | null;
     puedeGestionar: boolean;
     huecos: string[];
 };
+
+/** El valor del filtro que no filtra nada. */
+const TODOS = 'todos';
 
 /** El color de cada estado sale de estas clases; el CSS vive en `app.css`. */
 const TONO: Record<
@@ -81,9 +99,12 @@ export default function TurnosIndex({
     turnos,
     servicios,
     estados,
+    rubros,
+    rubro,
     puedeGestionar,
     huecos,
 }: Props) {
+    const [filtro, setFiltro] = useState(rubro ?? TODOS);
     const [abierto, setAbierto] = useState<EventoTurno | null>(null);
     const [creando, setCreando] = useState(false);
 
@@ -93,26 +114,48 @@ export default function TurnosIndex({
     const [fecha, setFecha] = useState(hoy);
     const [hora, setHora] = useState('');
 
-    const rango = useRef<string>('');
+    const pedido = useRef<string>('');
 
-    const pedirRango = (desde: Date, hasta: Date) => {
-        const clave = `${desde.toISOString()}|${hasta.toISOString()}`;
+    /* El rango que el calendario está mostrando. Lo guarda `pedirRango` para
+       que el filtro de rubro pueda volver a pedir el mismo tramo sin esperar a
+       que el usuario navegue. */
+    const visible = useRef<{ desde: Date; hasta: Date } | null>(null);
+
+    const pedirRango = (desde: Date, hasta: Date, deRubro: string) => {
+        visible.current = { desde, hasta };
+
+        /* El rubro va en la clave además del rango: si no, cambiar de filtro
+           sobre el mismo mes no pediría nada. */
+        const clave = `${desde.toISOString()}|${hasta.toISOString()}|${deRubro}`;
 
         /* `datesSet` se dispara también al montar y al abrir un diálogo: sin
-           esta guarda el calendario pediría el mismo rango una y otra vez. */
-        if (rango.current === clave) {
+           esta guarda el calendario pediría lo mismo una y otra vez. */
+        if (pedido.current === clave) {
             return;
         }
 
-        rango.current = clave;
+        pedido.current = clave;
 
         router.reload({
             only: ['turnos'],
             data: {
                 desde: desde.toLocaleDateString('en-CA'),
                 hasta: hasta.toLocaleDateString('en-CA'),
+                rubro: deRubro === TODOS ? '' : deRubro,
             },
         });
+    };
+
+    const filtrar = (valor: string) => {
+        /* El ToggleGroup devuelve cadena vacía al desmarcar el activo: eso vale
+           como «todos» en vez de dejar el grupo sin ninguno apretado. */
+        const elegido = valor === '' ? TODOS : valor;
+
+        setFiltro(elegido);
+
+        if (visible.current) {
+            pedirRango(visible.current.desde, visible.current.hasta, elegido);
+        }
     };
 
     const pedirHuecos = (nuevoServicio: string, nuevaFecha: string) => {
@@ -151,18 +194,48 @@ export default function TurnosIndex({
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <Heading
                         title="Turnos"
-                        description="La agenda del taller. Los que entran por la web llegan pendientes."
+                        description="La agenda del taller y del lavadero. Los que entran por la web llegan pendientes."
                     />
 
-                    {puedeGestionar && (
-                        <Button
-                            onClick={() => setCreando(true)}
-                            data-test="nuevo-turno-button"
+                    <div className="flex flex-wrap items-center gap-3">
+                        {/* El color del evento ya dice el estado, así que el
+                            rubro se filtra en vez de pintarse: en la vista de
+                            todos lo marca la barra de la izquierda. */}
+                        <ToggleGroup
+                            type="single"
+                            variant="outline"
+                            value={filtro}
+                            onValueChange={filtrar}
+                            aria-label="Filtrar por rubro"
                         >
-                            <CalendarPlus />
-                            Nuevo turno
-                        </Button>
-                    )}
+                            <ToggleGroupItem
+                                value={TODOS}
+                                data-test="filtro-todos"
+                            >
+                                Todos
+                            </ToggleGroupItem>
+
+                            {rubros.map((uno) => (
+                                <ToggleGroupItem
+                                    key={uno.value}
+                                    value={uno.value}
+                                    data-test={`filtro-${uno.value}`}
+                                >
+                                    {uno.label}
+                                </ToggleGroupItem>
+                            ))}
+                        </ToggleGroup>
+
+                        {puedeGestionar && (
+                            <Button
+                                onClick={() => setCreando(true)}
+                                data-test="nuevo-turno-button"
+                            >
+                                <CalendarPlus />
+                                Nuevo turno
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="rounded-xl border border-sidebar-border/70 p-3 dark:border-sidebar-border">
@@ -194,7 +267,9 @@ export default function TurnosIndex({
                         allDaySlot={false}
                         nowIndicator
                         height="auto"
-                        datesSet={(info) => pedirRango(info.start, info.end)}
+                        datesSet={(info) =>
+                            pedirRango(info.start, info.end, filtro)
+                        }
                         eventClick={(evento: EventClickArg) => {
                             const turno = turnos.find(
                                 (uno) => uno.id === evento.event.id,
@@ -236,6 +311,10 @@ export default function TurnosIndex({
                                         {abierto.extendedProps.estadoLabel}
                                     </Badge>
 
+                                    <Badge variant="outline">
+                                        {abierto.extendedProps.rubroLabel}
+                                    </Badge>
+
                                     <span className="text-muted-foreground">
                                         {abierto.extendedProps.origen === 'web'
                                             ? 'Reserva web'
@@ -265,6 +344,15 @@ export default function TurnosIndex({
                                             Vehículo:{' '}
                                         </span>
                                         {abierto.extendedProps.vehiculo}
+                                    </p>
+                                )}
+
+                                {abierto.extendedProps.matricula && (
+                                    <p>
+                                        <span className="text-muted-foreground">
+                                            Matrícula:{' '}
+                                        </span>
+                                        {abierto.extendedProps.matricula}
                                     </p>
                                 )}
 
@@ -362,14 +450,34 @@ export default function TurnosIndex({
                                             required
                                         >
                                             <option value="">Elegí uno</option>
-                                            {servicios.map((uno) => (
-                                                <option
-                                                    key={uno.slug}
-                                                    value={uno.slug}
+
+                                            {/* Agrupados por rubro: la lista
+                                                mezcla services y lavados, y el
+                                                nombre solo no alcanza para
+                                                saber cuál es cuál. */}
+                                            {rubros.map((deRubro) => (
+                                                <optgroup
+                                                    key={deRubro.value}
+                                                    label={deRubro.label}
                                                 >
-                                                    {uno.nombre} ·{' '}
-                                                    {uno.duracionLegible}
-                                                </option>
+                                                    {servicios
+                                                        .filter(
+                                                            (uno) =>
+                                                                uno.rubro ===
+                                                                deRubro.value,
+                                                        )
+                                                        .map((uno) => (
+                                                            <option
+                                                                key={uno.slug}
+                                                                value={uno.slug}
+                                                            >
+                                                                {uno.nombre} ·{' '}
+                                                                {
+                                                                    uno.duracionLegible
+                                                                }
+                                                            </option>
+                                                        ))}
+                                                </optgroup>
                                             ))}
                                         </select>
 
@@ -513,6 +621,20 @@ export default function TurnosIndex({
                                             <Input
                                                 id="vehiculo_modelo"
                                                 name="vehiculo_modelo"
+                                            />
+                                        </div>
+
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="matricula">
+                                                Matrícula
+                                            </Label>
+                                            <Input
+                                                id="matricula"
+                                                name="matricula"
+                                                placeholder="ABC 1234"
+                                            />
+                                            <InputError
+                                                message={errors.matricula}
                                             />
                                         </div>
                                     </div>

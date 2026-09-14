@@ -3,6 +3,7 @@ paths:
   - app/Models/Vehiculo.php
   - app/Models/Entrega.php
   - app/Models/Turno.php
+  - 'app/Models/{Puesto,Servicio,Turno}.php'
 ---
 
 # Models
@@ -42,3 +43,14 @@ Regla que se sigue de eso: **estado y cita se mueven juntos**. `Turno::reservar(
 Capacidad: Zap no maneja capacidad > 1 sobre un recurso, así que N autos en paralelo son N filas en `puestos`, cada una con su agenda (`config('taller.puestos')`, las crea `php artisan taller:agenda`). `Puesto::huecosDelDia()` y `Puesto::libreEn()` son la única definición de la disponibilidad: las consultan el sitio público y el panel.
 
 Trampa ya pagada: al construir un schedule de Zap, no reutilices los nombres de variable del rango (`$desde`/`$hasta`) dentro del `foreach` que agrega los períodos — el destructuring los pisa y la agenda queda con `end_date = start_date` sin dar ningún error. Y `forYear()` del año en curso falla porque Zap rechaza fechas de inicio pasadas: hay que arrancar en hoy.
+
+## La capacidad es por rubro: un lavado no ocupa un puesto de mecánica
+`App\Enums\Rubro` (taller | lavadero) es columna en `servicios` y en `puestos`, y parte la capacidad en dos: los horarios de un servicio salen ÚNICAMENTE de los puestos de su mismo rubro.
+
+`Puesto::huecosDelDia()` y `libreEn()` no reciben el rubro: lo derivan de `$servicio->rubro`, y con él resuelven `Puesto::activos($rubro)` y el buffer. Por eso sus firmas no cambiaron. `Puesto::activos()` SÍ lo exige. Si alguna vez vuelve a sumar todos los puestos activos, el test «booking a wash does not eat into the workshop capacity» (tests/Feature/LavaderoReservaTest.php) es el que lo caza.
+
+El valor del enum coincide a propósito con el nombre del archivo de config: `$rubro->config('buffer')` lee `config/taller.php` o `config/lavadero.php`. Cada rubro tiene su comando de agenda (`taller:agenda`, `lavadero:agenda`), ambos sobre `AgendarPuestos`.
+
+Trampa: el nombre del schedule de Zap es la clave de idempotencia y quedó como "Horario del {rubro} {anio}" — para taller la cadena es idéntica a la vieja, así que los datos existentes no se duplicaron. No cambiar ese formato sin migrar.
+
+`servicios.area` es nullable: sólo el taller clasifica por área. `ServicioRequest` la exige con `required_if:rubro,taller`.

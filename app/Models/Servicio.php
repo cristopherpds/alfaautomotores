@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AreaServicio;
+use App\Enums\Rubro;
 use Database\Factories\ServicioFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,7 +14,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Un trabajo que hace el taller: nombre, área, cuánto lleva y su foto.
+ * Un trabajo que se vende y se agenda: nombre, cuánto lleva y su foto.
+ *
+ * El `rubro` dice de qué negocio es —taller o lavadero— y con él se decide qué
+ * puestos miran sus horarios. El `area` sólo lo usa el taller: los servicios
+ * del lavadero son tamaños de vehículo y van sin área, con `precio` cargado.
  *
  * `duracion` está en minutos y es lo que mide el turno: de ahí sale el largo de
  * los huecos que se ofrecen en la web.
@@ -25,8 +30,10 @@ use Illuminate\Support\Facades\Storage;
  * @property int $id
  * @property string $slug
  * @property string $nombre
- * @property AreaServicio $area
+ * @property Rubro $rubro
+ * @property AreaServicio|null $area
  * @property int $duracion
+ * @property int|null $precio
  * @property string $descripcion
  * @property string|null $foto
  * @property bool $activo
@@ -37,7 +44,7 @@ use Illuminate\Support\Facades\Storage;
  * @property-read Collection<int, Turno> $turnos
  */
 #[Fillable([
-    'slug', 'nombre', 'area', 'duracion', 'descripcion',
+    'slug', 'rubro', 'nombre', 'area', 'duracion', 'precio', 'descripcion',
     'foto', 'activo', 'agendable', 'orden',
 ])]
 class Servicio extends Model
@@ -60,8 +67,10 @@ class Servicio extends Model
     protected function casts(): array
     {
         return [
+            'rubro' => Rubro::class,
             'area' => AreaServicio::class,
             'duracion' => 'integer',
+            'precio' => 'integer',
             'activo' => 'boolean',
             'agendable' => 'boolean',
             'orden' => 'integer',
@@ -77,15 +86,17 @@ class Servicio extends Model
     }
 
     /**
-     * Los servicios que ve el sitio público, en el orden en que se muestran.
+     * Los servicios de un rubro que ve el sitio público, ya ordenados.
      *
-     * Es el contrato de `TallerController`: no se cambia de firma.
+     * El rubro es obligatorio a propósito: sin él los lavados aparecerían en la
+     * grilla del taller y al revés.
      *
      * @return Collection<int, static>
      */
-    public static function publicos(): Collection
+    public static function publicos(Rubro $rubro): Collection
     {
         return static::query()
+            ->where('rubro', $rubro)
             ->where('activo', true)
             ->orderBy('orden')
             ->orderBy('nombre')
@@ -113,6 +124,17 @@ class Servicio extends Model
             $minutos === 0 => "{$horas} h",
             default => "{$horas} h {$minutos} min",
         };
+    }
+
+    /**
+     * El precio en palabras: `$ 500`. Null cuando el servicio no lleva precio
+     * de lista, que es el caso de todo el taller.
+     */
+    public function precioLegible(): ?string
+    {
+        return $this->precio === null
+            ? null
+            : '$ '.number_format($this->precio, 0, ',', '.');
     }
 
     /**
