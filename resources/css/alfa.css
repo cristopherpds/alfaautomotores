@@ -802,6 +802,237 @@
         }
     }
 
+    /* --- Taller ----------------------------------------------------------- */
+
+    /*
+     * La página del taller (dirección «Tarjetas claras» del material): clara y
+     * comercial, con la grilla de servicios reusando `.grid` y `.card` del
+     * catálogo y un formulario de reserva propio.
+     */
+    & .taller-hero {
+        background: var(--alfa-offwhite);
+        border-bottom: 1px solid var(--alfa-border);
+
+        /* Sin volanta arriba: el título abre el bloque, así que no lleva
+           margen superior o se sumaría al padding del hero. */
+        & h1 {
+            font-size: clamp(32px, 4.4vw, 58px);
+            font-weight: 800;
+            line-height: 1.02;
+            letter-spacing: -0.025em;
+            margin: 0 0 clamp(14px, 2.2vw, 22px);
+            text-wrap: balance;
+        }
+
+        & .lede {
+            max-width: 46ch;
+            margin-bottom: clamp(20px, 3vw, 30px);
+        }
+    }
+
+    & .taller-hero__inner {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+        gap: clamp(28px, 4vw, 64px);
+        align-items: center;
+        padding-block: clamp(44px, 6vw, 88px);
+    }
+
+    & .taller-hero__nota {
+        background: var(--alfa-white);
+        border: 1px solid var(--alfa-border);
+        padding: clamp(22px, 3vw, 32px);
+
+        & p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--alfa-text-body);
+            margin: 12px 0 0;
+        }
+    }
+
+    & .taller-hero__horario {
+        border-top: 1px solid var(--alfa-border-light);
+        padding-top: 14px;
+        font-size: 12px !important;
+        color: var(--alfa-text-muted) !important;
+    }
+
+    /* Filtros por área: los mismos chips que ordena la grilla de abajo. */
+    & .taller-areas {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: clamp(20px, 2.5vw, 28px);
+    }
+
+    & .taller-areas__chip {
+        border: 1px solid var(--alfa-border-input);
+        background: var(--alfa-white);
+        padding: 10px 16px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            color 0.18s ease;
+
+        &:hover {
+            border-color: var(--alfa-ink);
+        }
+
+        &[data-activo='true'] {
+            background: var(--alfa-ink);
+            border-color: var(--alfa-ink);
+            color: var(--alfa-white);
+        }
+    }
+
+    & .card--servicio {
+        & .card__desc {
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--alfa-text-body);
+            margin: 0;
+        }
+    }
+
+    & .card__duracion {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--alfa-text-muted);
+        letter-spacing: 0.04em;
+    }
+
+    /*
+     * Formulario de reserva.
+     *
+     * Duplica a propósito el estilo de campo de `.auth__input`: aquel bloque
+     * está atado a las pantallas de ingreso y arrastra la advertencia de orden
+     * de `.auth` sobre `.shell`. Si aparece un tercer formulario, conviene
+     * extraer una familia común en vez de sumar una tercera copia.
+     */
+    & .turno {
+        background: var(--alfa-offwhite);
+        border-top: 1px solid var(--alfa-border);
+        padding-block: clamp(44px, 6vw, 84px);
+        scroll-margin-top: var(--alfa-header);
+    }
+
+    & .turno__form {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(18px, 2.4vw, 26px);
+        background: var(--alfa-white);
+        border: 1px solid var(--alfa-border);
+        padding: clamp(20px, 3vw, 34px);
+    }
+
+    & .turno__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+        gap: clamp(14px, 2vw, 20px);
+    }
+
+    & .turno__field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    & .turno__input {
+        width: 100%;
+        padding: 13px 14px;
+        font: inherit;
+        font-size: 14px;
+        color: var(--alfa-ink);
+        background: var(--alfa-white);
+        border: 1px solid var(--alfa-border-input);
+        border-radius: 0;
+
+        &:focus-visible {
+            outline: 2px solid var(--alfa-blue);
+            outline-offset: -1px;
+        }
+    }
+
+    /* `select` y `textarea` comparten `.turno__input`, pero no su alto nativo. */
+    & select.turno__input {
+        appearance: none;
+        cursor: pointer;
+    }
+
+    & textarea.turno__input {
+        resize: vertical;
+        min-height: 88px;
+    }
+
+    & .turno__horarios {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    & .turno__hueco {
+        border: 1px solid var(--alfa-border-input);
+        background: var(--alfa-white);
+        padding: 11px 16px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        cursor: pointer;
+        transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            color 0.18s ease;
+
+        &:hover {
+            border-color: var(--alfa-ink);
+        }
+
+        /* El horario elegido: `aria-pressed` es el estado, no una clase. */
+        &[aria-pressed='true'] {
+            background: var(--alfa-ink);
+            border-color: var(--alfa-ink);
+            color: var(--alfa-white);
+        }
+    }
+
+    & .turno__aviso {
+        font-size: 13px;
+        color: var(--alfa-text-muted);
+        background: var(--alfa-offwhite);
+        border-left: 2px solid var(--alfa-blue);
+        padding: 12px 14px;
+        margin: 0;
+    }
+
+    & .turno__error {
+        font-size: 13px;
+        color: var(--alfa-reserved);
+        margin: 0;
+    }
+
+    & .turno__enviar {
+        display: flex;
+        align-items: center;
+        gap: clamp(14px, 2vw, 24px);
+        flex-wrap: wrap;
+        border-top: 1px solid var(--alfa-border-light);
+        padding-top: clamp(16px, 2vw, 22px);
+    }
+
+    & .turno__nota {
+        font-size: 12px;
+        color: var(--alfa-text-muted);
+        max-width: 44ch;
+        margin: 0;
+    }
+
     /* --- Grilla de vehículos --------------------------------------------- */
 
     & .grid {

@@ -1,11 +1,13 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
+    CalendarDays,
     Car,
     FolderGit2,
     Images,
     LayoutGrid,
     Users,
+    Wrench,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -22,6 +24,8 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as entregasIndex } from '@/routes/panel/entregas';
+import { index as serviciosIndex } from '@/routes/panel/servicios';
+import { index as turnosIndex } from '@/routes/panel/turnos';
 import { index as vehiculosIndex } from '@/routes/panel/vehiculos';
 import { index as usersIndex } from '@/routes/users';
 import type { NavItem } from '@/types';
@@ -44,6 +48,19 @@ const catalogoNavItems: NavItem[] = [
         title: 'Entregas',
         href: entregasIndex(),
         icon: Images,
+    },
+];
+
+const tallerNavItems: NavItem[] = [
+    {
+        title: 'Turnos',
+        href: turnosIndex(),
+        icon: CalendarDays,
+    },
+    {
+        title: 'Servicios',
+        href: serviciosIndex(),
+        icon: Wrench,
     },
 ];
 
@@ -90,6 +107,7 @@ export function AppSidebar() {
                 <NavMain items={mainNavItems} />
 
                 <NavMain items={catalogoNavItems} label="Catálogo" />
+                <NavMain items={tallerNavItems} label="Taller" />
 
                 {isAdmin && (
                     <NavMain items={adminNavItems} label="Administración" />

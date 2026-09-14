@@ -17,6 +17,7 @@ createInertiaApp({
             // Sitio público: cabecera y pie propios, sin el panel.
             case name === 'welcome':
             case name === 'catalogo':
+            case name === 'taller':
             case name.startsWith('vehiculos/'):
                 return AlfaLayout;
             // Acceso al panel: mismo sistema de diseño que el sitio público,

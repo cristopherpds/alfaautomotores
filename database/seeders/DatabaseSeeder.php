@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 
 class DatabaseSeeder extends Seeder
 {
@@ -24,5 +25,10 @@ class DatabaseSeeder extends Seeder
 
         $this->call(VehiculoSeeder::class);
         $this->call(EntregaSeeder::class);
+        $this->call(ServicioSeeder::class);
+
+        /* La agenda del taller no es una tabla de datos: son los horarios que
+           le cuelgan a cada puesto. Los crea el comando, que es idempotente. */
+        Artisan::call('taller:agenda');
     }
 }

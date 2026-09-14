@@ -38,6 +38,22 @@ export type Entrega = {
 /** La fila que arma `Panel\EntregaController::index()`. */
 export type ManagedEntrega = Entrega & { id: number };
 
+/** Un servicio del taller, tal como lo manda `TallerController::index()`. */
+export type ServicioTaller = {
+    slug: string;
+    nombre: string;
+    /** Valor del enum `AreaServicio`; `areaLabel` es lo que se muestra. */
+    area: string;
+    areaLabel: string;
+    /** Minutos que lleva el trabajo: es el largo del turno. */
+    duracion: number;
+    duracionLegible: string;
+    descripcion: string;
+    foto: string | null;
+    /** Los trabajos mayores se cotizan en el taller: no se reservan online. */
+    agendable: boolean;
+};
+
 /** Datos del local, servidos desde `config/alfa.php`. */
 export type SiteInfo = {
     nombre: string;
@@ -55,6 +71,26 @@ export type SiteInfo = {
     whatsapp: string;
     telefono: string;
 };
+
+/** La fila que arma `Panel\ServicioController::toListItem()`. */
+export type ManagedServicio = {
+    id: number;
+    slug: string;
+    nombre: string;
+    area: string;
+    areaLabel: string;
+    /** Minutos: es el largo del turno que genera este servicio. */
+    duracion: number;
+    duracionLegible: string;
+    foto: string | null;
+    activo: boolean;
+    agendable: boolean;
+    orden: number;
+    turnos_count: number;
+};
+
+/** El servicio que consume el formulario de edición. */
+export type ServicioEditable = ManagedServicio & { descripcion: string };
 
 /** En el panel también se ven los borradores, que nunca salen al público. */
 export type EstadoVehiculoAdmin = EstadoVehiculo | 'borrador';

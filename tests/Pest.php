@@ -1,6 +1,8 @@
 <?php
 
+use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Date;
 use Tests\TestCase;
 
 /*
@@ -44,7 +46,24 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Poner el reloj en un lunes fijo y abrir el taller con su agenda.
+ *
+ * Los turnos son la única parte del proyecto que depende de la hora: sin
+ * congelar el reloj, un test que reserva «el próximo lunes a las 10» falla el
+ * día que la suite corre un domingo a las 23:59. La agenda no es una fila que
+ * se pueda crear con una factory: son los horarios que `taller:agenda` le
+ * cuelga a cada puesto.
+ *
+ * Devuelve el lunes siguiente al congelado, que es el día que usan los tests.
+ */
+function abrirElTaller(int $puestos = 2): CarbonInterface
 {
-    // ..
+    test()->travelTo(Date::parse('2026-09-14 09:00'));
+
+    config()->set('taller.puestos', $puestos);
+
+    test()->artisan('taller:agenda');
+
+    return Date::parse('2026-09-21')->startOfDay();
 }

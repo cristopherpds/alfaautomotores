@@ -143,3 +143,81 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* ---------------------------------------------------------------------------
+   Calendario de turnos (FullCalendar)
+
+   El paquete inyecta su propia hoja de estilos y se configura por variables
+   CSS. Acá sólo se lo ata a los tokens del panel para que no desentone —y para
+   que funcione igual en claro y en oscuro— y se pinta cada estado del turno.
+--------------------------------------------------------------------------- */
+
+.fc {
+    --fc-border-color: var(--border);
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: var(--muted);
+    --fc-today-bg-color: var(--accent);
+    --fc-now-indicator-color: var(--destructive);
+    font-size: 0.875rem;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.fc .fc-button {
+    background: var(--background);
+    border-color: var(--border);
+    color: var(--foreground);
+    font-size: 0.8125rem;
+    text-transform: capitalize;
+    box-shadow: none;
+}
+
+.fc .fc-button:hover,
+.fc .fc-button-active {
+    background: var(--accent);
+    border-color: var(--border);
+    color: var(--accent-foreground);
+}
+
+.fc .fc-button:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+.fc .fc-event {
+    cursor: pointer;
+    border: none;
+    padding: 1px 4px;
+}
+
+/*
+ * Un turno pendiente todavía no está confirmado con el cliente: se distingue a
+ * simple vista del que ya está cerrado. El cancelado queda tachado en vez de
+ * desaparecer, porque el hueco ya volvió a la web y conviene ver por qué.
+ */
+.fc .turno--pendiente {
+    background: var(--secondary);
+    color: var(--secondary-foreground);
+    border-left: 3px solid var(--muted-foreground);
+}
+
+.fc .turno--confirmado {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.fc .turno--completado {
+    background: var(--muted);
+    color: var(--muted-foreground);
+}
+
+.fc .turno--cancelado {
+    background: transparent;
+    color: var(--muted-foreground);
+    text-decoration: line-through;
+}

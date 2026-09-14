@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Panel\EntregaController;
+use App\Http\Controllers\Panel\ServicioController;
+use App\Http\Controllers\Panel\TurnoController;
 use App\Http\Controllers\Panel\VehiculoController as PanelVehiculoController;
 use App\Http\Controllers\Panel\VehiculoImagenController;
 use App\Http\Controllers\Panel\VehiculoLoteController;
+use App\Http\Controllers\TallerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehiculoController;
 use Illuminate\Support\Facades\Route;
@@ -12,6 +15,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('catalogo', [VehiculoController::class, 'index'])->name('catalogo');
 Route::get('vehiculos/{slug}', [VehiculoController::class, 'show'])->name('vehiculos.show');
+
+/* El taller: la grilla de servicios y la reserva de turnos. Los horarios libres
+   se piden con una recarga parcial de `huecos` sobre la misma ruta. */
+Route::get('taller', [TallerController::class, 'index'])->name('taller');
+Route::post('taller/turnos', [TallerController::class, 'store'])->name('taller.turnos.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
@@ -44,6 +52,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
            ni `edit`: se suben y se corrigen desde el índice. */
         Route::resource('entregas', EntregaController::class)
             ->only(['index', 'store', 'update', 'destroy']);
+
+        /* El taller. Los servicios son un ABM normal; los turnos no tienen
+           `create` ni `edit`: se cargan y se resuelven desde el calendario. */
+        Route::resource('servicios', ServicioController::class)->except('show');
+
+        Route::get('turnos', [TurnoController::class, 'index'])->name('turnos.index');
+        Route::post('turnos', [TurnoController::class, 'store'])->name('turnos.store');
+        Route::patch('turnos/{turno}/estado', [TurnoController::class, 'estado'])->name('turnos.estado');
+        Route::delete('turnos/{turno}', [TurnoController::class, 'destroy'])->name('turnos.destroy');
     });
 });
 

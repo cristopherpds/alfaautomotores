@@ -2,6 +2,7 @@
 paths:
   - app/Models/Vehiculo.php
   - app/Models/Entrega.php
+  - app/Models/Turno.php
 ---
 
 # Models
@@ -32,3 +33,12 @@ Trampa que ya se pagó una vez: `contarDestacados()` y `destacados()` tienen que
 `paraLaTira()` es el contrato de `HomeController`: devuelve `{url, fecha, etiqueta, legible}`, los mismos cuatro campos del tipo `Entrega` de `resources/js/types/alfa.ts`. No se cambia de firma. `ordenadas()` es la única definición del orden (fecha desc, id desc) y la consultan la portada y el panel; el id desempata las del mismo día, que es lo que antes hacía el número de adelante en el nombre del archivo (por eso el seeder importa en orden ascendente).
 
 Los meses en español van a mano en `Entrega::MESES`, no por locale de Carbon: el local escribe «setiembre», no «septiembre». Hay un test dedicado en `HomePageTest` porque es justo el detalle que un refactor prolijo rompe en silencio.
+
+## El turno manda; la cita de Zap es el espejo que ocupa el horario
+La agenda del taller corre sobre `laraveljutsu/zap`, pero el paquete NO guarda el turno: `App\Models\Turno` es la fuente de verdad (cliente, vehículo, estado) y `schedule_id` apunta a la cita espejo que hace que el horario deje de ofrecerse. Se hizo así porque el panel filtra por estado y ordena por fecha, y contra las tablas genéricas de Zap eso sería JSON sin tipos.
+
+Regla que se sigue de eso: **estado y cita se mueven juntos**. `Turno::reservar()` crea las dos cosas en una transacción (con `lockForUpdate` sobre los puestos y un segundo chequeo adentro, para que dos personas no se lleven el mismo hueco); `cancelar()` borra la cita y deja `schedule_id` en null; un hook `deleting` limpia la cita. Si alguna vez se reprograma un turno, es borrar la cita y crear otra, no editarla.
+
+Capacidad: Zap no maneja capacidad > 1 sobre un recurso, así que N autos en paralelo son N filas en `puestos`, cada una con su agenda (`config('taller.puestos')`, las crea `php artisan taller:agenda`). `Puesto::huecosDelDia()` y `Puesto::libreEn()` son la única definición de la disponibilidad: las consultan el sitio público y el panel.
+
+Trampa ya pagada: al construir un schedule de Zap, no reutilices los nombres de variable del rango (`$desde`/`$hasta`) dentro del `foreach` que agrega los períodos — el destructuring los pisa y la agenda queda con `end_date = start_date` sin dar ningún error. Y `forYear()` del año en curso falla porque Zap rechaza fechas de inicio pasadas: hay que arrancar en hoy.
