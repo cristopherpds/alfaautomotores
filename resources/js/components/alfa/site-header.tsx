@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { BrandLockup } from '@/components/alfa/brand';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { whatsapp } from '@/lib/alfa';
-import { catalogo, home } from '@/routes';
+import { catalogo, home, lavadero, taller } from '@/routes';
 import type { SiteInfo } from '@/types';
 
 /** El `aria-controls` del botón hamburguesa apunta acá. */
@@ -25,6 +25,9 @@ export function SiteHeader({ site }: { site: SiteInfo }) {
     const enCatalogo =
         currentUrl.startsWith('/catalogo') ||
         currentUrl.startsWith('/vehiculos');
+
+    const enTaller = currentUrl.startsWith('/taller');
+    const enLavadero = currentUrl.startsWith('/lavadero');
 
     const cerrarMenu = () => setMenuAbierto(false);
 
@@ -98,6 +101,26 @@ export function SiteHeader({ site }: { site: SiteInfo }) {
                             Catálogo
                         </Link>
 
+                        <Link
+                            href={taller()}
+                            className="nav__link"
+                            data-active={enTaller}
+                            aria-current={enTaller ? 'page' : undefined}
+                            onClick={cerrarMenu}
+                        >
+                            Taller
+                        </Link>
+
+                        <Link
+                            href={lavadero()}
+                            className="nav__link"
+                            data-active={enLavadero}
+                            aria-current={enLavadero ? 'page' : undefined}
+                            onClick={cerrarMenu}
+                        >
+                            Lavadero
+                        </Link>
+
                         <a
                             href={whatsapp(
                                 site.whatsapp,
@@ -109,14 +132,6 @@ export function SiteHeader({ site }: { site: SiteInfo }) {
                             onClick={cerrarMenu}
                         >
                             Cotizá tu auto
-                        </a>
-
-                        <a
-                            href="#contacto"
-                            className="nav__link"
-                            onClick={cerrarMenu}
-                        >
-                            Contacto
                         </a>
 
                         <a

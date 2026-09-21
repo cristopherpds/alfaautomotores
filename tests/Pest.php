@@ -1,6 +1,8 @@
 <?php
 
+use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Date;
 use Tests\TestCase;
 
 /*
@@ -44,7 +46,57 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Poner el reloj en un lunes fijo y abrir el taller con su agenda.
+ *
+ * Los turnos son la única parte del proyecto que depende de la hora: sin
+ * congelar el reloj, un test que reserva «el próximo lunes a las 10» falla el
+ * día que la suite corre un domingo a las 23:59. La agenda no es una fila que
+ * se pueda crear con una factory: son los horarios que `taller:agenda` le
+ * cuelga a cada puesto.
+ *
+ * Devuelve el lunes siguiente al congelado, que es el día que usan los tests.
+ */
+function abrirElTaller(int $puestos = 2): CarbonInterface
 {
-    // ..
+    congelarElReloj();
+
+    config()->set('taller.puestos', $puestos);
+
+    test()->artisan('taller:agenda');
+
+    return elLunes();
+}
+
+/**
+ * Lo mismo para el lavadero, que tiene sus propios boxes.
+ *
+ * Se puede llamar junto con `abrirElTaller()` en un mismo test: las dos
+ * capacidades son independientes y es justamente lo que hay que poder probar.
+ */
+function abrirElLavadero(int $puestos = 1): CarbonInterface
+{
+    congelarElReloj();
+
+    config()->set('lavadero.puestos', $puestos);
+
+    test()->artisan('lavadero:agenda');
+
+    return elLunes();
+}
+
+/**
+ * El lunes que usan los tests de agenda: el siguiente al reloj congelado.
+ */
+function elLunes(): CarbonInterface
+{
+    return Date::parse('2026-09-21')->startOfDay();
+}
+
+/**
+ * Congelar el reloj. Llamarlo dos veces es inofensivo: viaja al mismo instante.
+ */
+function congelarElReloj(): void
+{
+    test()->travelTo(Date::parse('2026-09-14 09:00'));
 }

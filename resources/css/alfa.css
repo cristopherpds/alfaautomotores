@@ -14,6 +14,8 @@
     --alfa-white: #ffffff;
     --alfa-offwhite: #f4f4f2;
     --alfa-ink: #101012;
+    /* Fondo de los recuadros vacíos sobre tinta (las fotos de entregas). */
+    --alfa-ink-soft: #1c1c20;
 
     /* Acento */
     --alfa-blue: #1e1ee6;
@@ -70,6 +72,17 @@
     from {
         opacity: 0;
         transform: translateY(-6px);
+    }
+}
+
+/*
+ * Tira de entregas. El riel lleva el mismo juego de fotos dos veces, así que
+ * correrlo exactamente la mitad deja el segundo juego donde arrancó el primero
+ * y el bucle no tiene costura. Ver `resources/js/components/alfa/entregas.tsx`.
+ */
+@keyframes alfa-entregas-correr {
+    to {
+        transform: translateX(-50%);
     }
 }
 
@@ -645,6 +658,537 @@
         display: flex;
         gap: 12px;
         flex-wrap: wrap;
+    }
+
+    /* --- Tira de entregas ------------------------------------------------ */
+
+    /*
+     * Prueba social: las fotos de cada entrega corriendo en bucle.
+     *
+     * Va sobre `.pitch`, que comparte el fondo oscuro, así que el filete de
+     * abajo es lo único que separa los dos bloques.
+     */
+    & .entregas {
+        background: var(--alfa-ink);
+        color: var(--alfa-white);
+        border-bottom: 1px solid var(--alfa-border-dark);
+        padding-top: clamp(44px, 6vw, 84px);
+
+        & .eyebrow {
+            color: var(--alfa-blue-soft);
+        }
+
+        & .section__link {
+            border-bottom-color: var(--alfa-white);
+
+            &:hover {
+                color: var(--alfa-blue-soft);
+                border-bottom-color: var(--alfa-blue-soft);
+            }
+        }
+    }
+
+    & .entregas__titular {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+
+        & h2 {
+            font-size: clamp(26px, 3.2vw, 40px);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin: 0;
+            max-width: 620px;
+        }
+
+        & .lede {
+            font-size: 14px;
+            color: var(--alfa-text-on-dark);
+            max-width: 400px;
+        }
+    }
+
+    /*
+     * La tira sangra hasta los dos bordes: no lleva `.shell`, y el recorte es
+     * lo que esconde el riel que sobra a cada lado.
+     */
+    & .entregas__pista {
+        overflow: hidden;
+        margin-top: clamp(28px, 3.5vw, 44px);
+        padding-bottom: clamp(28px, 3vw, 40px);
+
+        /* Detener el riel para poder mirar una foto. */
+        &:hover .entregas__riel,
+        &:focus-within .entregas__riel {
+            animation-play-state: paused;
+        }
+    }
+
+    & .entregas__riel {
+        display: flex;
+        width: max-content;
+        animation: alfa-entregas-correr linear infinite;
+        /* De respaldo: la duración real la calcula el componente a partir de
+           cuántas fotos hay, para que la velocidad no cambie al sumar
+           entregas. */
+        animation-duration: 48s;
+    }
+
+    /*
+     * La separación va como margen del recuadro y no como `gap` del riel: con
+     * `gap`, entre los dos juegos de fotos habría una separación de más y la
+     * vuelta saltaría medio hueco al reiniciarse.
+     */
+    & .entregas__toma {
+        position: relative;
+        flex: none;
+        width: 232px;
+        aspect-ratio: 9 / 16;
+        margin-right: 18px;
+        background: var(--alfa-ink-soft);
+        overflow: hidden;
+
+        & img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /*
+         * Las fotos vienen de las historias de Instagram y traen su propia
+         * firma abajo —el recuadro blanco con el logo y el arroba—, justo donde
+         * va la fecha. La sombra del texto sola no alcanza contra el blanco:
+         * hace falta oscurecer la franja.
+         */
+        &::after {
+            content: '';
+            position: absolute;
+            inset: auto 0 0;
+            height: 30%;
+            background: linear-gradient(
+                to top,
+                rgb(0 0 0 / 0.85),
+                rgb(0 0 0 / 0)
+            );
+            pointer-events: none;
+        }
+    }
+
+    & .entregas__fecha {
+        position: absolute;
+        left: 10px;
+        bottom: 10px;
+        /* Por encima del degradado, que se pinta después por ser un ::after. */
+        z-index: 1;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        color: var(--alfa-white);
+        text-shadow: 0 1px 6px rgb(0 0 0 / 0.8);
+    }
+
+    & .entregas__pie {
+        padding-bottom: clamp(44px, 6vw, 84px);
+    }
+
+    @media (max-width: 700px) {
+        & .entregas__toma {
+            width: 150px;
+            margin-right: 10px;
+        }
+    }
+
+    /* --- Taller ----------------------------------------------------------- */
+
+    /*
+     * La página del taller: grilla de servicios reusando `.grid` y `.card` del
+     * catálogo, formulario de reserva propio y un hero de foto a sangre como el
+     * de la portada.
+     *
+     * La tinta de abajo es el fondo mientras la imagen carga (y el respaldo si
+     * falla), y el velo la oscurece para que el texto blanco tenga contraste
+     * sin apagar la foto.
+     */
+    & .taller-hero {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        /* El texto se apoya abajo a la izquierda, como en el hero de la
+           portada. */
+        display: flex;
+        align-items: flex-end;
+        /* Lo que queda de pantalla debajo del header, igual que el hero de la
+           portada: la foto llena la primera vista completa. `dvh` y no
+           `vh`/`svh` porque en móvil el alto útil cambia al esconderse la barra
+           del navegador y es la única unidad que acompaña ese cambio. La línea
+           con `vh` queda de respaldo. */
+        min-height: calc(100vh - var(--alfa-header));
+        min-height: calc(100dvh - var(--alfa-header));
+        background: var(--alfa-ink);
+        color: var(--alfa-white);
+
+        /* Sin volanta arriba: el título abre el bloque, así que no lleva
+           margen superior o se sumaría al padding del hero. */
+        & h1 {
+            font-size: clamp(32px, 4.4vw, 58px);
+            font-weight: 800;
+            line-height: 1.02;
+            letter-spacing: -0.025em;
+            margin: 0 0 clamp(14px, 2.2vw, 22px);
+            text-wrap: balance;
+        }
+
+        & .lede {
+            max-width: 46ch;
+            margin-bottom: clamp(20px, 3vw, 30px);
+            color: rgb(255 255 255 / 0.82);
+        }
+    }
+
+    & .taller-hero__foto,
+    & .taller-hero__velo {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+    }
+
+    /*
+     * El encuadre se corre a la derecha y hacia arriba a propósito: es donde
+     * está el mecánico. Con el centro, en los recortes anchos queda sólo el
+     * motor.
+     */
+    & .taller-hero__foto {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 62% 35%;
+    }
+
+    /*
+     * Dos degradados: el horizontal apaga la izquierda, que es donde va el
+     * título; el vertical asienta el conjunto y deja la parte de arriba —el
+     * capó abierto, ya oscuro— más limpia.
+     */
+    & .taller-hero__velo {
+        background:
+            linear-gradient(
+                to right,
+                rgb(16 16 18 / 0.92) 0%,
+                rgb(16 16 18 / 0.62) 50%,
+                rgb(16 16 18 / 0.38) 100%
+            ),
+            linear-gradient(to top, rgb(16 16 18 / 0.6), rgb(16 16 18 / 0.15));
+    }
+
+    & .taller-hero__inner {
+        padding-block: clamp(40px, 6vw, 88px);
+    }
+
+    /*
+     * En pantallas angostas el texto ocupa todo el ancho y el degradado
+     * horizontal deja de servir: el final de cada línea cae sobre la parte
+     * clara de la foto —el hombro del mecánico, el motor iluminado— y pierde
+     * contraste. Ahí el velo pasa a ser parejo, y el encuadre se corre para
+     * que en el recorte vertical siga entrando la cara.
+     */
+    @media (max-width: 767px) {
+        & .taller-hero__velo {
+            background: linear-gradient(
+                to top,
+                rgb(16 16 18 / 0.88) 0%,
+                rgb(16 16 18 / 0.68) 55%,
+                rgb(16 16 18 / 0.45) 100%
+            );
+        }
+
+        & .taller-hero__foto {
+            object-position: 56% 30%;
+        }
+    }
+
+    /* Filtros por área: los mismos chips que ordena la grilla de abajo. */
+    & .taller-areas {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: clamp(20px, 2.5vw, 28px);
+    }
+
+    & .taller-areas__chip {
+        border: 1px solid var(--alfa-border-input);
+        background: var(--alfa-white);
+        padding: 10px 16px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            color 0.18s ease;
+
+        &:hover {
+            border-color: var(--alfa-ink);
+        }
+
+        &[data-activo='true'] {
+            background: var(--alfa-ink);
+            border-color: var(--alfa-ink);
+            color: var(--alfa-white);
+        }
+    }
+
+    & .card--servicio {
+        & .card__desc {
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--alfa-text-body);
+            margin: 0;
+        }
+    }
+
+    & .card__duracion {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--alfa-text-muted);
+        letter-spacing: 0.04em;
+    }
+
+    /*
+     * Formulario de reserva.
+     *
+     * Duplica a propósito el estilo de campo de `.auth__input`: aquel bloque
+     * está atado a las pantallas de ingreso y arrastra la advertencia de orden
+     * de `.auth` sobre `.shell`. Si aparece un tercer formulario, conviene
+     * extraer una familia común en vez de sumar una tercera copia.
+     */
+    & .turno {
+        background: var(--alfa-offwhite);
+        border-top: 1px solid var(--alfa-border);
+        padding-block: clamp(44px, 6vw, 84px);
+        scroll-margin-top: var(--alfa-header);
+    }
+
+    & .turno__form {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(18px, 2.4vw, 26px);
+        background: var(--alfa-white);
+        border: 1px solid var(--alfa-border);
+        padding: clamp(20px, 3vw, 34px);
+    }
+
+    & .turno__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+        gap: clamp(14px, 2vw, 20px);
+    }
+
+    & .turno__field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    & .turno__input {
+        width: 100%;
+        padding: 13px 14px;
+        font: inherit;
+        font-size: 14px;
+        color: var(--alfa-ink);
+        background: var(--alfa-white);
+        border: 1px solid var(--alfa-border-input);
+        border-radius: 0;
+
+        &:focus-visible {
+            outline: 2px solid var(--alfa-blue);
+            outline-offset: -1px;
+        }
+    }
+
+    /* `select` y `textarea` comparten `.turno__input`, pero no su alto nativo. */
+    & select.turno__input {
+        appearance: none;
+        cursor: pointer;
+    }
+
+    & textarea.turno__input {
+        resize: vertical;
+        min-height: 88px;
+    }
+
+    & .turno__horarios {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    & .turno__hueco {
+        border: 1px solid var(--alfa-border-input);
+        background: var(--alfa-white);
+        padding: 11px 16px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        cursor: pointer;
+        transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            color 0.18s ease;
+
+        &:hover {
+            border-color: var(--alfa-ink);
+        }
+
+        /* El horario elegido: `aria-pressed` es el estado, no una clase. */
+        &[aria-pressed='true'] {
+            background: var(--alfa-ink);
+            border-color: var(--alfa-ink);
+            color: var(--alfa-white);
+        }
+    }
+
+    & .turno__aviso {
+        font-size: 13px;
+        color: var(--alfa-text-muted);
+        background: var(--alfa-offwhite);
+        border-left: 2px solid var(--alfa-blue);
+        padding: 12px 14px;
+        margin: 0;
+    }
+
+    & .turno__error {
+        font-size: 13px;
+        color: var(--alfa-reserved);
+        margin: 0;
+    }
+
+    & .turno__enviar {
+        display: flex;
+        align-items: center;
+        gap: clamp(14px, 2vw, 24px);
+        flex-wrap: wrap;
+        border-top: 1px solid var(--alfa-border-light);
+        padding-top: clamp(16px, 2vw, 22px);
+    }
+
+    & .turno__nota {
+        font-size: 12px;
+        color: var(--alfa-text-muted);
+        max-width: 44ch;
+        margin: 0;
+    }
+
+    /* --- Lavadero --------------------------------------------------------- */
+
+    /*
+     * El hero del lavadero es claro y no de foto como el del taller: acá lo que
+     * vende es el precio y el rato que lleva, no el oficio, así que el bloque
+     * se apoya en el papel y deja la nota al lado del título.
+     */
+    & .lavadero-hero {
+        background: var(--alfa-offwhite);
+        border-bottom: 1px solid var(--alfa-border);
+
+        /* Sin volanta arriba: el título abre el bloque, así que no lleva
+           margen superior o se sumaría al padding del hero. */
+        & h1 {
+            font-size: clamp(32px, 4.4vw, 58px);
+            font-weight: 800;
+            line-height: 1.02;
+            letter-spacing: -0.025em;
+            margin: 0 0 clamp(14px, 2.2vw, 22px);
+            text-wrap: balance;
+        }
+
+        & .lede {
+            max-width: 46ch;
+            margin-bottom: clamp(20px, 3vw, 30px);
+        }
+    }
+
+    & .lavadero-hero__inner {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+        gap: clamp(28px, 4vw, 64px);
+        align-items: center;
+        padding-block: clamp(44px, 6vw, 88px);
+    }
+
+    & .lavadero-hero__nota {
+        background: var(--alfa-white);
+        border: 1px solid var(--alfa-border);
+        padding: clamp(22px, 3vw, 32px);
+
+        /*
+         * La volanta también es un <p>, así que `& p` le ganaría por
+         * especificidad (0,2,1 contra 0,2,0) y le pisaría tamaño y color. Va
+         * declarada aparte para que no pase.
+         */
+        & .eyebrow {
+            font-size: 10px;
+            color: var(--alfa-blue);
+            margin: 0;
+        }
+
+        & p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--alfa-text-body);
+            margin: 12px 0 0;
+        }
+    }
+
+    & .lavadero-hero__horario {
+        border-top: 1px solid var(--alfa-border-light);
+        padding-top: 14px;
+        font-size: 12px !important;
+        color: var(--alfa-text-muted) !important;
+    }
+
+    /*
+     * Dos columnas exactas y no las que entren: son dos tamaños de vehículo que
+     * se comparan entre sí, y `.grid` —que llena con lo que quepa— los dejaría
+     * angostos y sueltos en pantallas anchas.
+     */
+    /* Doble selector para ganarle a `.grid`, que se define más abajo y con la
+       misma especificidad le pisaría las columnas. */
+    & .grid.grid--duo {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: clamp(14px, 1.8vw, 22px);
+
+        @media (max-width: 700px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    & .card--lavado {
+        /* Más apaisada que la tarjeta de vehículo: la foto es del auto entero
+           saliendo del box, no de un detalle. */
+        & .card__media {
+            aspect-ratio: 16 / 9;
+        }
+
+        & .card__desc {
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--alfa-text-body);
+            margin: 0;
+        }
+    }
+
+    & .card__precio {
+        font-size: clamp(26px, 3vw, 32px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        margin: 0;
     }
 
     /* --- Grilla de vehículos --------------------------------------------- */
@@ -1266,6 +1810,148 @@
         text-transform: uppercase;
     }
 
+    /* --- Acceso al panel -------------------------------------------------- */
+
+    /*
+     * `AlfaAuthLayout` no pone cabecera ni pie, así que el bloque se centra a
+     * mano en lo que queda de pantalla. El relleno vertical vive acá y no en
+     * `.auth` para que en pantallas bajas el contenido siga respirando en vez
+     * de quedar pegado a los bordes.
+     */
+    & .auth-page {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-block: clamp(40px, 8vw, 72px);
+
+        & .auth {
+            padding-block: 0;
+        }
+    }
+
+    & .auth-page__marca {
+        margin-bottom: 40px;
+    }
+
+    /*
+     * Portado del prototipo Next (`app/ingresar`). La columna es angosta a
+     * propósito: `.auth` va junto a `.shell` en el mismo elemento y le pisa el
+     * `max-width` —gana por orden de fuente, misma especificidad—, así que este
+     * bloque tiene que quedar después de las primitivas de layout.
+     */
+    & .auth {
+        max-width: 460px;
+        padding-block: clamp(56px, 10vw, 112px);
+
+        & h1 {
+            margin: 10px 0 0;
+            font-size: clamp(28px, 4vw, 38px);
+            letter-spacing: -0.02em;
+        }
+
+        & .lede {
+            margin-bottom: 32px;
+        }
+    }
+
+    & .auth__form {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    & .auth__field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    & .auth__input {
+        width: 100%;
+        padding: 14px;
+        font-size: 14px;
+        color: var(--alfa-ink);
+        background: var(--alfa-white);
+        border: 1px solid var(--alfa-border-input);
+        border-radius: 0;
+
+        &:focus-visible {
+            outline: 2px solid var(--alfa-blue);
+            outline-offset: -1px;
+        }
+
+        /* El correo llega fijado desde el enlace en `restablecer contraseña`. */
+        &:read-only {
+            background: var(--alfa-offwhite);
+            color: var(--alfa-text-muted);
+        }
+    }
+
+    /*
+     * Etiqueta del campo y su acción secundaria en la misma línea. Envuelve a
+     * propósito: abajo de ~360px el enlace no entra al lado de la etiqueta y
+     * cae entero a la línea siguiente en vez de partirse en dos.
+     */
+    & .auth__label-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+    }
+
+    /* Botón de texto, calcado de `.filters-summary__reset` */
+    & .auth__link {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--alfa-blue);
+    }
+
+    & .auth__remember {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+
+        & input[type='checkbox'] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--alfa-blue);
+            cursor: pointer;
+        }
+    }
+
+    & .auth__error {
+        margin: 0;
+        font-size: 13px;
+        color: var(--alfa-reserved);
+    }
+
+    /* Mensaje de sesión (`status`): "te enviamos el enlace", etc. */
+    & .auth__aviso {
+        margin: 0 0 24px;
+        padding: 14px 16px;
+        font-size: 13px;
+        color: var(--alfa-text-body);
+        background: var(--alfa-offwhite);
+        border-left: 2px solid var(--alfa-blue);
+    }
+
+    & .auth__volver {
+        margin-top: 28px;
+        font-size: 13px;
+        color: var(--alfa-text-muted);
+
+        & a {
+            border-bottom: 1px solid var(--alfa-border-input);
+        }
+    }
+
     /* --- Footer ---------------------------------------------------------- */
 
     & .footer {
@@ -1381,6 +2067,24 @@
 
         & .nav[data-abierto='true'] {
             animation: none;
+        }
+
+        /*
+         * La tira de entregas queda quieta, pero frenarla y nada más dejaría
+         * fuera de alcance todo lo que no entra en pantalla: pasa a ser un
+         * carrusel que se arrastra a mano. El juego repetido de fotos, que sólo
+         * existía para cerrar el bucle, sobra.
+         */
+        & .entregas__riel {
+            animation: none;
+        }
+
+        & .entregas__pista {
+            overflow-x: auto;
+        }
+
+        & .entregas__toma[aria-hidden] {
+            display: none;
         }
     }
 }

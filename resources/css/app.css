@@ -88,6 +88,16 @@
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
+
+    /*
+     * Barra que identifica el negocio de un turno en la agenda. Tono propio y
+     * no un `--chart-*`: esos cambian de matiz entre claro y oscuro, y acá el
+     * color significa algo —de qué negocio es el turno— así que tiene que ser
+     * el mismo en los dos modos. Azul el taller, verde agua el lavadero.
+     */
+    --rubro-taller: oklch(0.5 0.16 255);
+    --rubro-lavadero: oklch(0.62 0.13 195);
+
     --radius: 0.625rem;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
@@ -124,6 +134,11 @@
     --chart-3: oklch(0.769 0.188 70.08);
     --chart-4: oklch(0.627 0.265 303.9);
     --chart-5: oklch(0.645 0.246 16.439);
+
+    /* Los mismos tonos, aclarados para que se lean sobre el fondo oscuro. */
+    --rubro-taller: oklch(0.68 0.16 255);
+    --rubro-lavadero: oklch(0.75 0.13 195);
+
     --sidebar: oklch(0.205 0 0);
     --sidebar-foreground: oklch(0.985 0 0);
     --sidebar-primary: oklch(0.985 0 0);
@@ -142,4 +157,92 @@
     body {
         @apply bg-background text-foreground;
     }
+}
+
+/* ---------------------------------------------------------------------------
+   Calendario de turnos (FullCalendar)
+
+   El paquete inyecta su propia hoja de estilos y se configura por variables
+   CSS. Acá sólo se lo ata a los tokens del panel para que no desentone —y para
+   que funcione igual en claro y en oscuro— y se pinta cada estado del turno.
+--------------------------------------------------------------------------- */
+
+.fc {
+    --fc-border-color: var(--border);
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: var(--muted);
+    --fc-today-bg-color: var(--accent);
+    --fc-now-indicator-color: var(--destructive);
+    font-size: 0.875rem;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.fc .fc-button {
+    background: var(--background);
+    border-color: var(--border);
+    color: var(--foreground);
+    font-size: 0.8125rem;
+    text-transform: capitalize;
+    box-shadow: none;
+}
+
+.fc .fc-button:hover,
+.fc .fc-button-active {
+    background: var(--accent);
+    border-color: var(--border);
+    color: var(--accent-foreground);
+}
+
+.fc .fc-button:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+.fc .fc-event {
+    cursor: pointer;
+    border: none;
+    padding: 1px 4px;
+}
+
+/*
+ * Dos señales sobre el mismo evento, en canales distintos para que no se pisen:
+ * el FONDO dice el estado y la BARRA IZQUIERDA dice el rubro.
+ *
+ * El borde lo tenía «pendiente», pero ese estado ya se distingue de sobra por
+ * su fondo, y el rubro necesitaba una marca que funcionara en los cuatro
+ * estados. Ver `Panel\TurnoController::toEvento()`.
+ */
+.fc .turno--pendiente {
+    background: var(--secondary);
+    color: var(--secondary-foreground);
+}
+
+.fc .turno--confirmado {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.fc .turno--completado {
+    background: var(--muted);
+    color: var(--muted-foreground);
+}
+
+.fc .turno--cancelado {
+    background: transparent;
+    color: var(--muted-foreground);
+    text-decoration: line-through;
+}
+
+.fc .turno--taller {
+    border-left: 3px solid var(--rubro-taller);
+}
+
+.fc .turno--lavadero {
+    border-left: 3px solid var(--rubro-lavadero);
 }

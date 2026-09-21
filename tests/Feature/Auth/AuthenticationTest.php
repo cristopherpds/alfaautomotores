@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
 
@@ -8,6 +9,15 @@ test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
 
     $response->assertOk();
+});
+
+test('the login screen renders the alfa page with password recovery enabled', function () {
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('auth/login')
+            ->where('canResetPassword', true)
+        );
 });
 
 test('users can authenticate using the login screen', function () {
@@ -20,6 +30,31 @@ test('users can authenticate using the login screen', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
+});
+
+/* El checkbox "Recordarme" del formulario: si llega, Laravel deja la cookie de
+   sesión recordada; si no, no. */
+test('users can stay logged in with the remember me checkbox', function () {
+    $user = User::factory()->create();
+
+    $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+        'remember' => 'on',
+    ])->assertCookie(Auth::guard()->getRecallerName());
+
+    $this->assertAuthenticated();
+});
+
+test('users are not remembered when the checkbox is left unchecked', function () {
+    $user = User::factory()->create();
+
+    $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ])->assertCookieMissing(Auth::guard()->getRecallerName());
+
+    $this->assertAuthenticated();
 });
 
 test('users with two factor enabled are redirected to two factor challenge', function () {

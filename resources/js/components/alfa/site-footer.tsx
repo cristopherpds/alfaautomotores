@@ -8,7 +8,7 @@ export function SiteFooter({ site }: { site: SiteInfo }) {
     const { auth } = usePage().props;
 
     return (
-        <footer className="footer" id="contacto">
+        <footer className="footer">
             <div className="shell footer__grid">
                 <div>
                     <div className="brand" style={{ marginBottom: 16 }}>

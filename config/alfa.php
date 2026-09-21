@@ -18,6 +18,11 @@ return [
     'direccion' => 'Ituzaingó 779',
     'codigo_postal' => '40000',
 
+    /*
+    | Horarios como se imprimen en el pie y en la ficha. La versión que se
+    | calcula (la que usa la agenda del taller) vive en `config/taller.php`:
+    | si cambia una hay que cambiar la otra.
+    */
     'horarios' => [
         'semana' => '08:30–12:00 · 14:00–18:00',
         'sabado' => '08:30–12:00',

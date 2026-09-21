@@ -1,13 +1,15 @@
 import { Head, Link } from '@inertiajs/react';
+import { Entregas } from '@/components/alfa/entregas';
 import { VehicleGrid } from '@/components/alfa/vehicle-card';
 import { whatsapp } from '@/lib/alfa';
 import { catalogo } from '@/routes';
-import type { SiteInfo, Vehiculo } from '@/types';
+import type { Entrega, SiteInfo, Vehiculo } from '@/types';
 
 type Props = {
     site: SiteInfo;
     destacados: Vehiculo[];
     totalStock: number;
+    entregas: Entrega[];
 };
 
 const ARGUMENTOS = [
@@ -17,7 +19,12 @@ const ARGUMENTOS = [
     ['Lun a Vie', '08:30 a 12:00 · 14:00 a 18:00'],
 ];
 
-export default function Welcome({ site, destacados, totalStock }: Props) {
+export default function Welcome({
+    site,
+    destacados,
+    totalStock,
+    entregas,
+}: Props) {
     const cotizar = whatsapp(
         site.whatsapp,
         'Hola, quiero cotizar mi auto con Alfa Automotores.',
@@ -112,6 +119,8 @@ export default function Welcome({ site, destacados, totalStock }: Props) {
 
                 <VehicleGrid vehiculos={destacados} />
             </section>
+
+            <Entregas entregas={entregas} />
 
             <section className="pitch">
                 <div className="shell pitch__inner">
