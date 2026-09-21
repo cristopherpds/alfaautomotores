@@ -16,7 +16,6 @@ const ARGUMENTOS = [
     ['Financiación', 'Planes en pesos, sin salir de Rivera.'],
     ['Recibimos tu usado', 'Tasación en el día como parte de pago.'],
     ['Revisados', 'Mecánica y documentación al día.'],
-    ['Lun a Vie', '08:30 a 12:00 · 14:00 a 18:00'],
 ];
 
 export default function Welcome({
@@ -102,6 +101,21 @@ export default function Welcome({
                             <dd>{detalle}</dd>
                         </div>
                     ))}
+
+                    {/* Los horarios salen de `config/alfa.php`, igual que en el
+                        pie: acá no se repite el texto a mano. */}
+                    <div className="strip__item">
+                        <dt>Horarios</dt>
+                        <dd>
+                            Lunes a viernes
+                            <br />
+                            {site.horarios.semana}
+                            <br />
+                            Sábados
+                            <br />
+                            {site.horarios.sabado}
+                        </dd>
+                    </div>
                 </dl>
             </div>
 

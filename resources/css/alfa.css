@@ -1095,11 +1095,23 @@
     & .lavadero-hero {
         background: var(--alfa-offwhite);
         border-bottom: 1px solid var(--alfa-border);
+        /* Lo que queda de pantalla debajo del header, igual que los heros de
+           la portada y del taller: sin esto el bloque medía lo que midiera su
+           texto y la sección de precios asomaba a media pantalla. `dvh` y no
+           `vh`/`svh` porque en móvil el alto útil cambia al esconderse la barra
+           del navegador; la línea con `vh` queda de respaldo. */
+        display: flex;
+        align-items: center;
+        min-height: calc(100vh - var(--alfa-header));
+        min-height: calc(100dvh - var(--alfa-header));
 
         /* Sin volanta arriba: el título abre el bloque, así que no lleva
-           margen superior o se sumaría al padding del hero. */
+           margen superior o se sumaría al padding del hero. Acá el `vh` sí
+           entra en el tamaño —a diferencia del taller, que se apoya en la
+           foto— porque en una laptop baja el título, la nota y los botones
+           tienen que caber juntos en esa única vista. */
         & h1 {
-            font-size: clamp(32px, 4.4vw, 58px);
+            font-size: clamp(32px, min(4.4vw, 9vh), 58px);
             font-weight: 800;
             line-height: 1.02;
             letter-spacing: -0.025em;
@@ -1114,6 +1126,9 @@
     }
 
     & .lavadero-hero__inner {
+        /* El hero es el flex que reparte el alto; el interior tiene que tomar
+           todo el ancho o el `shell` se encoge a su contenido. */
+        width: 100%;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
         gap: clamp(28px, 4vw, 64px);

@@ -82,6 +82,20 @@ test('the hero background video ships with the public assets', function () {
 });
 
 /*
+ * La franja de argumentos que va bajo el hero cierra con el horario, y lo saca
+ * de `site.horarios` (igual que el pie). Tenerlo escrito a mano en
+ * `welcome.tsx` ya dejó una vez la portada anunciando un horario incompleto.
+ */
+test('the landing page carries the opening hours from the config', function () {
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('site.horarios.semana', '08:30–12:00 · 14:00–18:00')
+            ->where('site.horarios.sabado', '08:30–12:00')
+        );
+});
+
+/*
  * La tira de «Nuestros clientes» sale de la tabla `entregas`; los archivos viven
  * en el disco `public`. Ver `App\Models\Entrega::paraLaTira()`.
  */
