@@ -3,11 +3,14 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LavaderoController;
 use App\Http\Controllers\Panel\EntregaController;
+use App\Http\Controllers\Panel\ProductoController as PanelProductoController;
+use App\Http\Controllers\Panel\ProductoImagenController;
 use App\Http\Controllers\Panel\ServicioController;
 use App\Http\Controllers\Panel\TurnoController;
 use App\Http\Controllers\Panel\VehiculoController as PanelVehiculoController;
 use App\Http\Controllers\Panel\VehiculoImagenController;
 use App\Http\Controllers\Panel\VehiculoLoteController;
+use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\TallerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehiculoController;
@@ -16,6 +19,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('catalogo', [VehiculoController::class, 'index'])->name('catalogo');
 Route::get('vehiculos/{slug}', [VehiculoController::class, 'show'])->name('vehiculos.show');
+
+/* El catálogo de movilidad son dos grillas sobre la misma tabla: `bicicletas`
+   es la bici sin motor, que se publica sin precio, y `movilidad` todo lo que
+   anda con batería. La ficha es una sola para las dos. */
+Route::get('movilidad', [ProductoController::class, 'movilidad'])->name('movilidad');
+Route::get('bicicletas', [ProductoController::class, 'bicicletas'])->name('bicicletas');
+Route::get('productos/{slug}', [ProductoController::class, 'show'])->name('productos.show');
 
 /* Los dos negocios que agendan. Cada uno ofrece los servicios de su rubro y
    calcula los horarios contra sus propios puestos; los huecos se piden con una
@@ -52,6 +62,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('vehiculos.imagenes.orden');
         Route::delete('vehiculos/{vehiculo}/imagenes/{imagen}', [VehiculoImagenController::class, 'destroy'])
             ->name('vehiculos.imagenes.destroy');
+
+        /* Movilidad y bicicletas son un solo ABM: el índice filtra la sección
+           con `?seccion=`. Van bajo `panel/` porque `productos/{slug}` es la
+           ficha pública. */
+        Route::resource('productos', PanelProductoController::class)->except('show');
+
+        Route::post('productos/{producto}/imagenes', [ProductoImagenController::class, 'store'])
+            ->name('productos.imagenes.store');
+        Route::patch('productos/{producto}/imagenes/orden', [ProductoImagenController::class, 'orden'])
+            ->name('productos.imagenes.orden');
+        Route::delete('productos/{producto}/imagenes/{imagen}', [ProductoImagenController::class, 'destroy'])
+            ->name('productos.imagenes.destroy');
 
         /* Las fotos de la tira «Nuestros clientes» de la portada. No hay `create`
            ni `edit`: se suben y se corrigen desde el índice. */

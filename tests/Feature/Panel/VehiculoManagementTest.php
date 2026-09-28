@@ -5,6 +5,13 @@ use App\Enums\TipoVehiculo;
 use App\Enums\UserRole;
 use App\Models\User;
 use App\Models\Vehiculo;
+use Illuminate\Support\Facades\Storage;
+
+/* Borrar un vehículo limpia `vehiculos/{id}` del disco `public`: sin el fake,
+   los tests borran las fotos reales del stock que tengan el mismo id. */
+beforeEach(function () {
+    Storage::fake('public');
+});
 
 test('the stock list is open to everyone on the team', function (UserRole $role) {
     Vehiculo::factory()->create();

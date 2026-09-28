@@ -1,0 +1,3353 @@
+[
+    {
+        "slug": "moto-electrica-max-350",
+        "nombre": "Moto eléctrica MAX 350",
+        "familia": "moto",
+        "codigo": null,
+        "precio": 33900,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "350 W · 30 km/h · 25–30 km · rodado 14",
+        "desc": "La Max350 es una moto eléctrica que combina diseño urbano con tecnología eficiente, pensada para ofrecer una movilidad práctica, segura y sin emisiones. Ideal para moverse por la ciudad con comodidad. Con un diseño moderno y detalles bien cuidados, incorpora luces LED, frenos seguros y modos de velocidad adaptables para distintos tipos de trayecto. Perfecta para quienes buscan una alternativa sostenible al transporte convencional, sin renunciar al estilo ni al confort.",
+        "specs": [
+            [
+                "Pulgadas",
+                "14"
+            ],
+            [
+                "Batería",
+                "48V/12h"
+            ],
+            [
+                "Potencia",
+                "350 W"
+            ],
+            [
+                "Vel. Máxima",
+                "30 km/h"
+            ],
+            [
+                "Autonomía",
+                "25–30 km"
+            ],
+            [
+                "Tiempo De Carga",
+                "6–8 h"
+            ],
+            [
+                "Peso Máximo Usuario",
+                "90 kg"
+            ],
+            [
+                "Consumo Por Carga",
+                "$4 a $8"
+            ],
+            [
+                "Llantas Acero",
+                "Sí"
+            ],
+            [
+                "Chasis",
+                "Acero"
+            ],
+            [
+                "Carcasa",
+                "Plástico"
+            ],
+            [
+                "Frenos",
+                "Tambor ( del y tras )"
+            ]
+        ],
+        "colores": [
+            "Blanco",
+            "Celeste",
+            "Gris",
+            "Negro",
+            "Rojo"
+        ],
+        "foto": "moto-electrica-max-350.jpg"
+    },
+    {
+        "slug": "moto-electrica-chopper-doble-amortiguacion",
+        "nombre": "Moto eléctrica Chopper doble amortiguación",
+        "familia": "moto",
+        "codigo": "MTD21",
+        "precio": 61990,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "1000 W · 20–35 km/h · 25–35 km · rodado 18",
+        "desc": "Diseñada para quienes buscan moverse con comodidad y estilo, esta moto eléctrica combina potencia y estabilidad en un formato ágil y moderno. Su doble amortiguación brinda una experiencia de manejo suave incluso en superficies irregulares, mientras que los frenos a disco y las luces LED garantizan seguridad y visibilidad en todo momento. Con tres velocidades ajustables, se adapta a tu ritmo, ya sea para paseos tranquilos o traslados más dinámicos. Ideal para moverte por la ciudad de forma práctica, silenciosa y sin complicaciones.",
+        "specs": [
+            [
+                "Medidas",
+                "175 x 75 x 70 cm"
+            ],
+            [
+                "Voltaje",
+                "60V /12h"
+            ],
+            [
+                "Potencia",
+                "1000 W"
+            ],
+            [
+                "Velocidad Máxima",
+                "20–35 km/h"
+            ],
+            [
+                "Tiempo de carga",
+                "6–8 horas Batería Ácido"
+            ],
+            [
+                "Autonomía",
+                "25–35 km"
+            ],
+            [
+                "Peso Máximo usuario",
+                "90 kg"
+            ],
+            [
+                "Rodado",
+                "18"
+            ],
+            [
+                "Peso Neto",
+                "60/70 kg"
+            ]
+        ],
+        "colores": [
+            "Azul",
+            "Negro",
+            "Rojo"
+        ],
+        "foto": "moto-electrica-chopper-doble-amortiguacion.jpg"
+    },
+    {
+        "slug": "scooter-electrico-enjoy-k-hemei",
+        "nombre": "Scooter eléctrico Enjoy K-Hemei",
+        "familia": "scooter",
+        "codigo": "SCEJ-800W",
+        "precio": 51900,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "800 W · 35–55 km/h · 20–40 km · batería 48V 20H",
+        "desc": "Potente, cómoda y con un diseño pensado para la ciudad, esta moto eléctrica ofrece una experiencia de manejo completa. Su sistema de suspensión hidráulica delantera y trasera brinda estabilidad incluso en terrenos irregulares, mientras que la iluminación LED y las luces de freno aseguran una conducción segura tanto de día como de noche. Con tres velocidades y funciones inteligentes como control remoto, alarma y encendido a distancia, combina tecnología y practicidad para adaptarse a tu ritmo diario. Ideal para quienes buscan una alternativa moderna, eficiente y con estilo para moverse con total libertad.",
+        "specs": [
+            [
+                "Potencia del Motor",
+                "800 W"
+            ],
+            [
+                "Velocidad máxima",
+                "35–55 km/h"
+            ],
+            [
+                "Max de carga usuario",
+                "95 Kg"
+            ],
+            [
+                "Neumáticos",
+                "Tubeless"
+            ],
+            [
+                "Peso neto",
+                "60kg"
+            ],
+            [
+                "Modelo de neumático",
+                "3,00–10"
+            ],
+            [
+                "Dimensión",
+                "1750*680*950mm"
+            ],
+            [
+                "Bocina",
+                "Sí"
+            ],
+            [
+                "De la batería",
+                "Batería de ácido de plomo"
+            ],
+            [
+                "Autonomía",
+                "20–40 km"
+            ],
+            [
+                "Batería",
+                "48V 20H"
+            ],
+            [
+                "Tiempo de carga",
+                "6–8H"
+            ]
+        ],
+        "colores": [
+            "Negro",
+            "Rojo"
+        ],
+        "foto": "scooter-electrico-enjoy-k-hemei.jpg"
+    },
+    {
+        "slug": "moto-electrica-chopper-bateria-de-litio",
+        "nombre": "Moto eléctrica Chopper batería de litio",
+        "familia": "moto",
+        "codigo": "MBLI80",
+        "precio": 68200,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "1000 W · 20–35 km/h · 25–35 km · litio 60V/12A",
+        "desc": "Diseñada para quienes buscan moverse con comodidad y estilo, esta moto eléctrica combina potencia y estabilidad en un formato ágil y moderno. Su doble amortiguación brinda una experiencia de manejo suave incluso en superficies irregulares, mientras que los frenos a disco y las luces LED garantizan seguridad y visibilidad en todo momento. Con tres velocidades ajustables, se adapta a tu ritmo, ya sea para paseos tranquilos o traslados más dinámicos. Ideal para moverte por la ciudad de forma práctica, silenciosa y sin complicaciones.",
+        "specs": [
+            [
+                "Voltaje",
+                "60V /12h"
+            ],
+            [
+                "Potencia",
+                "1000 W"
+            ],
+            [
+                "Velocidad Máxima",
+                "20–35 km/h"
+            ],
+            [
+                "Tiempo de carga",
+                "6–8 horas Batería litio"
+            ],
+            [
+                "Autonomía",
+                "25–35 km"
+            ],
+            [
+                "Peso Máximo usuario",
+                "90 kg"
+            ],
+            [
+                "Rodado",
+                "18 Batería Litio"
+            ],
+            [
+                "Velocidades",
+                "3"
+            ],
+            [
+                "Bocina",
+                "Sí"
+            ],
+            [
+                "Luz Led",
+                "Sí"
+            ]
+        ],
+        "colores": [
+            "Azul",
+            "Negra"
+        ],
+        "foto": "moto-electrica-chopper-bateria-de-litio.jpg"
+    },
+    {
+        "slug": "moto-electrica-max-350-retro-800-w",
+        "nombre": "Moto eléctrica MAX 350 Retro 800 W",
+        "familia": "moto",
+        "codigo": "VSPMX800",
+        "precio": 49900,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "800 W · 25–40 km/h · 20–40 km",
+        "desc": "Compacta, resistente y pensada para la ciudad, esta moto eléctrica es la compañera ideal para tus recorridos diarios. Su diseño combina comodidad y estabilidad, ofreciendo una conducción segura y confiable. Con suspensión delantera y trasera que suaviza el camino, y detalles como pantalla digital y retrovisores incluidos, cada trayecto se vuelve más práctico y agradable. Perfecta para quienes buscan una movilidad eficiente, accesible y con estilo, sin renunciar al confort.",
+        "specs": [
+            [
+                "Potencia del Motor",
+                "800 W"
+            ],
+            [
+                "Velocidad máxima",
+                "25–40 km/h"
+            ],
+            [
+                "Max de carga usuario",
+                "90 Kg"
+            ],
+            [
+                "Neumáticos",
+                "tubeless"
+            ],
+            [
+                "Peso neto",
+                "60kg"
+            ],
+            [
+                "Modelo de neumático",
+                "3,00–10"
+            ],
+            [
+                "Dimensión",
+                "1750*680*950mm"
+            ],
+            [
+                "Bocina",
+                "Sí"
+            ],
+            [
+                "De la batería",
+                "Batería de ácido de plomo"
+            ],
+            [
+                "Autonomía",
+                "20–40 km"
+            ],
+            [
+                "Tiempo de carga",
+                "6–8H"
+            ],
+            [
+                "Frenos",
+                "Freno de tambor (F / R)"
+            ]
+        ],
+        "colores": [
+            "Negro",
+            "Rojo"
+        ],
+        "foto": "moto-electrica-max-350-retro-800-w.jpg"
+    },
+    {
+        "slug": "moto-electrica-monster-1200-w",
+        "nombre": "Moto eléctrica Monster 1200 W",
+        "familia": "moto",
+        "codigo": "M3",
+        "precio": 40950,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "1200 W · 45 km/h · 30–40 km · rodado 14",
+        "desc": "Diseñada para el ritmo de la ciudad, esta moto eléctrica te ofrece una forma práctica y moderna de moverte todos los días. Su conducción es suave y silenciosa, ideal para evitar el estrés del tráfico y disfrutar del trayecto. Con un estilo urbano y compacto, se adapta fácilmente a tus necesidades cotidianas, ya sea para ir al trabajo, hacer mandados o simplemente recorrer con comodidad. Una opción inteligente para quienes buscan eficiencia sin perder estilo.",
+        "specs": [
+            [
+                "Pulgadas",
+                "14"
+            ],
+            [
+                "Batería",
+                "60V/20h"
+            ],
+            [
+                "Potencia",
+                "1200 W"
+            ],
+            [
+                "Vel. Máxima",
+                "45 km/h"
+            ],
+            [
+                "Autonomía",
+                "30–40 km"
+            ],
+            [
+                "Tiempo De Carga",
+                "6–8 h"
+            ],
+            [
+                "Peso Máximo Usuario",
+                "90 kg"
+            ],
+            [
+                "Consumo Por Carga",
+                "$4 a $8"
+            ],
+            [
+                "Llantas Acero",
+                "Sí"
+            ],
+            [
+                "Chasis",
+                "Acero"
+            ],
+            [
+                "Carcasa",
+                "Plástico"
+            ],
+            [
+                "Frenos",
+                "Disco ( del y tras )"
+            ]
+        ],
+        "colores": [],
+        "foto": "moto-electrica-monster-1200-w.jpg"
+    },
+    {
+        "slug": "moto-electrica-strada-1200-w",
+        "nombre": "Moto eléctrica Strada 1200 W",
+        "familia": "moto",
+        "codigo": "Z6",
+        "precio": 40950,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "1200 W · 45 km/h · 30–40 km · rodado 14",
+        "desc": "Ágil, silenciosa y lista para acompañarte en todos tus trayectos diarios, esta moto eléctrica combina diseño compacto con un rendimiento sorprendente. Ideal para moverte por la ciudad sin complicaciones, ofrece una experiencia de manejo cómoda, segura y sin emisiones. Con su estructura robusta y su andar, es perfecta tanto para quienes buscan una alternativa al transporte tradicional como para quienes simplemente quieren disfrutar del camino.",
+        "specs": [
+            [
+                "Pulgadas",
+                "14"
+            ],
+            [
+                "Batería",
+                "60V/ 20h"
+            ],
+            [
+                "Potencia",
+                "1200 W"
+            ],
+            [
+                "Vel. máxima",
+                "45 km/h"
+            ],
+            [
+                "Autonomía",
+                "30–40 km"
+            ],
+            [
+                "Tiempo de carga",
+                "6–8hs"
+            ],
+            [
+                "Peso máx.usuario",
+                "90kg"
+            ],
+            [
+                "Consumo por carga",
+                "$4 a $8"
+            ],
+            [
+                "Llantas acero",
+                "Sí"
+            ],
+            [
+                "Chasis",
+                "Acero"
+            ],
+            [
+                "Carcasa",
+                "Plástico"
+            ],
+            [
+                "Frenos",
+                "Disco (delantero y trasero)"
+            ]
+        ],
+        "colores": [
+            "Negra",
+            "Roja"
+        ],
+        "foto": "moto-electrica-strada-1200-w.jpg"
+    },
+    {
+        "slug": "bici-electrica-queen-rodado-26",
+        "nombre": "Bici eléctrica Queen rodado 26",
+        "familia": "bici_electrica",
+        "codigo": "ETC01",
+        "precio": 31900,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "250 W · 15–20 km · rodado 26",
+        "desc": "Conoce nuestra bicicleta eléctrica pensada para el entorno urbano. Su diseño combina practicidad y tecnología, permitiendo desplazamientos eficientes sin dejar de lado la comodidad. Es ideal tanto para trayectos diarios como para paseos más relajados. Gracias a su motor asistido, reduce el esfuerzo al pedalear y facilita los recorridos largos o con pendientes. Además, su estructura está optimizada para moverse con agilidad en el tránsito de la ciudad.",
+        "specs": [
+            [
+                "Velocidades",
+                "7 VELOCIDADES"
+            ],
+            [
+                "Cambios",
+                "SAIGUAN"
+            ],
+            [
+                "Shifters",
+                "SHIMANO TIPO THUMB"
+            ],
+            [
+                "Voltaje",
+                "24 Batería: Litio (removible)"
+            ],
+            [
+                "Rodado",
+                "26"
+            ],
+            [
+                "Potencia",
+                "250 W"
+            ],
+            [
+                "Peso máx. usuario",
+                "100 KG"
+            ],
+            [
+                "Autonomía",
+                "15–20 km"
+            ],
+            [
+                "Frenos",
+                "V-BRAKE"
+            ]
+        ],
+        "colores": [
+            "Marfil",
+            "Turquesa",
+            "Verde"
+        ],
+        "foto": "bici-electrica-queen-rodado-26.jpg"
+    },
+    {
+        "slug": "bicicleta-infantil-sin-pedales",
+        "nombre": "Bicicleta infantil sin pedales",
+        "familia": "bicicleta",
+        "codigo": "K-697",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "Rodado 12 · acero · rueda de espuma EVA",
+        "desc": "Los niños alcanzan un completo control sobre su Chivita, lo que les capacita de manera natural para desarrollar un equilibrio que, a su vez, les hará más fácil aprender a montar una bicicleta tradicional sin necesidad de añadir rueditas estabilizadoras. De esta manera, podrán progresar sin dificultad a una bicicleta con pedales. Útil para cultivar el sentido de auto equilibrio de los niños y fortalecer su capacidad de equilibrio mientras caminan. Entrenar la capacidad de reacción corporal de los niños, mejorar su capacidad de autocontrol.",
+        "specs": [
+            [
+                "Rodado",
+                "12"
+            ],
+            [
+                "Cuadro",
+                "Acero"
+            ],
+            [
+                "Pedales",
+                "Sin pedales"
+            ],
+            [
+                "Material",
+                "Acero, neumático de espuma EVA"
+            ],
+            [
+                "Dimensiones (aprox.)",
+                "82X42,5 cm"
+            ],
+            [
+                "Altura del Manillar",
+                "54–60 cm"
+            ],
+            [
+                "Altura del asiento",
+                "35–45 cm"
+            ]
+        ],
+        "colores": [
+            "Amarillo",
+            "Azul",
+            "Blanco",
+            "Celeste",
+            "Negro",
+            "Rojo",
+            "Rosa"
+        ],
+        "foto": "bicicleta-infantil-sin-pedales.jpg"
+    },
+    {
+        "slug": "bicicleta-lauxjack-rodado-27-5",
+        "nombre": "Bicicleta Lauxjack rodado 27.5",
+        "familia": "bicicleta",
+        "codigo": null,
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "Rodado 27.5 · MTB · frenos de disco",
+        "desc": "Pensada para quienes buscan versatilidad y estilo, la bicicleta Lauxjack rodado 27.5 combina un diseño moderno con características ideales para recorridos urbanos, caminos irregulares y salidas recreativas. Su rodado ofrece un buen equilibrio entre maniobrabilidad y estabilidad, adaptándose a distintos tipos de terreno. El acabado en gris oscuro aporta una estética deportiva y elegante para destacar en cada salida.",
+        "specs": [
+            [
+                "Rodado",
+                "27.5"
+            ],
+            [
+                "Tipo",
+                "MTB"
+            ],
+            [
+                "Frenos",
+                "Disco"
+            ]
+        ],
+        "colores": [
+            "Gris oscuro"
+        ],
+        "foto": "bicicleta-lauxjack-rodado-27-5.jpg"
+    },
+    {
+        "slug": "bicicleta-laux-jack-rodado-20",
+        "nombre": "Bicicleta Laux Jack rodado 20",
+        "familia": "bicicleta",
+        "codigo": "YX-P02-20/NG-AZ",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "Rodado 20 y 24 · acero · 21 velocidades",
+        "desc": "Bicicleta MTB Knex Laux Jack 21 Vel. Negra/Azul La Laux Jack es la bicicleta de montaña (MTB) perfecta para quienes buscan rendimiento y durabilidad en su aventura sobre ruedas. Con un diseño robusto y una construcción pensada para el terreno más exigente, esta bici te ofrece todo lo que necesitas para disfrutar de cada ruta, ya sea en caminos de tierra, senderos o rutas urbanas.",
+        "specs": [
+            [
+                "Rodado",
+                "20 y 24"
+            ],
+            [
+                "Velocidades",
+                "21"
+            ],
+            [
+                "Cuadro",
+                "Acero"
+            ],
+            [
+                "Frenos",
+                "V-brake"
+            ],
+            [
+                "Marca",
+                "Knex"
+            ],
+            [
+                "Tipo de bicicleta",
+                "Montaña"
+            ],
+            [
+                "Material de los pedales",
+                "Plástico"
+            ],
+            [
+                "Material del asiento",
+                "Cuero sintético"
+            ]
+        ],
+        "colores": [],
+        "foto": "bicicleta-laux-jack-rodado-20.jpg"
+    },
+    {
+        "slug": "bicicleta-speed-rodado-26",
+        "nombre": "Bicicleta Speed rodado 26",
+        "familia": "bicicleta",
+        "codigo": "YX-P02-26/AZ-VD",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "Rodado 26 · acero · 21 velocidades · 10 colores",
+        "desc": "La bicicleta MTB Knex Speed está diseñada para ofrecer un rendimiento óptimo en terrenos irregulares. Con un cuadro resistente y un sistema de 21 velocidades, permite un cambio de marchas suave y preciso, adaptándose fácilmente a diferentes tipos de caminos. Su diseño en colores verde y rojo le da un toque moderno y llamativo. Ideal para quienes buscan una bicicleta robusta, versátil y cómoda para disfrutar de aventuras al aire libre o recorridos urbanos.",
+        "specs": [
+            [
+                "Rodado",
+                "26"
+            ],
+            [
+                "Velocidades",
+                "21"
+            ],
+            [
+                "Cuadro",
+                "Acero"
+            ],
+            [
+                "Frenos",
+                "V-brake"
+            ],
+            [
+                "Marca",
+                "Knex"
+            ],
+            [
+                "Tipo de bicicleta",
+                "MTB (Montaña)"
+            ],
+            [
+                "Peso soportado",
+                "100 Kg"
+            ]
+        ],
+        "colores": [
+            "Azul/Blanco/Amarillo",
+            "Azul/Negro",
+            "Blanco/Negro",
+            "Gris/Blanco/Rojo",
+            "Gris/Blanco/Rosa",
+            "Negro/Blanco/Azul",
+            "Negro/Blanco/Verde",
+            "Negro/Gris"
+        ],
+        "foto": "bicicleta-speed-rodado-26.jpg"
+    },
+    {
+        "slug": "bicicleta-speed-rodado-24",
+        "nombre": "Bicicleta Speed rodado 24",
+        "familia": "bicicleta",
+        "codigo": null,
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "Rodado 24 · acero · 21 velocidades",
+        "desc": "La Bicicleta MTB Knex Speed es ideal para los amantes de las aventuras en montaña. Con un marco de acero resistente y 21 velocidades, ofrece un rendimiento excelente en terrenos diversos. Equipado con frenos V-brake para una frenada segura y eficiente, y un diseño moderno en colores negro y naranja. Perfecta para quienes buscan durabilidad, control y estilo en sus recorridos.",
+        "specs": [
+            [
+                "Rodado",
+                "24"
+            ],
+            [
+                "Velocidades",
+                "21"
+            ],
+            [
+                "Cuadro",
+                "Acero"
+            ],
+            [
+                "Frenos",
+                "V-brake"
+            ],
+            [
+                "Marca",
+                "Knex"
+            ],
+            [
+                "Tipo de bicicleta",
+                "MTB (Montaña)"
+            ],
+            [
+                "Material del asiento",
+                "Cuero sintético, diseñado para ofrecer comodidad en trayectos largos"
+            ],
+            [
+                "Peso Máximo Soportada",
+                "100 Kg"
+            ]
+        ],
+        "colores": [
+            "Azul/Blanco/Amarillo",
+            "Negro/Blanco/Azul"
+        ],
+        "foto": "bicicleta-speed-rodado-24.jpg"
+    },
+    {
+        "slug": "monopatin-electrico-kds-dc03",
+        "nombre": "Monopatín eléctrico KDS-DC03",
+        "familia": "monopatin",
+        "codigo": "KDS-DC03",
+        "precio": 8320,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "100 W · 12 km/h · 8–12 km · batería 12V/4.5 Ah x 2",
+        "desc": "Monopatín Eléctrico Plegable KDS-DC03 Monopatín eléctrico de diseño compacto y moderno, ideal para desplazamientos urbanos. Cuenta con un motor potente, baterías de larga duración y una velocidad máxima que lo hace eficiente para trayectos cortos. Además, su sistema de frenos y suspensión ofrece una conducción segura y cómoda. Es una opción práctica y ecológica para moverse por la ciudad.",
+        "specs": [
+            [
+                "Motor",
+                "100 W"
+            ],
+            [
+                "Voltaje",
+                "24V"
+            ],
+            [
+                "Tiempo de carga",
+                "3–5h"
+            ],
+            [
+                "Plegable",
+                "Sí"
+            ],
+            [
+                "Autonomía por carga",
+                "8–12 km"
+            ],
+            [
+                "Material de la llanta",
+                "Pu"
+            ],
+            [
+                "Material",
+                "Acero"
+            ],
+            [
+                "Batería",
+                "12V/4.5 Ah x 2"
+            ],
+            [
+                "Carga máxima",
+                "70 kg"
+            ],
+            [
+                "Velocidad máxima",
+                "12 km/h"
+            ],
+            [
+                "Freno",
+                "Freno de clip trasero"
+            ],
+            [
+                "Modo de inicio",
+                "Interruptor de botón y dirección Reguladora de velocidad"
+            ]
+        ],
+        "colores": [
+            "Celeste",
+            "Negro",
+            "Rojo",
+            "Rosa"
+        ],
+        "foto": "monopatin-electrico-kds-dc03.jpg"
+    },
+    {
+        "slug": "monopatin-electrico-kds-t3",
+        "nombre": "Monopatín eléctrico KDS-T3",
+        "familia": "monopatin",
+        "codigo": "KDS-T3",
+        "precio": 12320,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "180 W · 18 km/h · 6–8 km · rodado 8 pulgadas",
+        "desc": "Monopatín Eléctrico KDS-T3 Monopatín eléctrico robusto y de alto rendimiento, diseñado para ofrecer una experiencia de conducción cómoda y segura. Equipado con un motor potente, una batería de larga duración y neumáticos de mayor tamaño, es ideal para recorrer distancias más largas y enfrentarse a terrenos variados. Su estructura resistente y sistema de frenos confiables lo convierten en una opción perfecta para quienes buscan eficiencia y durabilidad en su movilidad urbana.",
+        "specs": [
+            [
+                "Autonomía",
+                "6–8 km"
+            ],
+            [
+                "Batería",
+                "25.2V/2600mAh"
+            ],
+            [
+                "Litio Medidas",
+                "86*32*15 cm"
+            ],
+            [
+                "Aceleración",
+                "Impulso"
+            ],
+            [
+                "Peso",
+                "8.3 Kg"
+            ],
+            [
+                "Rodado",
+                "8 pulgadas"
+            ],
+            [
+                "Parámetros de carga",
+                "25.2 VIA"
+            ],
+            [
+                "Motor",
+                "180 W"
+            ],
+            [
+                "Tiempo De Carga",
+                "2–3 h"
+            ],
+            [
+                "Carga máxima",
+                "70 Kg APROX"
+            ],
+            [
+                "Angulo máximo",
+                "5°"
+            ],
+            [
+                "Vel. máxima",
+                "18 km/h"
+            ]
+        ],
+        "colores": [
+            "Blanco",
+            "Rojo",
+            "Rosa",
+            "Verde Agua"
+        ],
+        "foto": "monopatin-electrico-kds-t3.jpg"
+    },
+    {
+        "slug": "monopatin-electrico-pulse-kds-dc10",
+        "nombre": "Monopatín eléctrico Pulse KDS-DC10",
+        "familia": "monopatin",
+        "codigo": "KDS-DC10",
+        "precio": 30500,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "350 W · 28 km/h",
+        "desc": "Monopatín Eléctrico Plegable KDS-DC10 Diseñado para ofrecer una conducción estable y cómoda. Con un motor potente y una batería de larga duración, es perfecto para trayectos urbanos y desplazamientos más largos. Sus neumáticos sólidos y sistema de frenos eficiente aseguran una experiencia segura en diferentes tipos de terreno. Además, su diseño moderno y plegable lo hace fácil de almacenar y transportar, ideal para quienes buscan un medio de transporte práctico y ecológico.",
+        "specs": [
+            [
+                "Motor",
+                "350 W"
+            ],
+            [
+                "Voltaje",
+                "36V"
+            ],
+            [
+                "Tiempo De Carga",
+                "5–8h"
+            ],
+            [
+                "Autonomía Por Carga",
+                "20–30 km (Según La Capacidad De La Batería)"
+            ],
+            [
+                "Material",
+                "Acero + Aluminio"
+            ],
+            [
+                "Batería De Plomo",
+                "36V/7.8 Ah"
+            ],
+            [
+                "Carga Máxima",
+                "80 Kg"
+            ],
+            [
+                "Velocidad Máxima",
+                "28 km/h"
+            ],
+            [
+                "Freno",
+                "Freno Electrónico En La Rueda Delantera, Freno De Disco En La Rueda Trasera"
+            ],
+            [
+                "Modo De Inicio",
+                "Control De Compuerta Y Regulación De Velocidad En El Manillar"
+            ],
+            [
+                "Número De Recargas",
+                "250–300"
+            ],
+            [
+                "Iluminación",
+                "Luces Delanteras, Luces Traseras De Freno, Pantalla De Electricidad"
+            ]
+        ],
+        "colores": [
+            "Negro"
+        ],
+        "foto": "monopatin-electrico-pulse-kds-dc10.jpg"
+    },
+    {
+        "slug": "monopatin-electrico-kds-es10",
+        "nombre": "Monopatín eléctrico KDS-ES10",
+        "familia": "monopatin",
+        "codigo": "KDS-ES10",
+        "precio": 15790,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "250 W · 25 km/h · 23–25 km · batería 36V 6.6 Ah",
+        "desc": "Monopatín Eléctrico Plegable KDS-ES10 Monopatín eléctrico de diseño elegante y funcional, ideal para quienes buscan una opción ágil y eficiente para moverse por la ciudad. Cuenta con un motor potente, una batería de larga duración y una velocidad máxima adecuada para trayectos urbanos. Sus neumáticos resistentes y sistema de frenos confiables proporcionan una conducción segura, mientras que su estructura ligera y plegable facilita su transporte y almacenamiento. Es una opción práctica y cómoda para quienes necesitan un medio de transporte rápido y ecológico.",
+        "specs": [
+            [
+                "Motor",
+                "250 W"
+            ],
+            [
+                "Voltaje",
+                "36V"
+            ],
+            [
+                "Tiempo de carga",
+                "3–5h"
+            ],
+            [
+                "Plegable",
+                "Sí"
+            ],
+            [
+                "Autonomía por carga",
+                "23–25 km"
+            ],
+            [
+                "Material de la llanta",
+                "Ruedas de goma con núcleo de panal"
+            ],
+            [
+                "Tamaño de las ruedas",
+                "8X2.5 pulgadas"
+            ],
+            [
+                "Material",
+                "Aluminio"
+            ],
+            [
+                "Batería",
+                "36V 6.6 Ah"
+            ],
+            [
+                "Carga máxima",
+                "75 kg"
+            ],
+            [
+                "Velocidad máxima",
+                "25 km/h"
+            ],
+            [
+                "Freno",
+                "Freno electrónico"
+            ]
+        ],
+        "colores": [
+            "Gris",
+            "Negro"
+        ],
+        "foto": "monopatin-electrico-kds-es10.jpg"
+    },
+    {
+        "slug": "monopatin-electrico-amsterdam-kds-es8",
+        "nombre": "Monopatín eléctrico Amsterdam KDS-ES8",
+        "familia": "monopatin",
+        "codigo": "KDS-ES8",
+        "precio": 26200,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "250 W · 25 km/h · 13–23 km",
+        "desc": "Monopatín Eléctrico KDS-ES8 Eléctrico compacto y versátil, diseñado para ofrecer comodidad y eficiencia en el desplazamiento urbano. Equipado con un motor potente y una batería de larga duración, permite recorrer distancias moderadas a buena velocidad. Sus neumáticos sólidos proporcionan estabilidad en diferentes superficies, mientras que su sistema de frenos asegura una conducción segura. Además, su diseño plegable lo hace fácil de transportar y almacenar, siendo una opción ideal para quienes buscan un medio de transporte práctico y ecológico.",
+        "specs": [
+            [
+                "Motor",
+                "250 W"
+            ],
+            [
+                "Voltaje",
+                "36V"
+            ],
+            [
+                "Tiempo De Carga",
+                "2–3h"
+            ],
+            [
+                "Plegable",
+                "Sí"
+            ],
+            [
+                "Autonomía Por Carga",
+                "13–23 km"
+            ],
+            [
+                "Material De La Llanta",
+                "Neumático De Goma"
+            ],
+            [
+                "Tamaño De La Llanta",
+                "8.5 Pulgadas"
+            ],
+            [
+                "Material",
+                "Aluminio"
+            ],
+            [
+                "Capacidad De La Batería",
+                "36V/7.8 Ah"
+            ],
+            [
+                "Carga Máxima",
+                "80 Kg"
+            ],
+            [
+                "Velocidad Máxima",
+                "25 km/h"
+            ],
+            [
+                "Freno",
+                "Freno Delantero"
+            ]
+        ],
+        "colores": [
+            "Negro"
+        ],
+        "foto": "monopatin-electrico-amsterdam-kds-es8.jpg"
+    },
+    {
+        "slug": "monopatin-electrico-city-kds-dc22",
+        "nombre": "Monopatín eléctrico City KDS-DC22",
+        "familia": "monopatin",
+        "codigo": "KDS-DC22",
+        "precio": 32900,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "500 W · 35 km/h · 25–35 km",
+        "desc": "Monopatín Eléctrico Plegable KDS-DC22 Diseñado para ofrecer una experiencia de conducción dinámica y cómoda. Con un motor potente y una batería de larga duración, es ideal para trayectos urbanos y recorridos más largos. Sus neumáticos robustos y el sistema de suspensión mejorado proporcionan una conducción estable, incluso en terrenos irregulares. Además, su diseño moderno y plegable facilita su almacenamiento y transporte, convirtiéndolo en una opción práctica, segura y ecológica para quienes buscan un medio de transporte eficiente.",
+        "specs": [
+            [
+                "Motor",
+                "500 W"
+            ],
+            [
+                "Voltaje",
+                "36V"
+            ],
+            [
+                "Tiempo De Carga",
+                "3–5h"
+            ],
+            [
+                "Plegable",
+                "Sí"
+            ],
+            [
+                "Autonomía Por Carga",
+                "25–35 km"
+            ],
+            [
+                "Material De La Llanta",
+                "Ruedas De Goma Con Inflado De Aire"
+            ],
+            [
+                "Tamaño De Las Ruedas",
+                "10×2.5 Pulgadas"
+            ],
+            [
+                "Material",
+                "Aluminio"
+            ],
+            [
+                "Batería",
+                "Batería China 36V 10.4 Ah"
+            ],
+            [
+                "Carga Máxima",
+                "100 Kg"
+            ],
+            [
+                "Velocidad Máxima",
+                "35 km/h"
+            ],
+            [
+                "Freno",
+                "Freno De Disco Delantero Y Trasero"
+            ]
+        ],
+        "colores": [
+            "Rojo",
+            "Negro"
+        ],
+        "foto": "monopatin-electrico-city-kds-dc22.jpg"
+    },
+    {
+        "slug": "monopatin-electrico-urban-kds-dc17",
+        "nombre": "Monopatín eléctrico Urban KDS-DC17",
+        "familia": "monopatin",
+        "codigo": "KDS-DC17",
+        "precio": 40900,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "800 W · 55 km/h · 25–35 km",
+        "desc": "Monopatín Eléctrico KDS-DC17 Diseñado para ofrecer una experiencia de conducción suave y segura. Equipado con un motor potente y una batería de larga duración, es ideal para desplazamientos urbanos y recorridos de mayor distancia. Sus neumáticos de gran tamaño y sistema de suspensión aseguran una conducción cómoda en terrenos irregulares, mientras que el sistema de frenos eficiente brinda seguridad. Con su diseño moderno y plegable, el KDS-DC17 es práctico para el transporte y almacenamiento, convirtiéndolo en una excelente opción para quienes buscan un medio de transporte rápido y ecológico.",
+        "specs": [
+            [
+                "Motor",
+                "800 W"
+            ],
+            [
+                "Voltaje",
+                "48V"
+            ],
+            [
+                "Tiempo De Carga",
+                "5–6h"
+            ],
+            [
+                "Autonomía Por Carga",
+                "25–35 km"
+            ],
+            [
+                "Tamaño De La Llanta",
+                "Neumáticos De Goma De 11 Pulgadas"
+            ],
+            [
+                "Material",
+                "Acero"
+            ],
+            [
+                "Batería",
+                "Batería De Litio 48V/10.4 Ah"
+            ],
+            [
+                "Carga Máxima",
+                "120 Kg"
+            ],
+            [
+                "Velocidad Máxima",
+                "55 km/h"
+            ],
+            [
+                "Freno",
+                "Freno Tipo Banda Trasero"
+            ],
+            [
+                "Modo De Inicio",
+                "Regulación De Velocidad En El Manillar"
+            ],
+            [
+                "Número De Recargas",
+                "250–300"
+            ]
+        ],
+        "colores": [],
+        "foto": "monopatin-electrico-urban-kds-dc17.jpg"
+    },
+    {
+        "slug": "monopatin-electrico-raptor-kds-dc29",
+        "nombre": "Monopatín eléctrico Raptor KDS-DC29",
+        "familia": "monopatin",
+        "codigo": "KDS-DC29",
+        "precio": 59900,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "60 km/h · 30–40 km",
+        "desc": "Monopatín Eléctrico Plegable KDS-DC29 Monopatín eléctrico de alto rendimiento, diseñado para ofrecer una experiencia de conducción ágil y cómoda. Con un motor potente y una batería de larga duración, es ideal para recorrer distancias largas y trayectos urbanos. Su sistema de suspensión y neumáticos robustos proporcionan estabilidad y confort, incluso en superficies irregulares. Además, su diseño moderno y plegable facilita su transporte y almacenamiento, convirtiéndolo en una opción práctica y eficiente para quienes buscan un medio de transporte rápido, seguro y ecológico.",
+        "specs": [
+            [
+                "Motor doble",
+                "1600 W"
+            ],
+            [
+                "Voltaje",
+                "48V"
+            ],
+            [
+                "Tiempo de carga",
+                "3–4h"
+            ],
+            [
+                "Plegable",
+                "Sí"
+            ],
+            [
+                "Autonomía por carga",
+                "30–40 km"
+            ],
+            [
+                "Tamaño de las ruedas",
+                "11 pulgadas"
+            ],
+            [
+                "Material",
+                "Aluminio"
+            ],
+            [
+                "Batería",
+                "Batería de litio 48V/13 Ah"
+            ],
+            [
+                "Carga máxima",
+                "120 kg"
+            ],
+            [
+                "Velocidad máxima",
+                "60 km/h"
+            ],
+            [
+                "Freno",
+                "Freno de disco en las ruedas delantera y trasera"
+            ]
+        ],
+        "colores": [
+            "Negro"
+        ],
+        "foto": "monopatin-electrico-raptor-kds-dc29.jpg"
+    },
+    {
+        "slug": "monopatin-electrico-thunder-kds-dc49",
+        "nombre": "Monopatín eléctrico Thunder KDS-DC49",
+        "familia": "monopatin",
+        "codigo": "KDS-DC49",
+        "precio": 53300,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "1200 W · 40 km/h · 20–35 km · batería 48V/13A de litio",
+        "desc": "El Monopatín Eléctrico Thunder está diseñado para quienes buscan rendimiento y adrenalina en cada trayecto. Equipado con un motor de 1200W y batería de 48V, ofrece una aceleración potente y una conducción ágil tanto en la ciudad como en caminos más exigentes. Su estructura robusta garantiza estabilidad y durabilidad, mientras que su diseño moderno lo convierte en el aliado ideal para moverte con estilo.",
+        "specs": [
+            [
+                "Motor",
+                "1200 W"
+            ],
+            [
+                "Voltaje",
+                "48V"
+            ],
+            [
+                "Tiempo de carga",
+                "3–4 horas"
+            ],
+            [
+                "Plegable",
+                "Sí"
+            ],
+            [
+                "Autonomía por carga",
+                "20–35 km"
+            ],
+            [
+                "Tamaño de ruedas",
+                "11 pulgadas"
+            ],
+            [
+                "Material",
+                "Aluminio"
+            ],
+            [
+                "Batería",
+                "48V/13A de litio"
+            ],
+            [
+                "Carga máxima",
+                "120 kg"
+            ],
+            [
+                "Velocidad máxima",
+                "40 km/h"
+            ],
+            [
+                "Frenos",
+                "Discos en rueda delantera y trasera"
+            ]
+        ],
+        "colores": [
+            "Negro"
+        ],
+        "foto": "monopatin-electrico-thunder-kds-dc49.jpg"
+    },
+    {
+        "slug": "bici-electrica-sin-pedales-para-nino",
+        "nombre": "Bici eléctrica sin pedales para niño",
+        "familia": "bici_electrica",
+        "codigo": "KDS-DC45",
+        "precio": 12900,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "150 W · 10 km/h · 6 km · rueda 12\"",
+        "desc": "La mejor manera de que los más chicos disfruten de la movilidad eléctrica con total seguridad. Esta bicicleta eléctrica sin pedales está pensada para niños que comienzan a dar sus primeras rodadas, combinando estabilidad, ligereza y velocidad controlada.",
+        "specs": [
+            [
+                "Material del cuerpo",
+                "Aleación de aluminio y magnesio, Tamaño de ruedas: 12 pulgadas"
+            ],
+            [
+                "Dimensiones del vehículo",
+                "95 × 38 × 60 cm"
+            ],
+            [
+                "Amortiguación",
+                "Neumáticos delanteros y traseros flush"
+            ],
+            [
+                "Voltaje máximo (V)",
+                "24.5V"
+            ],
+            [
+                "Velocidad máxima (km/h)",
+                "10 km/h"
+            ],
+            [
+                "Autonomía aproximada (km)",
+                "6 km"
+            ],
+            [
+                "Modo de conducción",
+                "Indica aceleración"
+            ],
+            [
+                "Modo de freno",
+                "Freno mecánico en rueda trasera"
+            ],
+            [
+                "Altura máxima del asiento",
+                "60 cm"
+            ],
+            [
+                "Ángulo de dirección",
+                "60°"
+            ],
+            [
+                "Modo de tracción",
+                "Motor trasero sin escobillas (brushless)"
+            ],
+            [
+                "Potencia nominal (W)",
+                "150 W"
+            ]
+        ],
+        "colores": [],
+        "foto": "bici-electrica-sin-pedales-para-nino.jpg"
+    },
+    {
+        "slug": "bici-electrica-titan-pro-rodado-20",
+        "nombre": "Bici eléctrica Titan Pro rodado 20",
+        "familia": "bici_electrica",
+        "codigo": null,
+        "precio": 64900,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "750 W · hasta 45 km/h · 35 a 40 km · rodado 20\"",
+        "desc": "La Titan Pro R20 es una bicicleta eléctrica moderna, potente y versátil, ideal para moverte por la ciudad con comodidad, rapidez y bajo costo. Gracias a su motor de 750W y batería de 48V 15.6Ah, ofrece un excelente rendimiento tanto para uso diario como recreativo. Esta bicicleta está diseñada para brindar potencia y estabilidad, gracias a sus ruedas anchas que mejoran el agarre en distintos terrenos.",
+        "specs": [
+            [
+                "Motor",
+                "750 W"
+            ],
+            [
+                "Velocidad máxima",
+                "hasta 45 km/h"
+            ],
+            [
+                "Batería",
+                "48V 15.6 Ah (litio)"
+            ],
+            [
+                "Autonomía",
+                "35 a 40 km"
+            ],
+            [
+                "Rodado",
+                "20\""
+            ],
+            [
+                "Neumáticos",
+                "Kenda 20×4.0 (fat tire)"
+            ],
+            [
+                "Cambios",
+                "Shimano (8 velocidades)"
+            ],
+            [
+                "Acelerador",
+                "Medio puño"
+            ],
+            [
+                "Display",
+                "LED"
+            ],
+            [
+                "Resistencia al agua",
+                "IPX5"
+            ],
+            [
+                "Frenos",
+                "Mecánicos"
+            ],
+            [
+                "Cuadro",
+                "Acero reforzado"
+            ]
+        ],
+        "colores": [],
+        "foto": "bici-electrica-titan-pro-rodado-20.jpg"
+    },
+    {
+        "slug": "bici-electrica-neo-cobra-rodado-26",
+        "nombre": "Bici eléctrica Neo Cobra rodado 26",
+        "familia": "bici_electrica",
+        "codigo": null,
+        "precio": 40900,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "250 W · 25 km/h · 30 a 50 km · rodado 26",
+        "desc": "Movete por la ciudad de forma rápida, cómoda y sin esfuerzo. La Neo Cobra está diseñada para el uso diario, combinando tecnología, confort y un diseño moderno que se adapta a cualquier estilo. Equipada con motor de 250W y batería de litio de 36V 7.8Ah, permite recorrer largas distancias con menor esfuerzo, ideal para ir al trabajo, estudiar o trasladarte sin depender del transporte público.",
+        "specs": [
+            [
+                "Motor",
+                "250 W"
+            ],
+            [
+                "Batería",
+                "36V 7.8 Ah (ion de litio)"
+            ],
+            [
+                "Autonomía",
+                "30 a 50 km"
+            ],
+            [
+                "Velocidad máxima",
+                "25 km/h"
+            ],
+            [
+                "Rodado",
+                "26"
+            ],
+            [
+                "Cubiertas",
+                "Chaoyang 26×1.95"
+            ],
+            [
+                "Peso máximo soportado",
+                "120 kg"
+            ]
+        ],
+        "colores": [
+            "Crema",
+            "Violeta"
+        ],
+        "foto": "bici-electrica-neo-cobra-rodado-26.jpg"
+    },
+    {
+        "slug": "bici-electrica-metropolis-rodado-28",
+        "nombre": "Bici eléctrica Metrópolis rodado 28",
+        "familia": "bici_electrica",
+        "codigo": null,
+        "precio": 42900,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "36V · hasta 25 km/h · 30 a 40 km · rodado 28\"",
+        "desc": "La Hiper Engine Metropolis R28 es la opción ideal para movilidad urbana: cómoda, práctica y eficiente. Diseñada para el día a día, te permite moverte sin esfuerzo, ahorrar dinero y ganar tiempo en cada trayecto. Su sistema eléctrico de 36V 10.4Ah brinda una conducción suave, silenciosa y confiable.",
+        "specs": [
+            [
+                "Motor",
+                "36V"
+            ],
+            [
+                "Batería",
+                "36V 10.4 Ah (litio)"
+            ],
+            [
+                "Rodado",
+                "28\""
+            ],
+            [
+                "Cubiertas",
+                "Chaoyang 28×1.75"
+            ],
+            [
+                "Velocidad máxima",
+                "hasta 25 km/h"
+            ],
+            [
+                "Autonomía",
+                "30 a 40 km"
+            ],
+            [
+                "Frenos",
+                "V-Brake"
+            ],
+            [
+                "Cuadro",
+                "Acero resistente"
+            ],
+            [
+                "Sistema eléctrico",
+                "Asistido + acelerador"
+            ],
+            [
+                "Dimensiones",
+                "144 x 27 x 96cm"
+            ]
+        ],
+        "colores": [],
+        "foto": "bici-electrica-metropolis-rodado-28.jpg"
+    },
+    {
+        "slug": "bicicleta-speed-rodado-27-5",
+        "nombre": "Bicicleta Speed rodado 27.5",
+        "familia": "bicicleta",
+        "codigo": null,
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "Rodado 27.5 · acero · 21 velocidades · 5 colores",
+        "desc": "La Bicicleta MTB Knex Speed es ideal para los amantes de las aventuras en montaña. Con un marco de acero resistente y 21 velocidades, ofrece un rendimiento excelente en terrenos diversos. Equipado con frenos V-brake para una frenada segura y eficiente, y un diseño moderno en colores negro y naranja. Perfecta para quienes buscan durabilidad, control y estilo en sus recorridos.",
+        "specs": [
+            [
+                "Rodado",
+                "27.5"
+            ],
+            [
+                "Velocidades",
+                "21"
+            ],
+            [
+                "Cuadro",
+                "Acero"
+            ],
+            [
+                "Frenos",
+                "V-brake"
+            ],
+            [
+                "Marca",
+                "Knex"
+            ],
+            [
+                "Tipo de bicicleta",
+                "MTB (Montaña)"
+            ],
+            [
+                "Material del asiento",
+                "Cuero sintético, diseñado para ofrecer comodidad en trayectos largos"
+            ],
+            [
+                "Peso Máximo Soportada",
+                "100 Kg"
+            ]
+        ],
+        "colores": [
+            "Azul/Negro",
+            "Blanco/Negro",
+            "Negro/Gris",
+            "Negro/Naranja",
+            "Negro/Rojo"
+        ],
+        "foto": "bicicleta-speed-rodado-27-5.jpg"
+    },
+    {
+        "slug": "bici-electrica-killer-rodado-20-fat-bike",
+        "nombre": "Bici eléctrica Killer rodado 20 fat bike",
+        "familia": "bici_electrica",
+        "codigo": null,
+        "precio": 56990,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "48V 350 W · 30 km/h · 35–50 km · rodado 20",
+        "desc": "Diseño moderno, ruedas anchas y comodidad para disfrutar cada recorrido. La Bicicleta Eléctrica Killer combina una estética inspirada en las motos con el confort de un asiento amplio y la presencia de sus ruedas Fat Bike. Una opción ideal para quienes buscan una forma diferente y práctica de moverse.",
+        "specs": [
+            [
+                "Rodado",
+                "20"
+            ],
+            [
+                "Motor",
+                "48V 350 W"
+            ],
+            [
+                "Batería",
+                "Litio 48V 10 Ah"
+            ],
+            [
+                "Voltaje",
+                "48V"
+            ],
+            [
+                "Peso máximo soportado",
+                "100kg"
+            ],
+            [
+                "Velocidad máxima",
+                "30 km/h"
+            ],
+            [
+                "Autonomía",
+                "35–50 km"
+            ],
+            [
+                "Horquilla",
+                "Doble suspensión delantera"
+            ],
+            [
+                "Manetas de freno",
+                "Aluminio"
+            ],
+            [
+                "Cambio trasero",
+                "7 velocidades"
+            ],
+            [
+                "Neumáticos",
+                "20 x 4.0 (Fat Fire)"
+            ]
+        ],
+        "colores": [],
+        "foto": "bici-electrica-killer-rodado-20-fat-bike.png"
+    },
+    {
+        "slug": "bici-electrica-galaxy-rodado-20",
+        "nombre": "Bici eléctrica Galaxy rodado 20",
+        "familia": "bici_electrica",
+        "codigo": null,
+        "precio": 37900,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "36V / 350 W · 25–35 km por carga · rodado 20",
+        "desc": "Movete por la ciudad de una manera práctica, cómoda y eficiente con la Bicicleta Eléctrica Galaxy Rodado 20. Su motor de 350 W ofrece una asistencia ideal para los desplazamientos cotidianos, mientras que su formato compacto y sus neumáticos 20 × 1.95 permiten una conducción ágil y fácil de controlar. Disponible en color negro o gris, combina movilidad eléctrica con un diseño urbano y moderno.",
+        "specs": [
+            [
+                "Modelo",
+                "Galaxy"
+            ],
+            [
+                "Rodado",
+                "20"
+            ],
+            [
+                "Motor eléctrico",
+                "36V / 350 W"
+            ],
+            [
+                "Batería de litio",
+                "36V / 7,8 Ah"
+            ],
+            [
+                "Capacidad energética",
+                "280,8 Wh"
+            ],
+            [
+                "Velocidad máxima estimada",
+                "25–35 km/h"
+            ],
+            [
+                "Autonomía estimada",
+                "25–35 km por carga"
+            ],
+            [
+                "Neumáticos",
+                "20 × 1.95"
+            ],
+            [
+                "Llantas de aluminio",
+                "20 × 1.95"
+            ]
+        ],
+        "colores": [
+            "Gris",
+            "Negro"
+        ],
+        "foto": "bici-electrica-galaxy-rodado-20.jpg"
+    },
+    {
+        "slug": "bici-electrica-madrid-rodado-26",
+        "nombre": "Bici eléctrica Madrid rodado 26",
+        "familia": "bici_electrica",
+        "codigo": null,
+        "precio": 36900,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "250 W · 25–35 km por carga · rodado 26",
+        "desc": "La Bicicleta Eléctrica Madrid Rodado 26 ofrece una propuesta equilibrada para quienes buscan simplificar sus traslados diarios sin dejar de disfrutar la experiencia de una bicicleta convencional. Su motor de 250 W trabaja en conjunto con una batería de litio de 36 V, brindando asistencia para recorridos urbanos, paseos y trayectos cotidianos. El rodado 26 × 1.95 completa una configuración cómoda y versátil para el día a día.",
+        "specs": [
+            [
+                "Modelo",
+                "Madrid"
+            ],
+            [
+                "Rodado",
+                "26"
+            ],
+            [
+                "Motor eléctrico",
+                "250 W"
+            ],
+            [
+                "Batería de litio",
+                "36V / 7,8 Ah"
+            ],
+            [
+                "Capacidad energética",
+                "280,8 Wh"
+            ],
+            [
+                "Controlador",
+                "9 tubos (9 MOSFET)"
+            ],
+            [
+                "Velocidad máxima estimada",
+                "hasta 25 km/h"
+            ],
+            [
+                "Autonomía estimada",
+                "25–35 km por carga"
+            ],
+            [
+                "Neumáticos",
+                "26 × 1.95"
+            ]
+        ],
+        "colores": [],
+        "foto": "bici-electrica-madrid-rodado-26.png"
+    },
+    {
+        "slug": "bici-electrica-taurus-rodado-20-fat-bike",
+        "nombre": "Bici eléctrica Taurus rodado 20 fat bike",
+        "familia": "bici_electrica",
+        "codigo": null,
+        "precio": 44900,
+        "moneda": "UYU",
+        "estado": "publicado",
+        "resumen": "36V / 350 W · 20–30 km por carga · rodado 20",
+        "desc": "La Bicicleta Eléctrica Taurus Rodado 20 se destaca por sus cubiertas Fat Tire 20 × 4.0, que le aportan una presencia robusta y un mayor apoyo sobre el terreno. Equipada con motor eléctrico de 350 W, suspensión delantera y transmisión de 7 velocidades, combina asistencia eléctrica con una configuración versátil para disfrutar de recorridos urbanos y paseos sobre diferentes superficies.",
+        "specs": [
+            [
+                "Modelo",
+                "Taurus"
+            ],
+            [
+                "Rodado",
+                "20"
+            ],
+            [
+                "Motor eléctrico",
+                "36V / 350 W"
+            ],
+            [
+                "Batería de litio",
+                "36V / 7,8 Ah"
+            ],
+            [
+                "Capacidad energética",
+                "280,8 Wh"
+            ],
+            [
+                "Velocidad máxima estimada",
+                "25–35 km/h"
+            ],
+            [
+                "Autonomía estimada",
+                "20–30 km por carga"
+            ],
+            [
+                "Neumáticos Fat Tire",
+                "20 × 4.0"
+            ]
+        ],
+        "colores": [
+            "Gris",
+            "Negro"
+        ],
+        "foto": "bici-electrica-taurus-rodado-20-fat-bike.png"
+    },
+    {
+        "slug": "moto-electrica-max-350-con-parrilla",
+        "nombre": "Moto eléctrica MAX 350 con parrilla",
+        "familia": "moto",
+        "codigo": "MAX350-P",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "350 W · 45 km/h · 25–30 km · litio 48V/20h",
+        "desc": "",
+        "specs": [
+            [
+                "Potencia",
+                "350 W"
+            ],
+            [
+                "Batería",
+                "Litio 48V/20h"
+            ],
+            [
+                "Vel. máxima",
+                "45 km/h"
+            ],
+            [
+                "Autonomía",
+                "25–30 km"
+            ],
+            [
+                "Tiempo de carga",
+                "6 a 8 h"
+            ],
+            [
+                "Peso máx. usuario",
+                "90 kg"
+            ],
+            [
+                "Frenos",
+                "Tambor delantero y trasero"
+            ],
+            [
+                "Chasis",
+                "Acero"
+            ],
+            [
+                "Velocidades",
+                "3"
+            ],
+            [
+                "Garantía",
+                "3 meses"
+            ]
+        ],
+        "colores": [
+            "Negra",
+            "Roja"
+        ],
+        "foto": "moto-electrica-max-350-con-parrilla.png"
+    },
+    {
+        "slug": "moto-electrica-chopper-18",
+        "nombre": "Moto eléctrica Chopper 18\"",
+        "familia": "moto",
+        "codigo": "MEC",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "1000 W · 60V/12A · 23–35 km · rodado 18",
+        "desc": "",
+        "specs": [
+            [
+                "Potencia",
+                "1000 W"
+            ],
+            [
+                "Batería",
+                "60V/12A"
+            ],
+            [
+                "Autonomía",
+                "23–35 km"
+            ],
+            [
+                "Medidas",
+                "1756 × 750 × 700 mm"
+            ],
+            [
+                "Tiempo de carga",
+                "6 a 8 h"
+            ],
+            [
+                "Peso máx. usuario",
+                "90 kg"
+            ],
+            [
+                "Peso neto",
+                "60/70 kg"
+            ]
+        ],
+        "colores": [
+            "Azul",
+            "Roja"
+        ],
+        "foto": "moto-electrica-chopper-18.png"
+    },
+    {
+        "slug": "moto-electrica-chopper-18-bateria-litio",
+        "nombre": "Moto eléctrica Chopper 18\" batería litio",
+        "familia": "moto",
+        "codigo": "MBLI80",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "1000 W · litio 60V/12A · 25–35 km · rodado 18",
+        "desc": "",
+        "specs": [
+            [
+                "Potencia",
+                "1000 W"
+            ],
+            [
+                "Batería",
+                "Litio 60V/12A"
+            ],
+            [
+                "Rodado",
+                "18"
+            ],
+            [
+                "Autonomía",
+                "25–35 km"
+            ],
+            [
+                "Tiempo de carga",
+                "6 a 8 h"
+            ],
+            [
+                "Peso máx. usuario",
+                "90 kg"
+            ],
+            [
+                "Vel. máxima",
+                "20–35 km/h"
+            ],
+            [
+                "Suspensión",
+                "Delantera y trasera"
+            ]
+        ],
+        "colores": [
+            "Azul",
+            "Negra"
+        ],
+        "foto": "moto-electrica-chopper-18-bateria-litio.png"
+    },
+    {
+        "slug": "scooter-electrico-800-w-k",
+        "nombre": "Scooter eléctrico 800 W K",
+        "familia": "scooter",
+        "codigo": "SC-800W",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "800 W · 35–55 km/h · 20–40 km · tubeless",
+        "desc": "",
+        "specs": [
+            [
+                "Motor",
+                "800 W"
+            ],
+            [
+                "Vel. máxima",
+                "35–55 km/h"
+            ],
+            [
+                "Autonomía",
+                "20–40 km"
+            ],
+            [
+                "Batería",
+                "Ácido de plomo"
+            ],
+            [
+                "Peso máx. usuario",
+                "95 kg"
+            ],
+            [
+                "Neumáticos",
+                "Tubeless 3.00-10"
+            ],
+            [
+                "Frenos",
+                "Tambor delantero y trasero"
+            ],
+            [
+                "Pantalla",
+                "LED y digital"
+            ],
+            [
+                "Espejos",
+                "2"
+            ]
+        ],
+        "colores": [
+            "Azul",
+            "Blanca",
+            "Roja",
+            "Gris"
+        ],
+        "foto": "scooter-electrico-800-w-k.png"
+    },
+    {
+        "slug": "triciclo-electrico-250-w",
+        "nombre": "Triciclo eléctrico 250 W",
+        "familia": "triciclo",
+        "codigo": "TR250W",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "250 W · 36V/12A · 15–25 km",
+        "desc": "",
+        "specs": [
+            [
+                "Potencia",
+                "250 W"
+            ],
+            [
+                "Batería",
+                "36V/12A"
+            ],
+            [
+                "Autonomía",
+                "15–25 km"
+            ],
+            [
+                "Tiempo de carga",
+                "4 a 6 h"
+            ],
+            [
+                "Peso máx. usuario",
+                "90 kg"
+            ],
+            [
+                "Peso neto",
+                "38 kg"
+            ],
+            [
+                "Medidas",
+                "820 × 1100 × 260 mm"
+            ]
+        ],
+        "colores": [
+            "Negra",
+            "Azul"
+        ],
+        "foto": "triciclo-electrico-250-w.png"
+    },
+    {
+        "slug": "triciclo-electrico-con-respaldo",
+        "nombre": "Triciclo eléctrico con respaldo",
+        "familia": "triciclo",
+        "codigo": "ETB-122",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "600 W · 48V/12h · 2 pasajeros · 25–35 km",
+        "desc": "",
+        "specs": [
+            [
+                "Motor",
+                "600 W"
+            ],
+            [
+                "Batería",
+                "Ácido de plomo 48V/12h"
+            ],
+            [
+                "Autonomía",
+                "25–35 km"
+            ],
+            [
+                "Pasajeros",
+                "2"
+            ],
+            [
+                "Tiempo de carga",
+                "6 a 8 h"
+            ],
+            [
+                "Peso máx. usuario",
+                "90 kg"
+            ],
+            [
+                "Neumáticos",
+                "18 × 19.50 (225/55.8)"
+            ],
+            [
+                "Reversa",
+                "Sí"
+            ],
+            [
+                "Amortiguación",
+                "Delantera y trasera"
+            ],
+            [
+                "Velocidades",
+                "3"
+            ]
+        ],
+        "colores": [
+            "Roja",
+            "Azul"
+        ],
+        "foto": "triciclo-electrico-con-respaldo.png"
+    },
+    {
+        "slug": "bici-electrica-street-250-w",
+        "nombre": "Bici eléctrica Street 250 W",
+        "familia": "bici_electrica",
+        "codigo": "ETE109",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "250 W · plegable · rodado 20 · 15–20 km",
+        "desc": "",
+        "specs": [
+            [
+                "Motor",
+                "250 W"
+            ],
+            [
+                "Batería",
+                "Litio removible 24V-5.2A"
+            ],
+            [
+                "Rodado",
+                "20 × 1.75"
+            ],
+            [
+                "Autonomía",
+                "15–20 km"
+            ],
+            [
+                "Velocidades",
+                "7 indexadas"
+            ],
+            [
+                "Plegable",
+                "Sí"
+            ],
+            [
+                "Peso máx. usuario",
+                "85 kg"
+            ],
+            [
+                "Frenos",
+                "Disco delantero y trasero"
+            ],
+            [
+                "Luz delantera",
+                "LED"
+            ]
+        ],
+        "colores": [
+            "Azul",
+            "Roja",
+            "Negra"
+        ],
+        "foto": "bici-electrica-street-250-w.png"
+    },
+    {
+        "slug": "bici-electrica-k-wing",
+        "nombre": "Bici eléctrica K Wing",
+        "familia": "bici_electrica",
+        "codigo": "ETF05",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "350 W · plegable · rodado 20 × 4.0 · 30 km",
+        "desc": "",
+        "specs": [
+            [
+                "Motor",
+                "350 W"
+            ],
+            [
+                "Batería",
+                "Litio removible 36V 7,8 Ah"
+            ],
+            [
+                "Rodado",
+                "20 × 4.0"
+            ],
+            [
+                "Autonomía",
+                "30 km"
+            ],
+            [
+                "Velocidades",
+                "1 × 7"
+            ],
+            [
+                "Plegable",
+                "Sí"
+            ],
+            [
+                "Chasis",
+                "Aluminio"
+            ],
+            [
+                "Carga máxima",
+                "100 kg"
+            ],
+            [
+                "Vel. máxima",
+                "20 km/h"
+            ],
+            [
+                "Frenos",
+                "Disco delantero y trasero"
+            ]
+        ],
+        "colores": [
+            "Gris mate",
+            "Negra"
+        ],
+        "foto": "bici-electrica-k-wing.png"
+    },
+    {
+        "slug": "bici-electrica-k-lady",
+        "nombre": "Bici eléctrica K Lady",
+        "familia": "bici_electrica",
+        "codigo": "ETC02",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "350 W · rodado 26 · 20–30 km · litio 36V",
+        "desc": "",
+        "specs": [
+            [
+                "Motor",
+                "350 W"
+            ],
+            [
+                "Batería",
+                "Litio 36V 7,8 Ah"
+            ],
+            [
+                "Rodado",
+                "26"
+            ],
+            [
+                "Autonomía",
+                "20–30 km"
+            ],
+            [
+                "Chasis",
+                "Aluminio"
+            ],
+            [
+                "Carga máxima",
+                "100 kg"
+            ],
+            [
+                "Vel. máxima",
+                "20 km/h"
+            ],
+            [
+                "Frenos",
+                "Disco delantero y trasero"
+            ],
+            [
+                "Suspensión",
+                "Delantera"
+            ]
+        ],
+        "colores": [
+            "Rojo",
+            "Azul",
+            "Marfil"
+        ],
+        "foto": "bici-electrica-k-lady.png"
+    },
+    {
+        "slug": "bici-electrica-k-street",
+        "nombre": "Bici eléctrica K Street",
+        "familia": "bici_electrica",
+        "codigo": "ETE007",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "250 W · rodado 27.5 · 20–30 km · 7 velocidades",
+        "desc": "",
+        "specs": [
+            [
+                "Motor",
+                "250 W"
+            ],
+            [
+                "Batería",
+                "Litio 24V / 5,2 A"
+            ],
+            [
+                "Rodado",
+                "27,5 × 1,95"
+            ],
+            [
+                "Autonomía",
+                "20–30 km"
+            ],
+            [
+                "Velocidades",
+                "7"
+            ],
+            [
+                "Chasis",
+                "Aluminio"
+            ],
+            [
+                "Carga máxima",
+                "100 kg"
+            ],
+            [
+                "Vel. máxima",
+                "20 km/h"
+            ],
+            [
+                "Plegable",
+                "No"
+            ]
+        ],
+        "colores": [
+            "Azul",
+            "Gris",
+            "Negro"
+        ],
+        "foto": "bici-electrica-k-street.png"
+    },
+    {
+        "slug": "bici-electrica-k-fixi",
+        "nombre": "Bici eléctrica K Fixi",
+        "familia": "bici_electrica",
+        "codigo": "EES875",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "250 W · plegable · rodado 20 · 15–25 km",
+        "desc": "",
+        "specs": [
+            [
+                "Motor",
+                "250 W"
+            ],
+            [
+                "Batería",
+                "Litio 36V 7,8 Ah"
+            ],
+            [
+                "Rodado",
+                "20 × 4.0"
+            ],
+            [
+                "Autonomía",
+                "15–25 km"
+            ],
+            [
+                "Engranaje",
+                "1 × 7 velocidades"
+            ],
+            [
+                "Marco",
+                "Acero"
+            ],
+            [
+                "Vel. máxima",
+                "20 km/h"
+            ],
+            [
+                "Frenos",
+                "Disco delantero y trasero"
+            ]
+        ],
+        "colores": [
+            "Gris",
+            "Negra"
+        ],
+        "foto": "bici-electrica-k-fixi.png"
+    },
+    {
+        "slug": "bicicleta-nino-sport-rodado-14-y-16",
+        "nombre": "Bicicleta niño Sport rodado 14 y 16",
+        "familia": "bicicleta",
+        "codigo": "F0702",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 14 y 16 · con rueditas · canasto",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "14 y 16"
+            ],
+            [
+                "Rueditas",
+                "Sí"
+            ],
+            [
+                "Canasto",
+                "Sí"
+            ],
+            [
+                "Extras",
+                "Caramañola y portabultos"
+            ]
+        ],
+        "colores": [
+            "Verde y blanca"
+        ],
+        "foto": "bicicleta-nino-sport-rodado-14-y-16.png"
+    },
+    {
+        "slug": "bicicleta-nino-k-kidland",
+        "nombre": "Bicicleta niño K Kidland",
+        "familia": "bicicleta",
+        "codigo": "SD58",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 12, 14, 16 y 20 · con rueditas",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "12, 14, 16 y 20"
+            ],
+            [
+                "Rueditas",
+                "Sí"
+            ],
+            [
+                "Canasto",
+                "Sí"
+            ]
+        ],
+        "colores": [
+            "Azul",
+            "Roja",
+            "Rosada"
+        ],
+        "foto": "bicicleta-nino-k-kidland.png"
+    },
+    {
+        "slug": "bicicleta-nino-rodado-12",
+        "nombre": "Bicicleta niño rodado 12",
+        "familia": "bicicleta",
+        "codigo": "K-583",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "Rodado 12 · con rueditas",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "12"
+            ],
+            [
+                "Rueditas",
+                "Sí"
+            ],
+            [
+                "Cuadro",
+                "Acero"
+            ]
+        ],
+        "colores": [
+            "Negra y violeta"
+        ],
+        "foto": "bicicleta-nino-rodado-12.png"
+    },
+    {
+        "slug": "bici-moto-nino",
+        "nombre": "Bici moto niño",
+        "familia": "bicicleta",
+        "codigo": "S-302",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 16 y 20 · carenado tipo moto · con rueditas",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "16 y 20"
+            ],
+            [
+                "Rueditas",
+                "Sí"
+            ],
+            [
+                "Cuadro",
+                "Acero"
+            ]
+        ],
+        "colores": [
+            "Azul",
+            "Roja"
+        ],
+        "foto": "bici-moto-nino.png"
+    },
+    {
+        "slug": "bicicleta-nina-dieloi",
+        "nombre": "Bicicleta niña Dieloi",
+        "familia": "bicicleta",
+        "codigo": "ANB",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 16 y 20 · canasto y rueditas",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "16 y 20"
+            ],
+            [
+                "Rueditas",
+                "Sí"
+            ],
+            [
+                "Canasto",
+                "Sí"
+            ]
+        ],
+        "colores": [
+            "Roja",
+            "Rosada"
+        ],
+        "foto": "bicicleta-nina-dieloi.png"
+    },
+    {
+        "slug": "bicicleta-nino-rodado-16-beige",
+        "nombre": "Bicicleta niño rodado 16 Beige",
+        "familia": "bicicleta",
+        "codigo": "K-721",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "Rodado 16 · aluminio · frenos de disco",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "16"
+            ],
+            [
+                "Cuadro",
+                "Aluminio"
+            ],
+            [
+                "Frenos",
+                "Disco"
+            ]
+        ],
+        "colores": [
+            "Blanca y verde"
+        ],
+        "foto": "bicicleta-nino-rodado-16-beige.png"
+    },
+    {
+        "slug": "bicicleta-bmx-xltong-rodado-20",
+        "nombre": "Bicicleta BMX Xltong rodado 20",
+        "familia": "bicicleta",
+        "codigo": "YX-P02-20",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 20 · acero · sin cambios",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "20"
+            ],
+            [
+                "Cuadro",
+                "Acero"
+            ],
+            [
+                "Velocidades",
+                "Sin cambios"
+            ],
+            [
+                "Tipo",
+                "BMX"
+            ]
+        ],
+        "colores": [
+            "Blanca",
+            "Roja"
+        ],
+        "foto": "bicicleta-bmx-xltong-rodado-20.png"
+    },
+    {
+        "slug": "bicicleta-mengdas-rodado-20",
+        "nombre": "Bicicleta Mengdas rodado 20",
+        "familia": "bicicleta",
+        "codigo": "R20/AN-1",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 20 × 2.35 · frenos de disco",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "20 × 2.35"
+            ],
+            [
+                "Frenos",
+                "Disco"
+            ],
+            [
+                "Cuadro",
+                "Acero"
+            ]
+        ],
+        "colores": [
+            "Negra y azul",
+            "Negra y roja"
+        ],
+        "foto": "bicicleta-mengdas-rodado-20.png"
+    },
+    {
+        "slug": "bicicleta-mtb-easy-try-rodado-27-5",
+        "nombre": "Bicicleta MTB Easy-Try rodado 27.5",
+        "familia": "bicicleta",
+        "codigo": "EPB003",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 27.5 y 29 · aluminio · 21 velocidades",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "26, 27.5 y 29"
+            ],
+            [
+                "Cuadro",
+                "Aluminio"
+            ],
+            [
+                "Velocidades",
+                "21"
+            ],
+            [
+                "Frenos",
+                "Disco delantero y trasero"
+            ]
+        ],
+        "colores": [
+            "Gris y roja",
+            "Negra"
+        ],
+        "foto": "bicicleta-mtb-easy-try-rodado-27-5.png"
+    },
+    {
+        "slug": "bicicleta-urbana-easy-try-700-25",
+        "nombre": "Bicicleta urbana Easy-Try 700 × 25",
+        "familia": "bicicleta",
+        "codigo": "EPB007",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "700 × 25 · manillar recto 620 mm · 3 × 7",
+        "desc": "",
+        "specs": [
+            [
+                "Cubiertas",
+                "700 × 25"
+            ],
+            [
+                "Velocidades",
+                "3 × 7"
+            ],
+            [
+                "Manillar",
+                "Recto 620 mm"
+            ],
+            [
+                "Cuadro",
+                "Aluminio talle XL"
+            ]
+        ],
+        "colores": [
+            "Negra"
+        ],
+        "foto": "bicicleta-urbana-easy-try-700-25.png"
+    },
+    {
+        "slug": "bicicleta-de-ruta-easy-try-700-25",
+        "nombre": "Bicicleta de ruta Easy-Try 700 × 25",
+        "familia": "bicicleta",
+        "codigo": "EPB001",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "700 × 25 · manillar de ruta · 3 × 9",
+        "desc": "",
+        "specs": [
+            [
+                "Cubiertas",
+                "700 × 25"
+            ],
+            [
+                "Velocidades",
+                "3 × 9"
+            ],
+            [
+                "Manillar",
+                "De ruta"
+            ],
+            [
+                "Cuadro",
+                "Aluminio talle M"
+            ]
+        ],
+        "colores": [
+            "Roja oscura"
+        ],
+        "foto": "bicicleta-de-ruta-easy-try-700-25.png"
+    },
+    {
+        "slug": "bicicleta-mtb-neffice-rodado-27-5",
+        "nombre": "Bicicleta MTB Neffice rodado 27.5",
+        "familia": "bicicleta",
+        "codigo": "EPB008",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 27.5 × 2.125 · 3 × 8 velocidades",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "27.5 × 2.125"
+            ],
+            [
+                "Velocidades",
+                "3 × 8"
+            ],
+            [
+                "Cuadro",
+                "Aluminio talle S"
+            ],
+            [
+                "Frenos",
+                "Disco"
+            ]
+        ],
+        "colores": [
+            "Naranja",
+            "Blanca"
+        ],
+        "foto": "bicicleta-mtb-neffice-rodado-27-5.png"
+    },
+    {
+        "slug": "bicicleta-mtb-rhinnos-rodado-27-5",
+        "nombre": "Bicicleta MTB Rhinnos rodado 27.5",
+        "familia": "bicicleta",
+        "codigo": "EPB013",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 27.5 × 2.125 · 3 × 7 velocidades",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "27.5 × 2.125"
+            ],
+            [
+                "Velocidades",
+                "3 × 7"
+            ],
+            [
+                "Cuadro",
+                "Aluminio talle S"
+            ],
+            [
+                "Frenos",
+                "Disco"
+            ]
+        ],
+        "colores": [
+            "Negra y verde",
+            "Negra y amarilla"
+        ],
+        "foto": "bicicleta-mtb-rhinnos-rodado-27-5.png"
+    },
+    {
+        "slug": "bicicleta-mtb-breaking-dawn-rodado-26",
+        "nombre": "Bicicleta MTB Breaking Dawn rodado 26",
+        "familia": "bicicleta",
+        "codigo": "YS7637-1",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 26 · aluminio · 21 velocidades",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "26"
+            ],
+            [
+                "Cuadro",
+                "Aluminio"
+            ],
+            [
+                "Velocidades",
+                "21"
+            ],
+            [
+                "Frenos",
+                "Disco"
+            ]
+        ],
+        "colores": [
+            "Negra"
+        ],
+        "foto": "bicicleta-mtb-breaking-dawn-rodado-26.png"
+    },
+    {
+        "slug": "hoverboard-6-5-pulgadas",
+        "nombre": "Hoverboard 6.5 pulgadas",
+        "familia": "hoverboard",
+        "codigo": "KDS-JY605",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "200 W × 2 · 8–10 km/h · 8–10 km · rodado 6.5\"",
+        "desc": "",
+        "specs": [
+            [
+                "Motor",
+                "200 W × 2"
+            ],
+            [
+                "Voltaje",
+                "48V"
+            ],
+            [
+                "Batería",
+                "Litio 36V 3.0 Ah"
+            ],
+            [
+                "Rodado",
+                "6.5"
+            ],
+            [
+                "Autonomía",
+                "8 a 10 km"
+            ],
+            [
+                "Vel. máxima",
+                "8–10 km/h"
+            ],
+            [
+                "Tiempo de carga",
+                "2 a 3 h"
+            ],
+            [
+                "Peso máx. usuario",
+                "80 kg"
+            ],
+            [
+                "Chasis",
+                "Aluminio"
+            ],
+            [
+                "Medidas",
+                "58 × 19 × 18 cm"
+            ]
+        ],
+        "colores": [
+            "Negra",
+            "Roja",
+            "Azul galaxia"
+        ],
+        "foto": "hoverboard-6-5-pulgadas.png"
+    },
+    {
+        "slug": "hoverboard-8-pulgadas",
+        "nombre": "Hoverboard 8 pulgadas",
+        "familia": "hoverboard",
+        "codigo": "KDS-JY108",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "200 W × 2 · 8–10 km/h · 8–10 km · rodado 8\"",
+        "desc": "",
+        "specs": [
+            [
+                "Motor",
+                "200 W × 2"
+            ],
+            [
+                "Voltaje",
+                "48V"
+            ],
+            [
+                "Batería",
+                "Litio 36V 3.0 Ah"
+            ],
+            [
+                "Rodado",
+                "8"
+            ],
+            [
+                "Autonomía",
+                "8 a 10 km"
+            ],
+            [
+                "Vel. máxima",
+                "8–10 km/h"
+            ],
+            [
+                "Tiempo de carga",
+                "2 a 3 h"
+            ],
+            [
+                "Peso máx. usuario",
+                "80 kg"
+            ],
+            [
+                "Chasis",
+                "Aluminio"
+            ],
+            [
+                "Medidas",
+                "58 × 19 × 18 cm"
+            ]
+        ],
+        "colores": [
+            "Negra",
+            "Roja",
+            "Azul galaxia"
+        ],
+        "foto": "hoverboard-8-pulgadas.png"
+    },
+    {
+        "slug": "monopatin-electrico-kds-es8-city-vibes",
+        "nombre": "Monopatín eléctrico KDS-ES8 City Vibes",
+        "familia": "monopatin",
+        "codigo": "KDS-ES8-CV",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "500 W · 30 km/h · 35 km · rueda 10\"",
+        "desc": "",
+        "specs": [
+            [
+                "Motor",
+                "500 W"
+            ],
+            [
+                "Voltaje",
+                "36V"
+            ],
+            [
+                "Batería",
+                "36V / 7.8 Ah"
+            ],
+            [
+                "Autonomía",
+                "35 km"
+            ],
+            [
+                "Vel. máxima",
+                "30 km/h"
+            ],
+            [
+                "Tiempo de carga",
+                "6 h"
+            ],
+            [
+                "Rodado",
+                "10"
+            ],
+            [
+                "Plegable",
+                "Sí"
+            ],
+            [
+                "Carga máxima",
+                "120 kg"
+            ],
+            [
+                "Chasis",
+                "Aluminio y acero"
+            ],
+            [
+                "Frenos",
+                "Electrónicos delanteros"
+            ],
+            [
+                "Extras",
+                "Amortiguadores e intermitentes"
+            ]
+        ],
+        "colores": [
+            "Negro y rojo"
+        ],
+        "foto": "monopatin-electrico-kds-es8-city-vibes.png"
+    },
+    {
+        "slug": "monopatin-electrico-monster-kds-dc34",
+        "nombre": "Monopatín eléctrico Monster KDS-DC34",
+        "familia": "monopatin",
+        "codigo": "KDS-DC34",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "1000 W · 35–70 km/h · 35–55 km · rueda 11\"",
+        "desc": "",
+        "specs": [
+            [
+                "Motor",
+                "1000 W"
+            ],
+            [
+                "Voltaje",
+                "60V"
+            ],
+            [
+                "Batería",
+                "60V / 12 Ah"
+            ],
+            [
+                "Autonomía",
+                "35–55 km"
+            ],
+            [
+                "Vel. máxima",
+                "35–70 km/h"
+            ],
+            [
+                "Tiempo de carga",
+                "3 a 5 h"
+            ],
+            [
+                "Rodado",
+                "11"
+            ],
+            [
+                "Plegable",
+                "Sí"
+            ],
+            [
+                "Carga máxima",
+                "120 kg"
+            ],
+            [
+                "Chasis",
+                "Aluminio"
+            ],
+            [
+                "Frenos",
+                "Disco delantero y trasero"
+            ],
+            [
+                "Neumáticos",
+                "Sin cámara"
+            ]
+        ],
+        "colores": [
+            "Negro"
+        ],
+        "foto": "monopatin-electrico-monster-kds-dc34.png"
+    },
+    {
+        "slug": "moto-cross-electrica-de-nino",
+        "nombre": "Moto cross eléctrica de niño",
+        "familia": "moto",
+        "codigo": "KDS-DC31",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "sin_stock",
+        "resumen": "500 W · 20–25 km/h · 15–20 km · rodado 14",
+        "desc": "",
+        "specs": [
+            [
+                "Motor",
+                "500 W de buje"
+            ],
+            [
+                "Voltaje",
+                "36V"
+            ],
+            [
+                "Batería",
+                "36V / 12 Ah de plomo-ácido"
+            ],
+            [
+                "Autonomía",
+                "15–20 km"
+            ],
+            [
+                "Vel. máxima",
+                "20–25 km/h"
+            ],
+            [
+                "Rodado",
+                "14"
+            ],
+            [
+                "Frenos",
+                "Disco delantero y trasero"
+            ],
+            [
+                "Chasis",
+                "Acero"
+            ],
+            [
+                "Medidas",
+                "112 × 55 × 78 cm"
+            ],
+            [
+                "Peso neto",
+                "30 kg"
+            ]
+        ],
+        "colores": [
+            "Azul y blanca"
+        ],
+        "foto": "moto-cross-electrica-de-nino.png"
+    },
+    {
+        "slug": "bicicleta-mtb-easy-try-rodado-29",
+        "nombre": "Bicicleta MTB Easy-Try rodado 29",
+        "familia": "bicicleta",
+        "codigo": "EPB006",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 29 × 2.125 · aluminio · 3 × 7 velocidades",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "29 × 2.125"
+            ],
+            [
+                "Cuadro",
+                "Aluminio talle M"
+            ],
+            [
+                "Velocidades",
+                "3 × 7"
+            ],
+            [
+                "Frenos",
+                "Disco"
+            ]
+        ],
+        "colores": [
+            "Negra y azul"
+        ],
+        "foto": "bicicleta-mtb-easy-try-rodado-29.png"
+    },
+    {
+        "slug": "bicicleta-de-paseo-k-flower-rodado-26",
+        "nombre": "Bicicleta de paseo K Flower rodado 26",
+        "familia": "bicicleta",
+        "codigo": "YX-P01",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 26 · paseo · canasto y parrilla",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "26"
+            ],
+            [
+                "Tipo",
+                "Paseo"
+            ],
+            [
+                "Canasto",
+                "Sí"
+            ],
+            [
+                "Parrilla trasera",
+                "Sí"
+            ],
+            [
+                "Cubre cadena",
+                "Sí"
+            ]
+        ],
+        "colores": [
+            "Lila",
+            "Rosa"
+        ],
+        "foto": "bicicleta-de-paseo-k-flower-rodado-26.png"
+    },
+    {
+        "slug": "bicicleta-mtb-phoeqn-rodado-26",
+        "nombre": "Bicicleta MTB Phoeqn rodado 26",
+        "familia": "bicicleta",
+        "codigo": "PHOEQN-26",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 26 · 21 velocidades · frenos de disco",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "26"
+            ],
+            [
+                "Velocidades",
+                "21"
+            ],
+            [
+                "Frenos",
+                "Disco"
+            ],
+            [
+                "Cuadro",
+                "Aluminio"
+            ]
+        ],
+        "colores": [
+            "Negra"
+        ],
+        "foto": "bicicleta-mtb-phoeqn-rodado-26.png"
+    },
+    {
+        "slug": "bicicleta-mtb-bianoi-rodado-26",
+        "nombre": "Bicicleta MTB Bianoi rodado 26",
+        "familia": "bicicleta",
+        "codigo": "S-303",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 26 · 21 velocidades · frenos de disco",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "26"
+            ],
+            [
+                "Velocidades",
+                "21"
+            ],
+            [
+                "Frenos",
+                "Disco"
+            ],
+            [
+                "Guardabarros",
+                "Delantero y trasero"
+            ]
+        ],
+        "colores": [
+            "Gris",
+            "Azul Francia"
+        ],
+        "foto": "bicicleta-mtb-bianoi-rodado-26.png"
+    },
+    {
+        "slug": "bicicleta-de-paseo-seven-7c-rodado-28",
+        "nombre": "Bicicleta de paseo Seven 7C rodado 28",
+        "familia": "bicicleta",
+        "codigo": "SEVEN-7C",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 28 × 1.75 · paseo · cuadro de acero",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "28 × 1.75"
+            ],
+            [
+                "Tipo",
+                "Paseo"
+            ],
+            [
+                "Cuadro",
+                "Acero"
+            ],
+            [
+                "Cubre cadena",
+                "Sí"
+            ]
+        ],
+        "colores": [
+            "Negra"
+        ],
+        "foto": "bicicleta-de-paseo-seven-7c-rodado-28.png"
+    },
+    {
+        "slug": "bicicleta-de-paseo-holland-rodado-28",
+        "nombre": "Bicicleta de paseo Holland rodado 28",
+        "familia": "bicicleta",
+        "codigo": "BT28175",
+        "precio": null,
+        "moneda": "UYU",
+        "estado": "por_encargue",
+        "resumen": "Rodado 28 × 1.75 · paseo · canasto y parrilla",
+        "desc": "",
+        "specs": [
+            [
+                "Rodado",
+                "28 × 1.75"
+            ],
+            [
+                "Tipo",
+                "Paseo"
+            ],
+            [
+                "Canasto",
+                "Sí"
+            ],
+            [
+                "Parrilla trasera",
+                "Sí"
+            ],
+            [
+                "Cubre cadena",
+                "Sí"
+            ]
+        ],
+        "colores": [
+            "Crema y rojo"
+        ],
+        "foto": "bicicleta-de-paseo-holland-rodado-28.png"
+    }
+]

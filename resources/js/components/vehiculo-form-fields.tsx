@@ -1,32 +1,14 @@
 import { useState } from 'react';
-import InputError from '@/components/input-error';
+import { Campo, SelectCampo } from '@/components/form-campo';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { OpcionesVehiculo, OpcionSelect, VehiculoEditable } from '@/types';
+import { aSlug } from '@/lib/slug';
+import type { OpcionesVehiculo, VehiculoEditable } from '@/types';
 
 type Errores = Record<string, string>;
 
 /** El slug de ejemplo del placeholder y del preview cuando el campo está vacío. */
 const EJEMPLO_SLUG = 'strada-freedom-24';
-
-/** Texto a slug: sin tildes, en minúsculas y separado por guiones. */
-function aSlug(texto: string): string {
-    return texto
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-}
 
 /**
  * El slug que se sugiere solo: modelo, versión y los dos últimos dígitos del
@@ -38,70 +20,6 @@ function slugSugerido(modelo: string, version: string, anio: string): string {
     const dosDigitos = /^\d{4}$/.test(anio.trim()) ? anio.trim().slice(-2) : '';
 
     return aSlug([modelo, version, dosDigitos].filter(Boolean).join(' '));
-}
-
-type CampoProps = {
-    name: string;
-    label: string;
-    error?: string;
-    children: React.ReactNode;
-    ayuda?: string;
-};
-
-function Campo({ name, label, error, children, ayuda }: CampoProps) {
-    return (
-        <div className="grid gap-2">
-            <Label htmlFor={name}>{label}</Label>
-            {children}
-            {ayuda && <p className="text-xs text-muted-foreground">{ayuda}</p>}
-            <InputError message={error} />
-        </div>
-    );
-}
-
-type SelectCampoProps = {
-    name: string;
-    label: string;
-    opciones: OpcionSelect[];
-    defaultValue?: string;
-    error?: string;
-    placeholder: string;
-};
-
-function SelectCampo({
-    name,
-    label,
-    opciones,
-    defaultValue,
-    error,
-    placeholder,
-}: SelectCampoProps) {
-    return (
-        <Campo name={name} label={label} error={error}>
-            <Select name={name} defaultValue={defaultValue}>
-                <SelectTrigger id={name} className="w-full">
-                    <SelectValue placeholder={placeholder} />
-                </SelectTrigger>
-
-                <SelectContent>
-                    <SelectGroup>
-                        {opciones.map((opcion) => (
-                            <SelectItem key={opcion.value} value={opcion.value}>
-                                <span className="flex flex-col items-start">
-                                    <span>{opcion.label}</span>
-                                    {opcion.description && (
-                                        <span className="text-xs text-muted-foreground">
-                                            {opcion.description}
-                                        </span>
-                                    )}
-                                </span>
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SelectContent>
-            </Select>
-        </Campo>
-    );
 }
 
 type VehiculoFormFieldsProps = {

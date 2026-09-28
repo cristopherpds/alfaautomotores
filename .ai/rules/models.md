@@ -4,6 +4,7 @@ paths:
   - app/Models/Entrega.php
   - app/Models/Turno.php
   - 'app/Models/{Puesto,Servicio,Turno}.php'
+  - app/Models/Producto.php
 ---
 
 # Models
@@ -54,3 +55,12 @@ El valor del enum coincide a propósito con el nombre del archivo de config: `$r
 Trampa: el nombre del schedule de Zap es la clave de idempotencia y quedó como "Horario del {rubro} {anio}" — para taller la cadena es idéntica a la vieja, así que los datos existentes no se duplicaron. No cambiar ese formato sin migrar.
 
 `servicios.area` es nullable: sólo el taller clasifica por área. `ServicioRequest` la exige con `required_if:rubro,taller`.
+
+## El catálogo de movilidad son dos grillas sobre una tabla, y la mitad va sin precio
+`App\Models\Producto` (tabla `productos`, fotos en `producto_imagenes`) alimenta `/movilidad` y `/bicicletas`. La frontera entre las dos páginas es `FamiliaProducto::esBicicleta()`: la consultan `Producto::deSeccion()`, `contar()` y los chips de las grillas. `deSeccion()`, `buscar()`, `similares()` y `contar()` son el contrato de `ProductoController`; no se cambian de firma.
+
+`precio` es nullable a propósito: las bicicletas se cotizan por WhatsApp y la grilla muestra «Consultar precio» en vez de una cifra (y sin precios no se dibuja el deslizador). `EstadoProducto` tiene cuatro casos y tres llegan al público: `sin_stock` es lo que el catálogo impreso marca agotado y `por_encargue` el modelo que el proveedor ya no publica pero consigue a pedido.
+
+`familia` y `estado` viajan como el valor del enum; las etiquetas visibles salen de `familiaLegible()` / `estadoLegible()` en `resources/js/lib/productos.ts`, igual que el estado del vehículo en `lib/catalogo.ts`. No ponerlas en `$appends`: un accessor de `Attribute` con nombre camelCase ahí revienta con «Call to undefined method getFamiliaLabelAttribute()».
+
+La semilla (`database/data/productos.json` + las fotos de al lado) sale de dos fuentes: la Store API de WooCommerce del proveedor (`worldsports.com.uy/wp-json/wc/store/v1/products`), de donde vienen precios en pesos y stock real, y los catálogos PDF 2026, de donde vienen los modelos que la web ya no lista — esos van sin precio porque el precio de lista viejo no sirve para el mostrador.

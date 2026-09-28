@@ -2,12 +2,14 @@
 
 namespace App\Policies;
 
-use App\Enums\UserRole;
+use App\Concerns\GestionaCatalogo;
 use App\Models\User;
 use App\Models\Vehiculo;
 
 class VehiculoPolicy
 {
+    use GestionaCatalogo;
+
     /**
      * Determine whether the user can see the stock list.
      *
@@ -62,13 +64,5 @@ class VehiculoPolicy
     public function deleteAny(User $user): bool
     {
         return $this->gestiona($user);
-    }
-
-    /**
-     * El stock lo maneja quien vende; el rol Equipo sólo consulta.
-     */
-    private function gestiona(User $user): bool
-    {
-        return $user->isAdmin() || $user->hasRole(UserRole::Vendedor);
     }
 }

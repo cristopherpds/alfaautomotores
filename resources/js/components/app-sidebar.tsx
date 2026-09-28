@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
+    Bike,
     BookOpen,
     CalendarDays,
     Car,
@@ -8,6 +9,7 @@ import {
     LayoutGrid,
     Users,
     Wrench,
+    Zap,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -22,6 +24,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { indiceDeSeccion } from '@/lib/productos-panel';
 import { dashboard } from '@/routes';
 import { index as entregasIndex } from '@/routes/panel/entregas';
 import { index as serviciosIndex } from '@/routes/panel/servicios';
@@ -43,6 +46,17 @@ const catalogoNavItems: NavItem[] = [
         title: 'Vehículos',
         href: vehiculosIndex(),
         icon: Car,
+    },
+    /* Un solo ABM de productos; cada entrada abre su sección. */
+    {
+        title: 'Movilidad',
+        href: indiceDeSeccion('movilidad'),
+        icon: Zap,
+    },
+    {
+        title: 'Bicicletas',
+        href: indiceDeSeccion('bicicletas'),
+        icon: Bike,
     },
     {
         title: 'Entregas',

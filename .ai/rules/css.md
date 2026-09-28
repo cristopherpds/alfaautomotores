@@ -14,3 +14,8 @@ Los datos del local salen de `config/alfa.php`; la tipografía (Archivo) se decl
 Los tres heros del sitio público (`.hero` de la portada, `.taller-hero`, `.lavadero-hero`) llenan la primera vista con el mismo par de líneas: `min-height: calc(100vh - var(--alfa-header))` y debajo la misma con `dvh`. `dvh` es la que manda: en móvil el alto útil cambia al esconderse la barra del navegador y con `vh`/`svh` la sección siguiente asoma o el hero se pasa de largo; la línea con `vh` queda de respaldo para navegadores viejos.
 El hero es el flex que reparte ese alto (`display: flex` + `align-items: center` o `flex-end`), así que su `__inner` necesita `width: 100%` o el `shell` se encoge a su contenido.
 Cuando el hero no tiene foto que sostenga el alto, el título suma el término `vh` al tamaño (`clamp(32px, min(4.4vw, 9vh), 58px)`): en una laptop baja (1366×768 deja ~640px útiles) todo el bloque tiene que caber en esa única vista. El `min()` con `vw` hace que en móvil el `vh` nunca mande, así el tamaño no salta al aparecer y desaparecer la barra.
+
+## El nav del sitio público pasa a hamburguesa en 1023px, no en 767px
+El corte del panel desplegable estaba en 767px cuando el menú tenía cuatro entradas. Con Movilidad y Bicicletas son seis más el botón de WhatsApp y a 1024px ya no entran en una línea; como `.header__inner` no envuelve a propósito (para que `--alfa-header` sea constante), pasado ese ancho la marca y el menú se pisan. Si se agrega otra sección, medir de nuevo antes que subir el corte a ciegas.
+
+El otro `@media (max-width: 767px)` del archivo es del velo de `.taller-hero` y no tiene que ver: ese sigue en 767.

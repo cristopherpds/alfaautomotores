@@ -34,8 +34,16 @@
     --alfa-text-faint: #8a8a90;
     --alfa-text-on-dark: #a9a9b0;
 
-    /* Estados */
-    --alfa-reserved: #b4740b;
+    /*
+     * Estados.
+     *
+     * El ámbar va oscuro a propósito: se usa como fondo de `.badge--reservado`
+     * con texto blanco de 9px, y el tono original (#b4740b) se quedaba en
+     * 3.3:1 contra el blanco —por debajo del 4.5:1 que pide el texto chico—.
+     * También es el color de los mensajes de error, que sobre papel blanco
+     * estaban igual de flojos.
+     */
+    --alfa-reserved: #8f5c08;
     --alfa-online: #5be07a;
 
     /* Layout */
@@ -398,13 +406,18 @@
     }
 
     /*
-     * Header en móvil: por debajo de este ancho los cuatro items del nav ya no
-     * entran junto a la marca, así que el nav pasa a ser un panel que despliega
-     * el botón hamburguesa. Se posiciona contra `.header` —sticky, o sea
+     * Header angosto: por debajo de este ancho los items del nav ya no entran
+     * junto a la marca, así que el nav pasa a ser un panel que despliega el
+     * botón hamburguesa. Se posiciona contra `.header` —sticky, o sea
      * contenedor posicionado—, de manera que baja con la cabecera y se apoya
      * sobre el contenido en vez de empujarlo.
+     *
+     * El corte estaba en 767px cuando el menú tenía cuatro entradas. Con
+     * Movilidad y Bicicletas son seis más el botón de WhatsApp, que a 1024px
+     * ya no entran en una línea: el nav no envuelve (ver `.header__inner`), así
+     * que pasado ese ancho la marca y el menú se pisan.
      */
-    @media (max-width: 767px) {
+    @media (max-width: 1023px) {
         & .nav__toggle {
             display: inline-flex;
         }
@@ -1285,6 +1298,39 @@
         color: var(--alfa-blue);
     }
 
+    /*
+     * Tarjeta del catálogo de movilidad.
+     *
+     * Las fotos de rodados llegan recortadas sobre blanco del catálogo del
+     * proveedor, no son fotos de ambiente como las de los autos: encajarlas
+     * enteras sobre papel blanco las muestra completas, mientras que el
+     * `cover` de `.photo` les comería el manubrio y la rueda.
+     *
+     * El marcador de foto pendiente no se toca: conserva su fondo papel para
+     * que se lea como hueco y no como producto.
+     */
+    & .card--producto .card__media {
+        background: var(--alfa-white);
+    }
+
+    & .card--producto .photo {
+        object-fit: contain;
+        padding: 6%;
+        box-sizing: border-box;
+    }
+
+    /*
+     * El pie de una tarjeta sin precio. Va más chico y en mayúsculas y no con
+     * el cuerpo de `.card__price`: es una invitación a escribir, no una cifra,
+     * y a ese tamaño competía con el precio de las tarjetas vecinas.
+     */
+    & .card__consultar {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
     & .badge {
         position: absolute;
         top: 10px;
@@ -1431,6 +1477,13 @@
             color: var(--alfa-ink);
             cursor: pointer;
             border-radius: 0;
+        }
+
+        /* Un solo control no se estira a todo el ancho: en bicicletas, donde
+           no hay filtro de precio ni de orden, la caja de disponibilidad
+           medía 1100px para un texto de veinte caracteres. */
+        &:has(> label:only-child) label {
+            flex-grow: 0;
         }
 
         & input[type='range'] {
@@ -1615,6 +1668,25 @@
         gap: 10px;
     }
 
+    /*
+     * La galería de un producto de movilidad, igual que su tarjeta: la foto
+     * viene recortada sobre blanco del catálogo del proveedor, así que se
+     * encaja entera. Con el `cover` de `.photo` una foto cuadrada dentro del
+     * marco 4:3 perdía el manillar y la rueda de abajo.
+     *
+     * El marcador de foto pendiente conserva su fondo papel: es un `div`, no
+     * la imagen, y `.photo` no lo alcanza.
+     */
+    & .detail--producto .detail__frame {
+        background: var(--alfa-white);
+    }
+
+    & .detail--producto .photo {
+        object-fit: contain;
+        padding: 5%;
+        box-sizing: border-box;
+    }
+
     /* Cualquier foto de la ficha abre el visor: el marco es el botón. */
     & .detail__shot {
         display: block;
@@ -1767,6 +1839,40 @@
         color: var(--alfa-text-body);
         margin: 0 0 30px;
         text-wrap: pretty;
+    }
+
+    /* Los colores en que viene un rodado: muestra y nombre, siempre los dos.
+       El nombre manda (una muestra de «gris mate» es aproximada), y si
+       `tonosDe()` no reconoce un color va sólo el texto. Los combinados son
+       una torta con una porción por tono. */
+    & .detail__colores {
+        margin: 0 0 28px;
+    }
+
+    & .detail__muestras {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 20px;
+        list-style: none;
+        margin: 10px 0 0;
+        padding: 0;
+
+        & li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+        }
+    }
+
+    /* El borde es para el blanco, la crema y el marfil, que sin él se pierden
+       contra el fondo. */
+    & .detail__muestra {
+        flex: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 1px solid var(--alfa-border-input);
     }
 
     & .detail__actions {

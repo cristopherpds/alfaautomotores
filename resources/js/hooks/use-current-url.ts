@@ -28,12 +28,12 @@ export type UseCurrentUrlReturn = {
 
 export function useCurrentUrl(): UseCurrentUrlReturn {
     const page = usePage();
-    const currentUrlPath = new URL(
-        page.url,
+    const origin =
         typeof window !== 'undefined'
             ? window.location.origin
-            : 'http://localhost',
-    ).pathname;
+            : 'http://localhost';
+    const current = new URL(page.url, origin);
+    const currentUrlPath = current.pathname;
 
     const isCurrentUrl: IsCurrentUrlFn = (
         urlToCheck: NonNullable<InertiaLinkProps['href']>,
@@ -41,22 +41,31 @@ export function useCurrentUrl(): UseCurrentUrlReturn {
         startsWith: boolean = false,
     ) => {
         const urlToCompare = currentUrl ?? currentUrlPath;
-        const urlString = toUrl(urlToCheck);
 
-        const comparePath = (path: string): boolean =>
-            startsWith ? urlToCompare.startsWith(path) : path === urlToCompare;
-
-        if (!urlString.startsWith('http')) {
-            return comparePath(urlString);
-        }
+        let parsed: URL;
 
         try {
-            const absoluteUrl = new URL(urlString);
-
-            return comparePath(absoluteUrl.pathname);
+            parsed = new URL(toUrl(urlToCheck), origin);
         } catch {
             return false;
         }
+
+        const path = parsed.pathname;
+        const pathMatches = startsWith
+            ? urlToCompare.startsWith(path)
+            : path === urlToCompare;
+
+        /* Un link con query (`/panel/productos?seccion=bicicletas`) sólo está
+           activo si la página actual trae los mismos parámetros: si no, las
+           dos secciones de productos se marcarían juntas. */
+        return (
+            pathMatches &&
+            (currentUrl !== undefined ||
+                Array.from(parsed.searchParams).every(
+                    ([clave, valor]) =>
+                        current.searchParams.get(clave) === valor,
+                ))
+        );
     };
 
     const isCurrentOrParentUrl: IsCurrentOrParentUrlFn = (

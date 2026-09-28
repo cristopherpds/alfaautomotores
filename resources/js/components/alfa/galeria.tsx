@@ -10,14 +10,15 @@ const SWIPE_MINIMO = 50;
 type GaleriaProps = {
     fotos: string[];
     nombre: string;
-    anio: number;
+    /** Línea secundaria del marcador: el año del auto, la familia del rodado. */
+    detalle: string;
 };
 
 /**
  * Galería de la ficha: la portada arriba y el resto en miniaturas, todas
  * ampliables. El visor se monta sólo cuando hay una foto abierta.
  */
-export function Galeria({ fotos, nombre, anio }: GaleriaProps) {
+export function Galeria({ fotos, nombre, detalle }: GaleriaProps) {
     const [abierta, setAbierta] = useState<number | null>(null);
     const cerrar = useCallback(() => setAbierta(null), []);
 
@@ -28,7 +29,7 @@ export function Galeria({ fotos, nombre, anio }: GaleriaProps) {
                     <Photo
                         alt={nombre}
                         placeholder={nombre}
-                        detalle={String(anio)}
+                        detalle={detalle}
                     />
                 </div>
 
@@ -60,7 +61,7 @@ export function Galeria({ fotos, nombre, anio }: GaleriaProps) {
                     src={portada}
                     alt={nombre}
                     placeholder={nombre}
-                    detalle={String(anio)}
+                    detalle={detalle}
                 />
             </button>
 

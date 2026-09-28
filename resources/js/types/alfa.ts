@@ -21,6 +21,48 @@ export type Vehiculo = {
 };
 
 /**
+ * `estado` también admite `borrador` en la base: nunca sale al público.
+ *
+ * Los otros tres sí llegan y dicen cosas distintas: `publicado` está en el
+ * local, `sin_stock` es lo que el catálogo del proveedor marca agotado y
+ * `por_encargue` es el modelo que ya no publica pero sigue consiguiendo.
+ */
+export type EstadoProducto = 'publicado' | 'sin_stock' | 'por_encargue';
+
+/** `bicicleta` es la única que va en `/bicicletas`; el resto, en `/movilidad`. */
+export type FamiliaProducto =
+    | 'moto'
+    | 'scooter'
+    | 'monopatin'
+    | 'hoverboard'
+    | 'bici_electrica'
+    | 'triciclo'
+    | 'bicicleta';
+
+/** Un rodado del catálogo de movilidad, servido por `ProductoController`. */
+export type Producto = {
+    slug: string;
+    nombre: string;
+    /** En palabras, con `familiaLegible()` de `lib/productos.ts`. */
+    familia: FamiliaProducto;
+    /** Código del proveedor (ETB-122, KDS-DC49); no todos lo traen. */
+    codigo: string | null;
+    /** Nulo en las bicicletas, que se cotizan por WhatsApp. */
+    precio: number | null;
+    moneda: string;
+    /** En palabras, con `estadoLegible()` de `lib/productos.ts`. */
+    estado: EstadoProducto;
+    /** La línea de la tarjeta: potencia · velocidad · autonomía. */
+    resumen: string;
+    desc: string;
+    /** Ficha técnica como pares etiqueta/valor, en el orden del proveedor. */
+    specs: [string, string][];
+    colores: string[];
+    /** URLs de la galería, de la portada a la última. */
+    imagenes: string[];
+};
+
+/**
  * Una foto de la tira de «Nuestros clientes» de la portada, servida por
  * `App\Models\Entrega::paraLaTira()`.
  */
@@ -152,9 +194,56 @@ export type ManagedVehiculo = {
 };
 
 /** Una foto de la galería, tal como la manda el panel. */
-export type FotoVehiculo = {
+export type FotoGaleria = {
     id: number;
     url: string;
+};
+
+export type FotoVehiculo = FotoGaleria;
+
+/** En el panel también se ven los borradores, que nunca salen al público. */
+export type EstadoProductoAdmin = EstadoProducto | 'borrador';
+
+/** Qué página pública lista el producto; el panel filtra por lo mismo. */
+export type SeccionProducto = 'movilidad' | 'bicicletas';
+
+/** Las opciones de los selectores de la ficha de un producto. */
+export type OpcionesProducto = {
+    familias: OpcionSelect[];
+    estados: OpcionSelect[];
+    monedas: OpcionSelect[];
+};
+
+/** La fila que arma `Panel\ProductoController::toListItem()`. */
+export type ManagedProducto = {
+    id: number;
+    slug: string;
+    nombre: string;
+    familia: FamiliaProducto;
+    codigo: string | null;
+    precio: number | null;
+    moneda: string;
+    estado: EstadoProductoAdmin;
+    portada: string | null;
+    imagenes_count: number;
+    can: { update: boolean; delete: boolean };
+};
+
+/** El producto que consume el formulario de edición. */
+export type ProductoEditable = {
+    id: number;
+    slug: string;
+    nombre: string;
+    familia: FamiliaProducto;
+    codigo: string | null;
+    precio: number | null;
+    moneda: string;
+    estado: EstadoProductoAdmin;
+    resumen: string;
+    desc: string;
+    specs: [string, string][];
+    colores: string[];
+    fotos: FotoGaleria[];
 };
 
 /** El vehículo que consume el formulario de edición. */

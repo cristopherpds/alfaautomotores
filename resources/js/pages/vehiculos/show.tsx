@@ -43,7 +43,7 @@ export default function VehiculoShow({ site, vehiculo, similares }: Props) {
                 <Galeria
                     fotos={vehiculo.imagenes}
                     nombre={nombre}
-                    anio={vehiculo.anio}
+                    detalle={String(vehiculo.anio)}
                 />
 
                 <div>

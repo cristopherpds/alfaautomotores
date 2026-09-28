@@ -2,12 +2,14 @@
 
 namespace App\Policies;
 
-use App\Enums\UserRole;
+use App\Concerns\GestionaCatalogo;
 use App\Models\Entrega;
 use App\Models\User;
 
 class EntregaPolicy
 {
+    use GestionaCatalogo;
+
     /**
      * Determine whether the user can see the delivery photos.
      *
@@ -41,16 +43,5 @@ class EntregaPolicy
     public function delete(User $user, Entrega $entrega): bool
     {
         return $this->gestiona($user);
-    }
-
-    /**
-     * La portada la maneja quien vende; el rol Equipo sólo consulta.
-     *
-     * Duplicado a propósito con `VehiculoPolicy::gestiona()`: son tres líneas y
-     * extraerlas a un trait recién vale la pena con una tercera policy.
-     */
-    private function gestiona(User $user): bool
-    {
-        return $user->isAdmin() || $user->hasRole(UserRole::Vendedor);
     }
 }

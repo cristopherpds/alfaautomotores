@@ -3,7 +3,14 @@ import { useEffect, useState } from 'react';
 import { BrandLockup } from '@/components/alfa/brand';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { whatsapp } from '@/lib/alfa';
-import { catalogo, home, lavadero, taller } from '@/routes';
+import {
+    bicicletas,
+    catalogo,
+    home,
+    lavadero,
+    movilidad,
+    taller,
+} from '@/routes';
 import type { SiteInfo } from '@/types';
 
 /** El `aria-controls` del botón hamburguesa apunta acá. */
@@ -26,6 +33,11 @@ export function SiteHeader({ site }: { site: SiteInfo }) {
         currentUrl.startsWith('/catalogo') ||
         currentUrl.startsWith('/vehiculos');
 
+    /* La ficha de un producto es una sola para las dos secciones de rodados,
+       así que `/productos/...` no marca ninguna de las dos: marcar la que no
+       es sería peor que no marcar nada. */
+    const enMovilidad = currentUrl.startsWith('/movilidad');
+    const enBicicletas = currentUrl.startsWith('/bicicletas');
     const enTaller = currentUrl.startsWith('/taller');
     const enLavadero = currentUrl.startsWith('/lavadero');
 
@@ -99,6 +111,26 @@ export function SiteHeader({ site }: { site: SiteInfo }) {
                             onClick={cerrarMenu}
                         >
                             Catálogo
+                        </Link>
+
+                        <Link
+                            href={movilidad()}
+                            className="nav__link"
+                            data-active={enMovilidad}
+                            aria-current={enMovilidad ? 'page' : undefined}
+                            onClick={cerrarMenu}
+                        >
+                            Movilidad
+                        </Link>
+
+                        <Link
+                            href={bicicletas()}
+                            className="nav__link"
+                            data-active={enBicicletas}
+                            aria-current={enBicicletas ? 'page' : undefined}
+                            onClick={cerrarMenu}
+                        >
+                            Bicicletas
                         </Link>
 
                         <Link
