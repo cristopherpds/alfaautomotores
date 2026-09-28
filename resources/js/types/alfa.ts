@@ -267,3 +267,33 @@ export type VehiculoEditable = {
     desc: string;
     fotos: FotoVehiculo[];
 };
+
+/** Qué le pasó al registro, con los valores de `App\Enums\AccionAuditoria`. */
+export type AccionAuditoria = 'creado' | 'modificado' | 'eliminado';
+
+/** Una entrada de la auditoría, tal como la arma `Panel\AuditoriaController`. */
+export type EntradaAuditoria = {
+    id: number;
+    /** ISO 8601. */
+    fecha: string;
+    usuario: string;
+    accion: AccionAuditoria;
+    /** `vehiculo`, `foto_producto`, `turno`…: se traduce con `TIPOS_AUDITORIA`. */
+    tipo: string;
+    etiqueta: string;
+    /** Campo → [antes, después]. En un alta «antes» es null; en una baja, «después». */
+    cambios: Record<string, [unknown, unknown]>;
+    ip: string | null;
+};
+
+/** Una página de un paginador de Laravel, con los campos que usa el panel. */
+export type Paginado<T> = {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+    prev_page_url: string | null;
+    next_page_url: string | null;
+};

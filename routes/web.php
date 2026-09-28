@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LavaderoController;
+use App\Http\Controllers\Panel\AuditoriaController;
 use App\Http\Controllers\Panel\EntregaController;
 use App\Http\Controllers\Panel\ProductoController as PanelProductoController;
 use App\Http\Controllers\Panel\ProductoImagenController;
@@ -88,6 +89,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('turnos', [TurnoController::class, 'store'])->name('turnos.store');
         Route::patch('turnos/{turno}/estado', [TurnoController::class, 'estado'])->name('turnos.estado');
         Route::delete('turnos/{turno}', [TurnoController::class, 'destroy'])->name('turnos.destroy');
+
+        /* Sólo lectura: las entradas las escribe el trait `Auditable`. */
+        Route::get('auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
     });
 });
 

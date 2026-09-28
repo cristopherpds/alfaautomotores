@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Database\Factories\EntregaFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -32,7 +33,23 @@ use Illuminate\Support\Facades\Storage;
 class Entrega extends Model
 {
     /** @use HasFactory<EntregaFactory> */
-    use HasFactory;
+    use Auditable, HasFactory;
+
+    /**
+     * La clave del registro en la auditoría.
+     */
+    public function tipoDeAuditoria(): string
+    {
+        return 'entrega';
+    }
+
+    /**
+     * Cómo figura la foto de entrega en la auditoría: por su fecha.
+     */
+    public function etiquetaDeAuditoria(): string
+    {
+        return 'Entrega del '.$this->legible();
+    }
 
     /**
      * Cuántas fotos admite una misma carga.

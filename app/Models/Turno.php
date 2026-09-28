@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use App\Enums\EstadoTurno;
 use App\Enums\OrigenTurno;
 use Carbon\CarbonInterface;
@@ -57,7 +58,25 @@ use Zap\Facades\Zap;
 class Turno extends Model
 {
     /** @use HasFactory<TurnoFactory> */
-    use HasFactory;
+    use Auditable, HasFactory;
+
+    /**
+     * La clave del registro en la auditoría.
+     */
+    public function tipoDeAuditoria(): string
+    {
+        return 'turno';
+    }
+
+    /**
+     * Cómo figura el turno en la auditoría: cliente, servicio y horario.
+     */
+    public function etiquetaDeAuditoria(): string
+    {
+        return $this->nombre.' '.$this->apellido
+            .' · '.($this->servicio->nombre ?? 'servicio borrado')
+            .' · '.$this->inicia_at->format('d/m/Y H:i');
+    }
 
     /**
      * Borrar un turno tiene que llevarse su cita: si no, el horario queda

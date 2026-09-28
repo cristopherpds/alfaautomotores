@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Panel;
 
+use App\Enums\AccionAuditoria;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Vehiculos\VehiculoImagenOrdenRequest;
 use App\Http\Requests\Vehiculos\VehiculoImagenStoreRequest;
+use App\Models\Auditoria;
 use App\Models\Vehiculo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
@@ -64,6 +66,9 @@ class VehiculoImagenController extends Controller implements HasMiddleware
         foreach ($request->validated('imagenes') as $posicion => $imagenId) {
             $vehiculo->fotos()->whereKey($imagenId)->update(['orden' => $posicion]);
         }
+
+        // El update de arriba es masivo y no dispara eventos: se anota a mano.
+        Auditoria::registrar($vehiculo, AccionAuditoria::Modificado, ['fotos' => [null, 'reordenadas']]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Galería reordenada.')]);
 

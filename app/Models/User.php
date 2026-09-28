@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Concerns\Auditable;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -32,7 +33,23 @@ use Illuminate\Support\Carbon;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use Auditable, HasFactory, Notifiable;
+
+    /**
+     * La clave del registro en la auditoría.
+     */
+    public function tipoDeAuditoria(): string
+    {
+        return 'usuario';
+    }
+
+    /**
+     * Cómo figura el usuario en la auditoría.
+     */
+    public function etiquetaDeAuditoria(): string
+    {
+        return $this->name;
+    }
 
     /**
      * Get the attributes that should be cast.

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use App\Enums\AreaServicio;
 use App\Enums\Rubro;
 use Database\Factories\ServicioFactory;
@@ -50,7 +51,23 @@ use Illuminate\Support\Facades\Storage;
 class Servicio extends Model
 {
     /** @use HasFactory<ServicioFactory> */
-    use HasFactory;
+    use Auditable, HasFactory;
+
+    /**
+     * La clave del registro en la auditoría.
+     */
+    public function tipoDeAuditoria(): string
+    {
+        return 'servicio';
+    }
+
+    /**
+     * Cómo figura el servicio en la auditoría.
+     */
+    public function etiquetaDeAuditoria(): string
+    {
+        return $this->nombre;
+    }
 
     /**
      * El pluralizador inglés no acierta con "servicio".

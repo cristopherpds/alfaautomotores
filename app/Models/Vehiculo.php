@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use App\Enums\Combustible;
 use App\Enums\EstadoVehiculo;
 use App\Enums\Moneda;
@@ -59,7 +60,23 @@ use Illuminate\Support\Facades\Storage;
 class Vehiculo extends Model
 {
     /** @use HasFactory<VehiculoFactory> */
-    use HasFactory;
+    use Auditable, HasFactory;
+
+    /**
+     * La clave del registro en la auditoría.
+     */
+    public function tipoDeAuditoria(): string
+    {
+        return 'vehiculo';
+    }
+
+    /**
+     * Cómo figura el vehículo en la auditoría.
+     */
+    public function etiquetaDeAuditoria(): string
+    {
+        return $this->titulo();
+    }
 
     /**
      * Cuántos vehículos se pueden destacar a la vez en la portada.

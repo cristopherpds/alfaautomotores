@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Database\Factories\ProductoImagenFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,7 +29,23 @@ use Illuminate\Support\Facades\Storage;
 class ProductoImagen extends Model
 {
     /** @use HasFactory<ProductoImagenFactory> */
-    use HasFactory;
+    use Auditable, HasFactory;
+
+    /**
+     * La clave del registro en la auditoría.
+     */
+    public function tipoDeAuditoria(): string
+    {
+        return 'foto_producto';
+    }
+
+    /**
+     * Cómo figura la foto en la auditoría: por el producto al que pertenece.
+     */
+    public function etiquetaDeAuditoria(): string
+    {
+        return 'Foto de '.($this->producto->nombre ?? 'un producto borrado');
+    }
 
     /**
      * El pluralizador inglés no acierta con "imagen".

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use App\Enums\EstadoProducto;
 use App\Enums\FamiliaProducto;
 use App\Enums\Moneda;
@@ -53,7 +54,23 @@ use Illuminate\Support\Facades\Storage;
 class Producto extends Model
 {
     /** @use HasFactory<ProductoFactory> */
-    use HasFactory;
+    use Auditable, HasFactory;
+
+    /**
+     * La clave del registro en la auditoría.
+     */
+    public function tipoDeAuditoria(): string
+    {
+        return 'producto';
+    }
+
+    /**
+     * Cómo figura el producto en la auditoría.
+     */
+    public function etiquetaDeAuditoria(): string
+    {
+        return $this->nombre;
+    }
 
     /**
      * Cuántas fotos admite la galería de un producto.

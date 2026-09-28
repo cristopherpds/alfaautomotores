@@ -5,6 +5,7 @@ import {
     CalendarDays,
     Car,
     FolderGit2,
+    History,
     Images,
     LayoutGrid,
     Users,
@@ -26,6 +27,7 @@ import {
 } from '@/components/ui/sidebar';
 import { indiceDeSeccion } from '@/lib/productos-panel';
 import { dashboard } from '@/routes';
+import { index as auditoriaIndex } from '@/routes/panel/auditoria';
 import { index as entregasIndex } from '@/routes/panel/entregas';
 import { index as serviciosIndex } from '@/routes/panel/servicios';
 import { index as turnosIndex } from '@/routes/panel/turnos';
@@ -85,6 +87,11 @@ const adminNavItems: NavItem[] = [
         title: 'Usuarios',
         href: usersIndex(),
         icon: Users,
+    },
+    {
+        title: 'Auditoría',
+        href: auditoriaIndex(),
+        icon: History,
     },
 ];
 

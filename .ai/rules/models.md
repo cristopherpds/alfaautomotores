@@ -5,6 +5,7 @@ paths:
   - app/Models/Turno.php
   - 'app/Models/{Puesto,Servicio,Turno}.php'
   - app/Models/Producto.php
+  - 'app/Models/**'
 ---
 
 # Models
@@ -64,3 +65,7 @@ Trampa: el nombre del schedule de Zap es la clave de idempotencia y quedó como 
 `familia` y `estado` viajan como el valor del enum; las etiquetas visibles salen de `familiaLegible()` / `estadoLegible()` en `resources/js/lib/productos.ts`, igual que el estado del vehículo en `lib/catalogo.ts`. No ponerlas en `$appends`: un accessor de `Attribute` con nombre camelCase ahí revienta con «Call to undefined method getFamiliaLabelAttribute()».
 
 La semilla (`database/data/productos.json` + las fotos de al lado) sale de dos fuentes: la Store API de WooCommerce del proveedor (`worldsports.com.uy/wp-json/wc/store/v1/products`), de donde vienen precios en pesos y stock real, y los catálogos PDF 2026, de donde vienen los modelos que la web ya no lista — esos van sin precio porque el precio de lista viejo no sirve para el mostrador.
+
+## Auditoría: un modelo nuevo que se edite desde el panel usa el trait Auditable
+`App\Concerns\Auditable` escribe en `auditorias` cada `created`/`updated`/`deleted` con el usuario de la sesión («Cliente (sitio web)» si es un request sin login, «Sistema» en consola). El modelo define `tipoDeAuditoria()` (clave del filtro; sumarla también a `TIPOS_AUDITORIA` en `pages/panel/auditoria/index.tsx`) y `etiquetaDeAuditoria()`.
+Trampas: una escritura masiva (`query()->update()`, `->whereKey()->update()`, delete sobre builder) NO dispara eventos: anotarla con `Auditoria::registrar()`, como `*ImagenController::orden()`. Nunca se guardan `remember_token` ni `two_factor_*`; `password` queda como «cambiada». `DatabaseSeeder` usa `WithoutModelEvents`, por eso sembrar no audita; un seeder corrido suelto (`--class=`) sí, como «Sistema». `Puesto` no se audita a propósito (lo arma `taller:agenda`).
