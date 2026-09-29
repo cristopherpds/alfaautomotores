@@ -63,6 +63,8 @@ abstract class TurnoPublicoRequest extends FormRequest
             'vehiculo_anio' => ['nullable', 'integer', 'between:1950,'.(now()->year + 1)],
             'matricula' => ['nullable', 'string', 'max:12'],
             'comentario' => ['nullable', 'string', 'max:500'],
+            // La casilla de novedades: destildada por defecto (ley 18.331).
+            'acepta_novedades' => ['nullable', 'boolean'],
         ];
     }
 

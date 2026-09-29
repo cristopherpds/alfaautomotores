@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LavaderoController;
+use App\Http\Controllers\Panel\AjusteController;
 use App\Http\Controllers\Panel\AuditoriaController;
+use App\Http\Controllers\Panel\ClienteController;
+use App\Http\Controllers\Panel\ClienteExportController;
 use App\Http\Controllers\Panel\EntregaController;
 use App\Http\Controllers\Panel\ProductoController as PanelProductoController;
 use App\Http\Controllers\Panel\ProductoImagenController;
@@ -38,7 +42,7 @@ Route::get('lavadero', [LavaderoController::class, 'index'])->name('lavadero');
 Route::post('lavadero/turnos', [LavaderoController::class, 'store'])->name('lavadero.turnos.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::resource('users', UserController::class)->except('show');
 
@@ -90,8 +94,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('turnos/{turno}/estado', [TurnoController::class, 'estado'])->name('turnos.estado');
         Route::delete('turnos/{turno}', [TurnoController::class, 'destroy'])->name('turnos.destroy');
 
+        /* Los clientes nacen solos de las reservas; el alta manual es para
+           los leads. `exportar` va antes del resource porque
+           `clientes/{cliente}` lo tomaría como un id. */
+        Route::get('clientes/exportar', ClienteExportController::class)->name('clientes.exportar');
+        Route::resource('clientes', ClienteController::class)->except(['edit']);
+
         /* Sólo lectura: las entradas las escribe el trait `Auditable`. */
         Route::get('auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
+
+        /* Ajustes del sitio público, sólo para admins. */
+        Route::get('ajustes/whatsapp', [AjusteController::class, 'whatsapp'])->name('ajustes.whatsapp');
+        Route::put('ajustes/whatsapp', [AjusteController::class, 'guardarWhatsapp'])->name('ajustes.whatsapp.update');
     });
 });
 

@@ -123,9 +123,54 @@ export type SiteInfo = {
         corto: string;
     };
     instagram: string;
-    /** Número en formato internacional, sin "+" ni separadores. */
+    /**
+     * Número en formato internacional, sin "+" ni separadores. Es el que se
+     * configura en el panel (Botón de WhatsApp) y vale para todo el sitio.
+     */
     whatsapp: string;
     telefono: string;
+    /** El botón flotante, con los contactos que están en horario ahora. */
+    botonWhatsapp: {
+        activo: boolean;
+        titulo: string;
+        subtitulo: string;
+        /** Nadie en horario: se ofrece sólo el contacto de respaldo. */
+        fueraDeHorario: boolean;
+        contactos: ContactoWhatsapp[];
+    };
+};
+
+/** Un contacto de WhatsApp de la tarjeta: «Ventas · Autos usados». */
+export type ContactoWhatsapp = {
+    nombre: string;
+    detalle: string | null;
+    /** Formato internacional, sólo dígitos. */
+    numero: string;
+    /** Lo que llega precargado al chat. */
+    mensaje: string;
+};
+
+/** Cuándo está disponible un contacto. `dias` son ISO: 1 lunes … 7 domingo. */
+export type HorarioWhatsapp = {
+    siempre: boolean;
+    dias: number[];
+    desde: string;
+    hasta: string;
+};
+
+/** Un contacto como se edita en el panel. */
+export type ContactoWhatsappEditable = ContactoWhatsapp & {
+    /** El que se muestra cuando ninguno está en horario. Hay uno solo. */
+    respaldo: boolean;
+    horario: HorarioWhatsapp;
+};
+
+/** El ajuste completo del botón, como lo edita el panel. */
+export type AjusteBotonWhatsapp = {
+    activo: boolean;
+    titulo: string;
+    subtitulo: string;
+    contactos: ContactoWhatsappEditable[];
 };
 
 /** La fila que arma `Panel\ServicioController::toListItem()`. */
@@ -296,4 +341,112 @@ export type Paginado<T> = {
     to: number | null;
     prev_page_url: string | null;
     next_page_url: string | null;
+};
+
+/** Un turno de hoy en el dashboard. */
+export type TurnoDeHoy = {
+    id: number;
+    hora: string;
+    cliente: string;
+    servicio: string;
+    estado: string;
+    estadoLabel: string;
+};
+
+/** Un turno de la web que espera confirmación. */
+export type TurnoPendiente = {
+    id: number;
+    cliente: string;
+    servicio: string;
+    rubroLabel: string;
+    /** ISO 8601: cuándo es el turno. */
+    cuando: string;
+    /** ISO 8601: cuándo entró la reserva. */
+    recibido: string | null;
+};
+
+/** Un vehículo de una lista «para revisar», con los días que lleva cargado. */
+export type VehiculoParaRevisar = { id: number; titulo: string; dias: number };
+
+export type ListaParaRevisar = { total: number; lista: VehiculoParaRevisar[] };
+
+export type ResumenDeSeccion = {
+    publicados: number;
+    sinStock: number;
+    porEncargue: number;
+    sinFotos: number;
+};
+
+/** Lo que arma `DashboardController`. */
+export type DatosDelDashboard = {
+    hoy: Record<'taller' | 'lavadero', TurnoDeHoy[]>;
+    pendientes: { total: number; lista: TurnoPendiente[] };
+    stock: {
+        publicados: number;
+        reservados: number;
+        borradores: number;
+        vendidosMes: number;
+        destacados: number;
+        maxDestacados: number;
+    };
+    revisar: {
+        sinFotos: ListaParaRevisar;
+        borradoresViejos: ListaParaRevisar;
+        estancados: ListaParaRevisar;
+    };
+    catalogo: Record<SeccionProducto, ResumenDeSeccion>;
+    semana: {
+        dias: { fecha: string; taller: number; lavadero: number }[];
+        cancelados: number;
+        origen: { web: number; panel: number };
+    };
+    /** Null para quien no puede leer la auditoría. */
+    actividad: Omit<EntradaAuditoria, 'cambios' | 'ip'>[] | null;
+};
+
+/** Una fila de `/panel/clientes`, de `Panel\ClienteController::toListItem()`. */
+export type ClienteDeLista = {
+    id: number;
+    nombre: string;
+    celular: string;
+    email: string | null;
+    acepta_novedades: boolean;
+    turnos_count: number;
+    ultimo: { fecha: string; servicio: string; rubroLabel: string } | null;
+};
+
+/** El cliente de la ficha, con lo que se edita. */
+export type ClienteEditable = {
+    id: number;
+    nombre: string;
+    apellido: string;
+    email: string | null;
+    celular: string;
+    acepta_novedades: boolean;
+    /** ISO 8601: cuándo dio el consentimiento. */
+    acepta_novedades_at: string | null;
+    notas: string | null;
+    creado: string | null;
+};
+
+/** Un vehículo del cliente, sacado de sus turnos. */
+export type VehiculoDeCliente = {
+    marca: string | null;
+    modelo: string | null;
+    anio: number | null;
+    matricula: string | null;
+};
+
+/** Un turno del historial del cliente. */
+export type TurnoDeCliente = {
+    id: number;
+    inicia_at: string;
+    servicio: string;
+    rubro: string;
+    rubroLabel: string;
+    estado: string;
+    estadoLabel: string;
+    origen: string;
+    vehiculo: string | null;
+    comentario: string | null;
 };

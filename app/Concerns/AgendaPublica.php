@@ -55,7 +55,7 @@ trait AgendaPublica
             'vehiculo_anio' => $request->validated('vehiculo_anio'),
             'matricula' => $request->validated('matricula'),
             'comentario' => $request->validated('comentario'),
-        ]);
+        ], aceptaNovedades: $request->boolean('acepta_novedades'));
 
         /* Entre que se pintaron los horarios y llegó este POST alguien pudo
            quedarse con el último puesto. */

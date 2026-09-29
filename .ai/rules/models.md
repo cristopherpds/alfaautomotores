@@ -6,6 +6,8 @@ paths:
   - 'app/Models/{Puesto,Servicio,Turno}.php'
   - app/Models/Producto.php
   - 'app/Models/**'
+  - app/Models/Cliente.php
+  - app/Models/Ajuste.php
 ---
 
 # Models
@@ -69,3 +71,21 @@ La semilla (`database/data/productos.json` + las fotos de al lado) sale de dos f
 ## Auditoría: un modelo nuevo que se edite desde el panel usa el trait Auditable
 `App\Concerns\Auditable` escribe en `auditorias` cada `created`/`updated`/`deleted` con el usuario de la sesión («Cliente (sitio web)» si es un request sin login, «Sistema» en consola). El modelo define `tipoDeAuditoria()` (clave del filtro; sumarla también a `TIPOS_AUDITORIA` en `pages/panel/auditoria/index.tsx`) y `etiquetaDeAuditoria()`.
 Trampas: una escritura masiva (`query()->update()`, `->whereKey()->update()`, delete sobre builder) NO dispara eventos: anotarla con `Auditoria::registrar()`, como `*ImagenController::orden()`. Nunca se guardan `remember_token` ni `two_factor_*`; `password` queda como «cambiada». `DatabaseSeeder` usa `WithoutModelEvents`, por eso sembrar no audita; un seeder corrido suelto (`--class=`) sí, como «Sistema». `Puesto` no se audita a propósito (lo arma `taller:agenda`).
+
+## vendido_at la pone el modelo, no un formulario
+`vehiculos.vendido_at` es la fecha de venta. La pone y la limpia el hook `saving` de `Vehiculo`: al pasar a `vendido` (ficha, lote o donde sea) toma `now()`; si ya estaba vendido no se mueve; si vuelve a otro estado queda en null. Está FUERA de `#[Fillable]` y en `#[Hidden]` (no viaja al sitio público). «Vendidos este mes» del dashboard cuenta por esta columna. Los vendidos anteriores a la columna quedaron en null (no hay de dónde sacar la fecha): no cuentan para ningún mes.
+
+## Sólo lo listable (publicado, reservado) se lista y se destaca; el vendido conserva su ficha
+Reemplaza a «un borrador nunca se destaca». `EstadoVehiculo::listables()` (publicado, reservado) es la única definición de qué ofrece el sitio: la usan `publicos()` (/catalogo), `contar()` (totalStock de la home), `destacados()` y `contarDestacados()`, y `esDestacable()` = `estado->esListable()`. Un vendido sale de todos los listados y de la portada (el hook `saving` le quita el destacado al venderlo), pero `buscar()` lo sigue devolviendo: su ficha abre con el cartel «Vendido» para que los links viejos no den 404. `similares()` es más estricto a propósito: sólo publicados. `contarDestacados()` y `destacados()` tienen que seguir filtrando el mismo conjunto.
+
+## Clientes: identidad por celular, el consentimiento sólo lo suma una reserva
+`Cliente` nace de `Turno::reservar()` (vía `Cliente::desdeReserva()`, dentro de la transacción: una reserva sin lugar no crea cliente) o del alta manual del panel. Identidad = `celular_normalizado` (sólo dígitos, único, lo calcula el hook `saving`); si no coincide, se busca por email en minúsculas. Una reserva pisa nombre/email/celular con lo último, y `acepta_novedades` sólo lo SUMA: nunca lo quita (eso es desde la ficha). `acepta_novedades_at` lo pone/borra el hook al cambiar el flag (ley 18.331: consentimiento con fecha, casilla nunca pretildada).
+El turno guarda su propia copia de los datos; `turnos.cliente_id` es nullOnDelete. La relación en Turno se llama `ficha()` porque `Turno::cliente()` ya era el nombre completo en texto. En el form del panel el consentimiento viaja en un input oculto 1/0 (un checkbox destildado no manda nada); los Checkbox de Radix necesitan `value="1"` porque mandan «on» y `boolean` lo rechaza. Tests de reserva: fijar `->duracion(30)` en el servicio, los huecos saltan según la duración aleatoria de la factory.
+
+## Ajustes del sitio: tabla `ajustes`, cacheada, con valores por defecto en el modelo
+Lo que se configura desde el panel y afecta al sitio público vive en `ajustes` (una fila por grupo, `valor` json). Leer siempre con `Ajuste::valor()` o el accessor del grupo (`Ajuste::botonWhatsapp()`): mezcla lo guardado sobre los valores por defecto, así una base nueva funciona sin sembrar nada. Va cacheado para siempre porque lo lee cada página pública (`ProvidesSiteInfo`); escribir SÓLO con `Ajuste::guardar()`, que limpia el caché (un `update()` directo dejaría el sitio mostrando lo viejo). Usa `Auditable`.
+El número de WhatsApp es uno solo: `siteInfo()['whatsapp']` sale del ajuste (fallback `config('alfa.whatsapp')`), así cabecera, pie, fichas y botón flotante no pueden quedar con números distintos. El botón flotante lo monta `AlfaLayout` (`components/alfa/boton-whatsapp.tsx`); `TarjetaWhatsapp` se reusa en la vista previa del panel dentro de un `.alfa`.
+
+## Botón de WhatsApp: varios contactos con horario y uno de respaldo
+`boton_whatsapp` guarda `titulo`, `subtitulo` y `contactos[]` (nombre, detalle, numero, mensaje, respaldo, horario {siempre, dias ISO 1–7, desde, hasta}). `Ajuste::whatsappDisponible(now())` es la única definición de quién se ofrece: los que están en horario, en el orden del panel; si no hay ninguno, el respaldo (exactamente uno, lo valida `AjusteWhatsappRequest::after()`) con `fueraDeHorario`. Una franja con desde > hasta cruza la medianoche y vale en la madrugada del día siguiente si el día anterior está en `dias`. `siteInfo()['whatsapp']` = el primer disponible, así los links sueltos siguen el mismo horario. El formato viejo (un solo `numero`) se lee como un contacto de respaldo.
+Trampas: `distinct` en `contactos.*.horario.dias.*` compara entre TODOS los contactos (rechaza dos que atienden el lunes): los repetidos se limpian en el controller. Los tests de horario que usan `Ajuste::guardar()` no pasan por la validación: hay uno que manda varios contactos por HTTP. En el form (useForm), los errores llegan con claves anidadas (`contactos.0.horario.dias.2`): el helper busca por prefijo.

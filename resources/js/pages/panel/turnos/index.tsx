@@ -12,6 +12,7 @@ import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogClose,
@@ -651,6 +652,21 @@ export default function TurnosIndex({
                                         <InputError
                                             message={errors.comentario}
                                         />
+                                    </div>
+
+                                    {/* `value="1"`: Radix manda «on» por
+                                        defecto y la regla `boolean` de
+                                        Laravel lo rechaza. */}
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox
+                                            id="acepta_novedades"
+                                            name="acepta_novedades"
+                                            value="1"
+                                        />
+                                        <Label htmlFor="acepta_novedades">
+                                            El cliente acepta recibir novedades
+                                            y recordatorios
+                                        </Label>
                                     </div>
                                 </div>
 

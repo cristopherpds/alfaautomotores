@@ -46,6 +46,12 @@
     --alfa-reserved: #8f5c08;
     --alfa-online: #5be07a;
 
+    /* El verde de WhatsApp: lo reconoce cualquiera, por eso no se cambia
+       por el azul de la marca. El oscuro es el hover y el texto blanco
+       sobre él pasa AA. */
+    --alfa-whatsapp: #25d366;
+    --alfa-whatsapp-dark: #128c4b;
+
     /* Layout */
     --alfa-max: 1320px;
     --alfa-gutter: clamp(18px, 4vw, 48px);
@@ -91,6 +97,14 @@
 @keyframes alfa-entregas-correr {
     to {
         transform: translateX(-50%);
+    }
+}
+
+/* Entrada del botón flotante de WhatsApp y de su tarjeta. */
+@keyframes alfa-wpp-entrada {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.96);
     }
 }
 
@@ -1096,6 +1110,26 @@
         color: var(--alfa-text-muted);
         max-width: 44ch;
         margin: 0;
+    }
+
+    /* La casilla de novedades del formulario de turno. Mismo tilde que el
+       «recordarme» del login. */
+    & .turno__novedades {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 13px;
+        color: var(--alfa-text-body);
+        cursor: pointer;
+
+        & input[type='checkbox'] {
+            flex: none;
+            width: 16px;
+            height: 16px;
+            margin-top: 2px;
+            accent-color: var(--alfa-blue);
+            cursor: pointer;
+        }
     }
 
     /* --- Lavadero --------------------------------------------------------- */
@@ -2206,6 +2240,176 @@
 
         & .entregas__toma[aria-hidden] {
             display: none;
+        }
+    }
+
+    /* --- Botón flotante de WhatsApp --------------------------------------
+     * Abajo a la derecha en todo el sitio público (lo monta `AlfaLayout`).
+     * Abre una tarjeta de chat y se vuelve una X. Por encima del header
+     * (`z-index: 40`) para que la tarjeta nunca quede tapada al hacer
+     * scroll. Textos y número se configuran desde el panel.
+     */
+    & .wpp {
+        position: fixed;
+        right: clamp(16px, 3vw, 28px);
+        bottom: clamp(16px, 3vw, 28px);
+        z-index: 50;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 14px;
+    }
+
+    & .wpp__boton {
+        display: grid;
+        place-items: center;
+        width: 56px;
+        height: 56px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--alfa-whatsapp);
+        color: var(--alfa-white);
+        box-shadow: 0 6px 20px rgb(16 16 18 / 0.22);
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        animation: alfa-wpp-entrada 0.4s ease-out both;
+
+        &:hover {
+            transform: scale(1.08);
+        }
+
+        &:focus-visible {
+            outline: 3px solid var(--alfa-blue);
+            outline-offset: 3px;
+        }
+    }
+
+    & .wpp[data-abierto='true'] .wpp__boton {
+        background: var(--alfa-ink);
+    }
+
+    & .wpp__icono {
+        width: 28px;
+        height: 28px;
+    }
+
+    & .wpp__tarjeta {
+        width: min(320px, calc(100vw - 32px));
+        overflow: hidden;
+        border-radius: 14px;
+        background: var(--alfa-white);
+        box-shadow: 0 12px 40px rgb(16 16 18 / 0.22);
+        animation: alfa-wpp-entrada 0.2s ease-out both;
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    /* Encabezado en tinta con el saludo, como la franja de color del
+       widget de referencia pero con la identidad de Alfa. */
+    & .wpp__encabezado {
+        padding: 18px 20px 16px;
+        background: var(--alfa-ink);
+        color: var(--alfa-white);
+    }
+
+    & .wpp__titulo {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1.1;
+    }
+
+    & .wpp__subtitulo {
+        margin: 4px 0 0;
+        font-size: 13px;
+        color: var(--alfa-text-on-dark);
+    }
+
+    & .wpp__cuerpo {
+        display: grid;
+        gap: 10px;
+        padding: 14px;
+    }
+
+    & .wpp__aviso {
+        margin: 0;
+        padding: 0 4px;
+        font-size: 12px;
+        color: var(--alfa-text-muted);
+    }
+
+    & .wpp__contactos {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    /* Un renglón por contacto: el renglón entero es el link al chat. */
+    & .wpp__contacto {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: var(--alfa-offwhite);
+        color: var(--alfa-text);
+        text-decoration: none;
+        transition: background 0.2s ease;
+
+        &:hover {
+            background: var(--alfa-border-light);
+        }
+
+        &:focus-visible {
+            outline: 3px solid var(--alfa-blue);
+            outline-offset: 2px;
+        }
+    }
+
+    & .wpp__icono-contacto {
+        flex: none;
+        width: 26px;
+        height: 26px;
+        color: var(--alfa-whatsapp-dark);
+    }
+
+    & .wpp__contacto-nombre {
+        display: block;
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.25;
+    }
+
+    & .wpp__contacto-detalle {
+        display: block;
+        margin-top: 2px;
+        font-size: 13px;
+        color: var(--alfa-text-body);
+    }
+
+    /* La vista previa del panel: la misma tarjeta, quieta y en su lugar. */
+    & .wpp--vista-previa {
+        position: static;
+
+        & .wpp__boton,
+        & .wpp__tarjeta {
+            animation: none;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        & .wpp__boton,
+        & .wpp__tarjeta {
+            animation: none;
+            transition: none;
+        }
+
+        & .wpp__boton:hover {
+            transform: none;
         }
     }
 }

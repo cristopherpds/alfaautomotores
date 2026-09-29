@@ -39,11 +39,11 @@ class DestacarVehiculoRequest extends FormRequest
                     return;
                 }
 
-                // Un borrador no llega al sitio público, así que destacarlo
-                // gastaría un lugar de la portada que nadie ve.
+                // Un borrador o un vendido no se lista en el sitio, así que
+                // destacarlo gastaría un lugar de la portada que nadie ve.
                 if (! $vehiculo->esDestacable()) {
                     $validator->errors()->add('destacado', __(
-                        'Un borrador no puede ir a la portada. Publicalo primero.',
+                        'Sólo un vehículo publicado o reservado puede ir a la portada.',
                     ));
 
                     return;

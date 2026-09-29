@@ -145,6 +145,27 @@ test('every slot the panel counts is a slot the landing page shows', function ()
     Vehiculo::factory()->vendido()->destacado()->create();
     Vehiculo::factory()->borrador()->destacado()->create();
 
-    expect(Vehiculo::contarDestacados())->toBe(2)
-        ->and(Vehiculo::destacados()->where('destacado', true))->toHaveCount(2);
+    // Sólo el reservado: el vendido y el borrador no se listan.
+    expect(Vehiculo::contarDestacados())->toBe(1)
+        ->and(Vehiculo::destacados()->where('destacado', true))->toHaveCount(1);
+});
+
+test('selling a pinned vehicle unpins it and frees its slot', function () {
+    $vehiculo = Vehiculo::factory()->destacado()->create();
+
+    $vehiculo->update(['estado' => 'vendido']);
+
+    expect($vehiculo->refresh()->destacado)->toBeFalse()
+        ->and(Vehiculo::contarDestacados())->toBe(0);
+});
+
+test('a sold vehicle cannot be pinned from the panel', function () {
+    $vehiculo = Vehiculo::factory()->vendido()->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->from(route('panel.vehiculos.index'))
+        ->patch(route('panel.vehiculos.destacado', $vehiculo), ['destacado' => true])
+        ->assertSessionHasErrors('destacado');
+
+    expect($vehiculo->refresh()->destacado)->toBeFalse();
 });

@@ -1,5 +1,6 @@
 import { usePage } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
+import BotonWhatsapp from '@/components/alfa/boton-whatsapp';
 import { SiteFooter } from '@/components/alfa/site-footer';
 import { SiteHeader } from '@/components/alfa/site-header';
 import type { SiteInfo } from '@/types';
@@ -21,6 +22,16 @@ export default function AlfaLayout({ children }: PropsWithChildren) {
             <main>{children}</main>
 
             <SiteFooter site={site} />
+
+            {site.botonWhatsapp.activo && (
+                <BotonWhatsapp
+                    nombre={site.nombre}
+                    titulo={site.botonWhatsapp.titulo}
+                    subtitulo={site.botonWhatsapp.subtitulo}
+                    fueraDeHorario={site.botonWhatsapp.fueraDeHorario}
+                    contactos={site.botonWhatsapp.contactos}
+                />
+            )}
         </div>
     );
 }

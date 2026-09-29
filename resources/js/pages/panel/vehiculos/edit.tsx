@@ -40,7 +40,7 @@ export default function EditVehiculo({
                             <p className="text-sm text-muted-foreground">
                                 {vehiculo.destacable
                                     ? 'Los destacados encabezan la home.'
-                                    : 'Un borrador no puede ir a la portada. Publicalo primero.'}
+                                    : 'Sólo un vehículo publicado o reservado puede ir a la portada.'}
                             </p>
                         </div>
 

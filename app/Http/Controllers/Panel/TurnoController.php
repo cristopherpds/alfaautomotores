@@ -117,6 +117,7 @@ class TurnoController extends Controller implements HasMiddleware
             ],
             EstadoTurno::Confirmado,
             OrigenTurno::Panel,
+            $request->boolean('acepta_novedades'),
         );
 
         if ($turno === null) {

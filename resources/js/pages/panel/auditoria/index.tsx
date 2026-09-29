@@ -36,13 +36,9 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { ACCIONES_AUDITORIA, tipoLegible } from '@/lib/auditoria';
 import { index } from '@/routes/panel/auditoria';
-import type {
-    AccionAuditoria,
-    EntradaAuditoria,
-    OpcionSelect,
-    Paginado,
-} from '@/types';
+import type { EntradaAuditoria, OpcionSelect, Paginado } from '@/types';
 
 type Filtros = {
     usuario: string;
@@ -60,27 +56,6 @@ type Props = {
     acciones: OpcionSelect[];
 };
 
-/** Los tipos que escribe `tipoDeAuditoria()` en cada modelo. */
-const TIPOS_AUDITORIA: Record<string, string> = {
-    vehiculo: 'Vehículo',
-    foto_vehiculo: 'Foto de vehículo',
-    producto: 'Producto',
-    foto_producto: 'Foto de producto',
-    entrega: 'Entrega',
-    servicio: 'Servicio',
-    turno: 'Turno',
-    usuario: 'Usuario',
-};
-
-const ACCIONES: Record<
-    AccionAuditoria,
-    { label: string; variant: 'default' | 'secondary' | 'destructive' }
-> = {
-    creado: { label: 'Creó', variant: 'default' },
-    modificado: { label: 'Modificó', variant: 'secondary' },
-    eliminado: { label: 'Eliminó', variant: 'destructive' },
-};
-
 /** El valor de los selects que significa «sin filtrar»: Radix no admite ''. */
 const TODOS = 'todos';
 
@@ -88,10 +63,6 @@ const fechaHora = new Intl.DateTimeFormat('es-UY', {
     dateStyle: 'short',
     timeStyle: 'short',
 });
-
-function tipoLegible(tipo: string): string {
-    return TIPOS_AUDITORIA[tipo] ?? tipo;
-}
 
 /** Un valor guardado, en texto: lo que no hay se muestra como raya. */
 function valorLegible(valor: unknown): string {
@@ -368,7 +339,8 @@ export default function AuditoriaIndex({
 
                             {entradas.data.map((entrada) => {
                                 const abierta = abiertas.includes(entrada.id);
-                                const accion = ACCIONES[entrada.accion];
+                                const accion =
+                                    ACCIONES_AUDITORIA[entrada.accion];
 
                                 return (
                                     <Fragment key={entrada.id}>

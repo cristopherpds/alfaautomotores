@@ -31,6 +31,7 @@ use Zap\Facades\Zap;
  * @property int $id
  * @property int $servicio_id
  * @property int $puesto_id
+ * @property int|null $cliente_id
  * @property int|null $schedule_id
  * @property EstadoTurno $estado
  * @property OrigenTurno $origen
@@ -49,9 +50,10 @@ use Zap\Facades\Zap;
  * @property Carbon|null $updated_at
  * @property-read Servicio $servicio
  * @property-read Puesto $puesto
+ * @property-read Cliente|null $ficha
  */
 #[Fillable([
-    'servicio_id', 'puesto_id', 'schedule_id', 'estado', 'origen',
+    'servicio_id', 'puesto_id', 'cliente_id', 'schedule_id', 'estado', 'origen',
     'inicia_at', 'termina_at', 'nombre', 'apellido', 'email', 'celular',
     'vehiculo_marca', 'vehiculo_modelo', 'vehiculo_anio', 'matricula', 'comentario',
 ])]
@@ -121,6 +123,19 @@ class Turno extends Model
     }
 
     /**
+     * La ficha del cliente de la reserva. Nula si el cliente se borró: el
+     * turno igual conserva sus propios datos.
+     *
+     * Se llama `ficha` porque `cliente()` ya es el nombre completo en texto.
+     *
+     * @return BelongsTo<Cliente, $this>
+     */
+    public function ficha(): BelongsTo
+    {
+        return $this->belongsTo(Cliente::class, 'cliente_id');
+    }
+
+    /**
      * Los turnos que caen dentro de un rango, para el calendario del panel.
      *
      * @return Builder<static>
@@ -140,7 +155,12 @@ class Turno extends Model
      * comprobación se rehace **dentro** de la transacción para que dos personas
      * que aprietan «Confirmar» a la vez no se lleven el mismo hueco.
      *
+     * El turno queda enganchado a su cliente (`Cliente::desdeReserva()`), que
+     * se crea o se actualiza en la misma transacción. Una reserva que no
+     * consigue lugar no crea cliente.
+     *
      * @param  array<string, mixed>  $datos  los campos del cliente y su vehículo
+     * @param  bool  $aceptaNovedades  si tildó la casilla de novedades: sólo suma consentimiento, nunca lo quita
      */
     public static function reservar(
         Servicio $servicio,
@@ -148,8 +168,9 @@ class Turno extends Model
         array $datos,
         EstadoTurno $estado = EstadoTurno::Pendiente,
         OrigenTurno $origen = OrigenTurno::Web,
+        bool $aceptaNovedades = false,
     ): ?self {
-        return DB::transaction(function () use ($servicio, $inicio, $datos, $estado, $origen): ?self {
+        return DB::transaction(function () use ($servicio, $inicio, $datos, $estado, $origen, $aceptaNovedades): ?self {
             /* El bloqueo no hace nada en SQLite, pero la transacción igual
                serializa las escrituras; en MySQL sí frena la carrera. Se acota
                al rubro del servicio: un lavado y un service no compiten por el
@@ -176,8 +197,16 @@ class Turno extends Model
                 ->withMetadata(['servicio' => $servicio->slug])
                 ->save();
 
+            $cliente = Cliente::desdeReserva([
+                'nombre' => $datos['nombre'],
+                'apellido' => $datos['apellido'],
+                'email' => $datos['email'] ?? null,
+                'celular' => $datos['celular'],
+            ], $aceptaNovedades);
+
             return static::create([
                 ...$datos,
+                'cliente_id' => $cliente->id,
                 'servicio_id' => $servicio->id,
                 'puesto_id' => $puesto->id,
                 'schedule_id' => $cita->id,

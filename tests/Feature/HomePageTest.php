@@ -67,8 +67,8 @@ test('sold and reserved vehicles never make the landing page', function () {
         ->assertInertia(fn ($page) => $page
             ->has('destacados', 1)
             ->where('destacados.0.slug', 'a-la-venta')
-            // Reservados y vendidos siguen contando como stock visible.
-            ->where('totalStock', 3)
+            // El reservado sigue contando como stock visible; el vendido, no.
+            ->where('totalStock', 2)
         );
 });
 

@@ -111,7 +111,7 @@ test('uploading, reordering and deleting product photos is recorded', function (
 
 test('a booking from the public site is recorded as the web client', function () {
     $lunes = abrirElTaller();
-    $servicio = Servicio::factory()->create(['slug' => 'service', 'nombre' => 'Service completo']);
+    $servicio = Servicio::factory()->duracion(30)->create(['slug' => 'service', 'nombre' => 'Service completo']);
 
     $this->post(route('taller.turnos.store'), [
         'servicio' => $servicio->slug,

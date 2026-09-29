@@ -17,6 +17,28 @@ test('the catalogue lists the whole public stock', function () {
         );
 });
 
+test('sold vehicles are not listed in the catalogue', function () {
+    Vehiculo::factory()->create(['slug' => 'a-la-venta']);
+    Vehiculo::factory()->reservado()->create(['slug' => 'reservado']);
+    Vehiculo::factory()->vendido()->create(['slug' => 'vendido']);
+
+    $this->get(route('catalogo'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('vehiculos', 2)
+            ->where('vehiculos.0.slug', fn (string $slug) => $slug !== 'vendido')
+            ->where('vehiculos.1.slug', fn (string $slug) => $slug !== 'vendido')
+        );
+});
+
+test('an old link to a sold vehicle still opens its page', function () {
+    Vehiculo::factory()->vendido()->create(['slug' => 'onix-activ-19']);
+
+    $this->get(route('vehiculos.show', 'onix-activ-19'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('vehiculo.estado', 'vendido'));
+});
+
 test('a vehicle page renders its details', function () {
     Vehiculo::factory()->create([
         'slug' => 'tiggo2-23',

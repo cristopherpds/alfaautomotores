@@ -519,6 +519,18 @@ export default function Lavadero({ site, servicios, ventana, huecos }: Props) {
                                     )}
                                 </div>
 
+                                {/* Consentimiento para promociones (ley
+                                    18.331): nunca tildado de antemano. */}
+                                <label className="turno__novedades">
+                                    <input
+                                        type="checkbox"
+                                        name="acepta_novedades"
+                                        value="1"
+                                    />
+                                    Quiero recibir novedades y recordatorios de
+                                    Alfa por WhatsApp o email.
+                                </label>
+
                                 <div className="turno__enviar">
                                     <button
                                         type="submit"

@@ -38,7 +38,7 @@ enum EstadoVehiculo: string
             self::Borrador => 'A medio cargar: no aparece en el sitio.',
             self::Publicado => 'A la venta y visible en el catálogo.',
             self::Reservado => 'Con seña: se muestra, pero no se ofrece.',
-            self::Vendido => 'Ya se vendió: queda visible como referencia.',
+            self::Vendido => 'Ya se vendió: sale del catálogo, su ficha queda como referencia.',
         };
     }
 
@@ -48,6 +48,28 @@ enum EstadoVehiculo: string
     public function esPublico(): bool
     {
         return $this !== self::Borrador;
+    }
+
+    /**
+     * Determine whether a vehicle in this state is offered in the listings:
+     * the catalogue grid, the landing page and the stock count.
+     *
+     * Un vendido es público (su ficha sigue abriendo por un link viejo) pero
+     * ya no se ofrece, así que no se lista ni se destaca.
+     */
+    public function esListable(): bool
+    {
+        return in_array($this, self::listables(), true);
+    }
+
+    /**
+     * The states that make it into the public listings.
+     *
+     * @return list<self>
+     */
+    public static function listables(): array
+    {
+        return [self::Publicado, self::Reservado];
     }
 
     /**

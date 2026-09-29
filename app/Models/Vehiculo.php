@@ -46,6 +46,7 @@ use Illuminate\Support\Facades\Storage;
  * @property TipoVehiculo $tipo
  * @property EstadoVehiculo $estado
  * @property bool $destacado
+ * @property Carbon|null $vendido_at
  * @property string $desc
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -56,7 +57,7 @@ use Illuminate\Support\Facades\Storage;
     'slug', 'marca', 'modelo', 'version', 'anio', 'km', 'precio',
     'moneda', 'comb', 'trans', 'tipo', 'estado', 'desc',
 ])]
-#[Hidden(['id', 'destacado', 'fotos', 'created_at', 'updated_at'])]
+#[Hidden(['id', 'destacado', 'vendido_at', 'fotos', 'created_at', 'updated_at'])]
 class Vehiculo extends Model
 {
     /** @use HasFactory<VehiculoFactory> */
@@ -109,6 +110,15 @@ class Vehiculo extends Model
             if (! $vehiculo->esDestacable()) {
                 $vehiculo->destacado = false;
             }
+
+            /* La fecha de venta sigue al estado: se pone al pasar a vendido
+               (desde la ficha, el lote o donde sea) y se limpia si vuelve
+               atrás. Si ya estaba vendido, no se toca. */
+            if ($vehiculo->estado !== EstadoVehiculo::Vendido) {
+                $vehiculo->vendido_at = null;
+            } elseif ($vehiculo->vendido_at === null || $vehiculo->isDirty('estado')) {
+                $vehiculo->vendido_at = now();
+            }
         });
 
         static::deleting(function (self $vehiculo): void {
@@ -121,11 +131,12 @@ class Vehiculo extends Model
      *
      * Es la única definición de la regla: la consultan el hook de arriba,
      * `DestacarVehiculoRequest` y los payloads del panel. Destacar un borrador
-     * ocuparía uno de los `MAX_DESTACADOS` lugares que nadie llega a ver.
+     * o un vendido ocuparía uno de los `MAX_DESTACADOS` lugares que nadie
+     * llega a ver: sólo lo listable va a la portada.
      */
     public function esDestacable(): bool
     {
-        return $this->estado !== EstadoVehiculo::Borrador;
+        return $this->estado->esListable();
     }
 
     /**
@@ -153,6 +164,7 @@ class Vehiculo extends Model
             'tipo' => TipoVehiculo::class,
             'estado' => EstadoVehiculo::class,
             'destacado' => 'boolean',
+            'vendido_at' => 'datetime',
         ];
     }
 
@@ -190,14 +202,16 @@ class Vehiculo extends Model
     }
 
     /**
-     * Todo el stock que se muestra al público, del más nuevo al más viejo.
+     * Todo el stock que se ofrece al público, del más nuevo al más viejo.
+     *
+     * Sólo lo listable: ni borradores ni vendidos.
      *
      * @return Collection<int, self>
      */
     public static function publicos(): Collection
     {
         return self::query()
-            ->whereNot('estado', EstadoVehiculo::Borrador)
+            ->whereIn('estado', EstadoVehiculo::listables())
             ->with('fotos')
             ->orderByDesc('created_at')
             ->orderByDesc('id')
@@ -212,16 +226,15 @@ class Vehiculo extends Model
      *
      * El filtro tiene que dar el mismo conjunto que cuenta
      * `contarDestacados()`, o el panel diría "6 de 6" mientras la portada
-     * muestra menos: un marcado a mano entra en cualquier estado público
-     * (reservado y vendido incluidos), y el relleno automático sigue siendo
-     * sólo de publicados.
+     * muestra menos: un marcado a mano entra si es listable (publicado o
+     * reservado), y el relleno automático sigue siendo sólo de publicados.
      *
      * @return Collection<int, self>
      */
     public static function destacados(int $cantidad = self::MAX_DESTACADOS): Collection
     {
         return self::query()
-            ->whereNot('estado', EstadoVehiculo::Borrador)
+            ->whereIn('estado', EstadoVehiculo::listables())
             ->where(function (Builder $query): void {
                 $query->where('destacado', true)
                     ->orWhere('estado', EstadoVehiculo::Publicado);
@@ -234,6 +247,12 @@ class Vehiculo extends Model
             ->get();
     }
 
+    /**
+     * La ficha de un vehículo por su slug.
+     *
+     * A diferencia de los listados, acá entra también el vendido: un link
+     * viejo (compartido o indexado) tiene que seguir abriendo, con el cartel.
+     */
     public static function buscar(string $slug): ?self
     {
         return self::query()
@@ -262,26 +281,27 @@ class Vehiculo extends Model
     }
 
     /**
-     * Cuántos vehículos ve el público.
+     * Cuántos vehículos se ofrecen al público: el mismo conjunto de `publicos()`.
      */
     public static function contar(): int
     {
         return self::query()
-            ->whereNot('estado', EstadoVehiculo::Borrador)
+            ->whereIn('estado', EstadoVehiculo::listables())
             ->count();
     }
 
     /**
      * Cuántos de los `MAX_DESTACADOS` lugares de la portada están ocupados.
      *
-     * Excluye borradores: el hook `saving` ya impide dejarlos destacados, pero
-     * el filtro también cubre las filas que quedaron marcadas de antes.
+     * Sólo lo listable, igual que `destacados()`: el hook `saving` ya impide
+     * dejar destacado un borrador o un vendido, pero el filtro también cubre
+     * las filas que quedaron marcadas de antes.
      */
     public static function contarDestacados(): int
     {
         return self::query()
             ->where('destacado', true)
-            ->whereNot('estado', EstadoVehiculo::Borrador)
+            ->whereIn('estado', EstadoVehiculo::listables())
             ->count();
     }
 }

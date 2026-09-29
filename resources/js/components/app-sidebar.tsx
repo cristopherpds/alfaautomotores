@@ -4,10 +4,12 @@ import {
     BookOpen,
     CalendarDays,
     Car,
+    Contact,
     FolderGit2,
     History,
     Images,
     LayoutGrid,
+    MessageCircle,
     Users,
     Wrench,
     Zap,
@@ -27,7 +29,9 @@ import {
 } from '@/components/ui/sidebar';
 import { indiceDeSeccion } from '@/lib/productos-panel';
 import { dashboard } from '@/routes';
+import { whatsapp as ajusteWhatsapp } from '@/routes/panel/ajustes';
 import { index as auditoriaIndex } from '@/routes/panel/auditoria';
+import { index as clientesIndex } from '@/routes/panel/clientes';
 import { index as entregasIndex } from '@/routes/panel/entregas';
 import { index as serviciosIndex } from '@/routes/panel/servicios';
 import { index as turnosIndex } from '@/routes/panel/turnos';
@@ -80,6 +84,11 @@ const agendaNavItems: NavItem[] = [
         href: serviciosIndex(),
         icon: Wrench,
     },
+    {
+        title: 'Clientes',
+        href: clientesIndex(),
+        icon: Contact,
+    },
 ];
 
 const adminNavItems: NavItem[] = [
@@ -93,7 +102,16 @@ const adminNavItems: NavItem[] = [
         href: auditoriaIndex(),
         icon: History,
     },
+    {
+        title: 'Botón de WhatsApp',
+        href: ajusteWhatsapp(),
+        icon: MessageCircle,
+    },
 ];
+
+/* Los links del starter kit de Laravel. Ocultos, no borrados: con `true`
+   vuelven a aparecer al pie del sidebar. */
+const mostrarEnlacesDelKit = false;
 
 const footerNavItems: NavItem[] = [
     {
@@ -138,7 +156,9 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                {mostrarEnlacesDelKit && (
+                    <NavFooter items={footerNavItems} className="mt-auto" />
+                )}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
