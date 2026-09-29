@@ -1135,28 +1135,30 @@
     /* --- Lavadero --------------------------------------------------------- */
 
     /*
-     * El hero del lavadero es claro y no de foto como el del taller: acá lo que
-     * vende es el precio y el rato que lleva, no el oficio, así que el bloque
-     * se apoya en el papel y deja la nota al lado del título.
+     * El hero del lavadero es de foto, como el del taller: la imagen tiene el
+     * auto y el lavador a la derecha y la pared lisa a la izquierda, así que el
+     * texto va sobre la pared y la nota queda debajo de los botones en lugar
+     * de al costado, donde taparía el auto.
      */
     & .lavadero-hero {
-        background: var(--alfa-offwhite);
-        border-bottom: 1px solid var(--alfa-border);
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
         /* Lo que queda de pantalla debajo del header, igual que los heros de
-           la portada y del taller: sin esto el bloque medía lo que midiera su
-           texto y la sección de precios asomaba a media pantalla. `dvh` y no
-           `vh`/`svh` porque en móvil el alto útil cambia al esconderse la barra
-           del navegador; la línea con `vh` queda de respaldo. */
+           la portada y del taller. `dvh` y no `vh`/`svh` porque en móvil el
+           alto útil cambia al esconderse la barra del navegador; la línea con
+           `vh` queda de respaldo. */
         display: flex;
         align-items: center;
         min-height: calc(100vh - var(--alfa-header));
         min-height: calc(100dvh - var(--alfa-header));
+        background: var(--alfa-ink);
+        color: var(--alfa-white);
 
         /* Sin volanta arriba: el título abre el bloque, así que no lleva
-           margen superior o se sumaría al padding del hero. Acá el `vh` sí
-           entra en el tamaño —a diferencia del taller, que se apoya en la
-           foto— porque en una laptop baja el título, la nota y los botones
-           tienen que caber juntos en esa única vista. */
+           margen superior o se sumaría al padding del hero. El `vh` sigue en
+           el tamaño aunque haya foto: a diferencia del taller, acá también va
+           la nota, y en una laptop baja todo tiene que caber en esa vista. */
         & h1 {
             font-size: clamp(32px, min(4.4vw, 9vh), 58px);
             font-weight: 800;
@@ -1169,24 +1171,51 @@
         & .lede {
             max-width: 46ch;
             margin-bottom: clamp(20px, 3vw, 30px);
+            color: rgb(255 255 255 / 0.82);
         }
+    }
+
+    & .lavadero-hero__foto,
+    & .lavadero-hero__velo {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+    }
+
+    /* Encuadre corrido a la derecha: en los recortes angostos tiene que seguir
+       entrando el auto con la espuma y no sólo la pared. */
+    & .lavadero-hero__foto {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 70% 55%;
+    }
+
+    /* La pared de la izquierda es clara: el degradado horizontal la apaga
+       donde va el texto y se abre hacia el auto. */
+    & .lavadero-hero__velo {
+        background:
+            linear-gradient(
+                to right,
+                rgb(16 16 18 / 0.9) 0%,
+                rgb(16 16 18 / 0.7) 40%,
+                rgb(16 16 18 / 0.2) 100%
+            ),
+            linear-gradient(to top, rgb(16 16 18 / 0.45), rgb(16 16 18 / 0.1));
     }
 
     & .lavadero-hero__inner {
         /* El hero es el flex que reparte el alto; el interior tiene que tomar
            todo el ancho o el `shell` se encoge a su contenido. */
         width: 100%;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-        gap: clamp(28px, 4vw, 64px);
-        align-items: center;
         padding-block: clamp(44px, 6vw, 88px);
     }
 
     & .lavadero-hero__nota {
-        background: var(--alfa-white);
-        border: 1px solid var(--alfa-border);
-        padding: clamp(22px, 3vw, 32px);
+        max-width: 46ch;
+        margin-top: clamp(24px, 3.5vw, 40px);
+        padding-left: 16px;
+        border-left: 2px solid rgb(255 255 255 / 0.4);
 
         /*
          * La volanta también es un <p>, así que `& p` le ganaría por
@@ -1195,23 +1224,34 @@
          */
         & .eyebrow {
             font-size: 10px;
-            color: var(--alfa-blue);
+            color: rgb(255 255 255 / 0.7);
             margin: 0;
         }
 
         & p {
             font-size: 14px;
             line-height: 1.6;
-            color: var(--alfa-text-body);
-            margin: 12px 0 0;
+            color: rgb(255 255 255 / 0.82);
+            margin: 8px 0 0;
         }
     }
 
     & .lavadero-hero__horario {
-        border-top: 1px solid var(--alfa-border-light);
-        padding-top: 14px;
         font-size: 12px !important;
-        color: var(--alfa-text-muted) !important;
+        color: rgb(255 255 255 / 0.6) !important;
+    }
+
+    /* En pantallas angostas el texto ocupa todo el ancho y cae sobre el auto:
+       el velo pasa a ser parejo, como en el taller. */
+    @media (max-width: 767px) {
+        & .lavadero-hero__velo {
+            background: linear-gradient(
+                to top,
+                rgb(16 16 18 / 0.88) 0%,
+                rgb(16 16 18 / 0.7) 55%,
+                rgb(16 16 18 / 0.5) 100%
+            );
+        }
     }
 
     /*

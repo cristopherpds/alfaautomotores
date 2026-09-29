@@ -71,29 +71,37 @@ export default function Lavadero({ site, servicios, ventana, huecos }: Props) {
             </Head>
 
             <section className="lavadero-hero">
+                {/* Fondo decorativo: no aporta contenido, así que va con
+                    `aria-hidden` y sin texto alternativo. */}
+                <img
+                    className="lavadero-hero__foto"
+                    src="/assets/hero-lavadero.jpg"
+                    alt=""
+                    aria-hidden="true"
+                    fetchPriority="high"
+                />
+                <div className="lavadero-hero__velo" aria-hidden="true" />
+
                 <div className="shell lavadero-hero__inner">
-                    <div>
-                        <h1>
-                            Tu auto limpio,
-                            <br />
-                            sin perder el día.
-                        </h1>
+                    <h1>
+                        Tu auto limpio,
+                        <br />
+                        sin perder el día.
+                    </h1>
 
-                        <p className="lede">
-                            Lavado exterior y aspirado interior en{' '}
-                            {site.direccion}, {site.ciudad}. Reservás el horario
-                            online y lo dejás solamente el rato que lleva el
-                            trabajo.
-                        </p>
+                    <p className="lede">
+                        Lavado exterior y aspirado interior en {site.direccion},{' '}
+                        {site.ciudad}. Reservás el horario online y lo dejás
+                        solamente el rato que lleva el trabajo.
+                    </p>
 
-                        <div className="hero__actions">
-                            <a href="#reservar" className="btn">
-                                Reservar lavado
-                            </a>
-                            <a href="#precios" className="btn btn--ghost">
-                                Ver precios
-                            </a>
-                        </div>
+                    <div className="hero__actions">
+                        <a href="#reservar" className="btn btn--light">
+                            Reservar lavado
+                        </a>
+                        <a href="#precios" className="btn btn--outline-light">
+                            Ver precios
+                        </a>
                     </div>
 
                     <aside className="lavadero-hero__nota">

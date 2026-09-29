@@ -18,4 +18,4 @@ Cuando el hero no tiene foto que sostenga el alto, el título suma el término `
 ## El nav del sitio público pasa a hamburguesa en 1023px, no en 767px
 El corte del panel desplegable estaba en 767px cuando el menú tenía cuatro entradas. Con Movilidad y Bicicletas son seis más el botón de WhatsApp y a 1024px ya no entran en una línea; como `.header__inner` no envuelve a propósito (para que `--alfa-header` sea constante), pasado ese ancho la marca y el menú se pisan. Si se agrega otra sección, medir de nuevo antes que subir el corte a ciegas.
 
-El otro `@media (max-width: 767px)` del archivo es del velo de `.taller-hero` y no tiene que ver: ese sigue en 767.
+Los otros `@media (max-width: 767px)` del archivo son de los velos de `.taller-hero` y `.lavadero-hero` y no tienen que ver: esos siguen en 767.
