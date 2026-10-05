@@ -496,11 +496,11 @@
     & .hero {
         position: relative;
         isolation: isolate;
-        /* Ancho completo: el `shell` pasa al interior para que el video sangre
+        /* Ancho completo: el `shell` pasa al interior para que el fondo sangre
            de borde a borde y el texto siga alineado con el resto de la
-           página. */
-        display: flex;
-        align-items: flex-end;
+           página. Grilla de una sola celda: los slides se apilan ahí y el
+           alto lo pone el más alto, así el pase no hace saltar la página. */
+        display: grid;
         /* Lo que queda de pantalla debajo del header, para que el video llene
            la primera vista completa. `dvh` y no `vh`/`svh`: en móvil el alto
            útil cambia al esconderse la barra del navegador, y es la única
@@ -516,13 +516,17 @@
             color: var(--alfa-white);
         }
 
-        & h1 {
+        /* `h1` en el slide visible y `p` en los demás: una sola clase para
+           que se vean igual. `pre-line` respeta los saltos que se cargan en
+           el panel. */
+        & .hero__titulo {
             font-size: clamp(34px, min(5.6vw, 9vh), 76px);
             font-weight: 800;
             line-height: 0.98;
             letter-spacing: -0.025em;
             margin-block: clamp(14px, 2.4vh, 22px);
             text-wrap: balance;
+            white-space: pre-line;
         }
 
         & .lede {
@@ -533,14 +537,37 @@
         }
     }
 
-    & .hero__video,
+    /* Cada slide es su propio contexto: el fondo y el velo se posicionan
+       contra él y no contra el hero. Los inactivos quedan invisibles (y
+       fuera del árbol de accesibilidad con `inert`); `visibility` espera al
+       final del fundido para que la salida también se vea. */
+    & .hero__slide {
+        grid-area: 1 / 1;
+        position: relative;
+        isolation: isolate;
+        display: flex;
+        align-items: flex-end;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+            opacity 0.8s ease,
+            visibility 0s linear 0.8s;
+
+        &.is-activo {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.8s ease;
+        }
+    }
+
+    & .hero__fondo,
     & .hero__velo {
         position: absolute;
         inset: 0;
         z-index: -1;
     }
 
-    & .hero__video {
+    & .hero__fondo {
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -552,14 +579,86 @@
      * contraste y el resto del plano se sigue viendo.
      */
     & .hero__velo {
-        background:
-            linear-gradient(
-                to top,
+        background: var(--velo-vertical), var(--velo-horizontal);
+    }
+
+    /*
+     * Posición del bloque de texto (`data-vertical` / `data-horizontal`, ver
+     * `App\Enums\PosicionTexto`). El velo sigue al texto: la zona donde cae
+     * queda oscura para el contraste y el resto de la foto se sigue viendo.
+     * Sin atributos vale abajo a la izquierda, la posición de siempre.
+     */
+    & .hero__slide {
+        --velo-vertical: linear-gradient(
+            to top,
+            rgb(16 16 18 / 0.88) 0%,
+            rgb(16 16 18 / 0.55) 45%,
+            rgb(16 16 18 / 0.2) 100%
+        );
+        --velo-horizontal: linear-gradient(
+            to right,
+            rgb(16 16 18 / 0.55),
+            transparent 70%
+        );
+
+        &[data-vertical='arriba'] {
+            align-items: flex-start;
+            --velo-vertical: linear-gradient(
+                to bottom,
                 rgb(16 16 18 / 0.88) 0%,
                 rgb(16 16 18 / 0.55) 45%,
                 rgb(16 16 18 / 0.2) 100%
-            ),
-            linear-gradient(to right, rgb(16 16 18 / 0.55), transparent 70%);
+            );
+        }
+
+        /* Al medio no hay borde que oscurecer: un velo parejo. */
+        &[data-vertical='centro'] {
+            align-items: center;
+            --velo-vertical: linear-gradient(
+                rgb(16 16 18 / 0.55),
+                rgb(16 16 18 / 0.55)
+            );
+        }
+
+        &[data-horizontal='derecha'] {
+            --velo-horizontal: linear-gradient(
+                to left,
+                rgb(16 16 18 / 0.55),
+                transparent 70%
+            );
+
+            & .hero__inner {
+                text-align: right;
+            }
+
+            & .lede {
+                margin-left: auto;
+            }
+
+            & .hero__actions {
+                justify-content: flex-end;
+            }
+        }
+
+        &[data-horizontal='centro'] {
+            --velo-horizontal: radial-gradient(
+                ellipse 60% 70% at center,
+                rgb(16 16 18 / 0.35),
+                transparent 100%
+            );
+
+            & .hero__inner {
+                text-align: center;
+            }
+
+            & .lede {
+                margin-inline: auto;
+            }
+
+            & .hero__actions {
+                justify-content: center;
+            }
+        }
     }
 
     & .hero__inner {
@@ -572,6 +671,154 @@
         display: flex;
         gap: 12px;
         flex-wrap: wrap;
+    }
+
+    /* Con varios slides, los controles van abajo y centrados —a la derecha
+       los tapaba el botón flotante de WhatsApp— y el texto les deja lugar
+       debajo para no pisarse en móvil. */
+    & .hero--carrusel .hero__inner {
+        padding-bottom: calc(clamp(40px, min(8vw, 8vh), 96px) + 44px);
+    }
+
+    & .hero__controles {
+        grid-area: 1 / 1;
+        align-self: end;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding-bottom: clamp(16px, 2.4vh, 24px);
+        pointer-events: none;
+
+        & > * {
+            pointer-events: auto;
+        }
+    }
+
+    & .hero__control {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border: 1px solid rgb(255 255 255 / 0.45);
+        border-radius: 50%;
+        background: rgb(16 16 18 / 0.35);
+        color: var(--alfa-white);
+        cursor: pointer;
+        transition:
+            background 0.18s ease,
+            border-color 0.18s ease;
+
+        & svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        &:hover {
+            background: rgb(255 255 255 / 0.16);
+            border-color: var(--alfa-white);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--alfa-white);
+            outline-offset: 2px;
+        }
+    }
+
+    & .hero__puntos {
+        display: flex;
+        align-items: center;
+        padding-inline: 4px;
+    }
+
+    /* El botón mide 24px (área táctil de WCAG 2.5.8); el punto visible es el
+       pseudo-elemento. El activo se estira en una barra. */
+    & .hero__punto {
+        display: grid;
+        place-items: center;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border: 0;
+        background: none;
+        cursor: pointer;
+
+        &::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 4px;
+            background: rgb(255 255 255 / 0.5);
+            transition:
+                width 0.3s ease,
+                background 0.3s ease;
+        }
+
+        &[aria-current='true']::before {
+            width: 20px;
+            background: var(--alfa-white);
+        }
+
+        &:hover::before {
+            background: var(--alfa-white);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--alfa-white);
+            outline-offset: -2px;
+            border-radius: 6px;
+        }
+    }
+
+    /* Sólo para lectores de pantalla. */
+    & .hero__estado {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        & .hero__slide,
+        & .hero__slide.is-activo {
+            transition: none;
+        }
+    }
+
+    /*
+     * Vista previa del panel. El hero real mide con `vw`/`vh`, que dentro del
+     * panel medirían la ventana del panel y no la pantalla que se simula. Por
+     * eso acá los tamaños son fijos —los que da el hero real en esa pantalla,
+     * los calcula `VistaPreviaHero`— y el conjunto se escala entero.
+     */
+    &.alfa--vista-previa {
+        min-height: 0;
+        display: block;
+        background: transparent;
+    }
+
+    & .hero--vista-previa {
+        min-height: 0;
+        height: 100%;
+        --alfa-gutter: var(--vista-gutter);
+
+        & .hero__titulo {
+            font-size: var(--vista-titulo);
+            margin-block: var(--vista-margen);
+        }
+
+        & .lede {
+            font-size: var(--vista-lede);
+            margin-bottom: var(--vista-margen-lede);
+        }
+
+        & .hero__inner {
+            padding-block: var(--vista-padding);
+        }
     }
 
     /* Franja de argumentos de venta */

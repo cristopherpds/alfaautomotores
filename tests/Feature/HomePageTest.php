@@ -1,6 +1,8 @@
 <?php
 
+use App\Enums\PosicionTexto;
 use App\Models\Entrega;
+use App\Models\HeroSlide;
 use App\Models\Vehiculo;
 
 test('the landing page renders for guests', function () {
@@ -157,4 +159,44 @@ test('the strip is empty when there are no deliveries', function () {
     $this->get(route('home'))
         ->assertOk()
         ->assertInertia(fn ($page) => $page->has('entregas', 0));
+});
+
+test('the hero shows only the slides in force, in the panel order', function () {
+    $this->travelTo('2026-10-05 10:00');
+
+    $segundo = HeroSlide::factory()->create(['orden' => 2, 'titulo' => 'Segundo']);
+    $primero = HeroSlide::factory()
+        ->vigencia('2026-10-01', '2026-10-05')
+        ->posicion(PosicionTexto::CentroCentro)
+        ->create(['orden' => 1, 'titulo' => 'Primero']);
+    HeroSlide::factory()->inactivo()->create(['orden' => 0]);
+    HeroSlide::factory()->vigencia('2026-10-06', null)->create(['orden' => 0]);
+    HeroSlide::factory()->vigencia(null, '2026-10-04')->create(['orden' => 0]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('slides', 2)
+            ->where('slides.0.id', $primero->id)
+            ->where('slides.0.titulo', 'Primero')
+            ->where('slides.0.posicion', 'centro-centro')
+            ->where('slides.1.posicion', 'abajo-izquierda')
+            ->where('slides.1.id', $segundo->id)
+            ->where('slides.0.botones.0.url', '/catalogo')
+        );
+});
+
+test('without slides in force the hero falls back to the route video', function () {
+    HeroSlide::factory()->inactivo()->create();
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('slides', 1)
+            ->where('slides.0.id', null)
+            ->where('slides.0.tipoFondo', 'video')
+            ->where('slides.0.fondo', '/assets/hero-ruta.mp4')
+            ->where('slides.0.posicion', 'abajo-izquierda')
+            ->where('slides.0.botones.1.url', fn (string $url) => str_starts_with($url, 'https://wa.me/'.config('alfa.whatsapp')))
+        );
 });

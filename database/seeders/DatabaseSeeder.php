@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ProductoSeeder::class);
         $this->call(EntregaSeeder::class);
         $this->call(ServicioSeeder::class);
+        $this->call(HeroSlideSeeder::class);
 
         /* Las agendas no son tablas de datos: son los horarios que le cuelgan
            a cada puesto. Los crean los comandos, que son idempotentes. Van uno

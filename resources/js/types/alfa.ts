@@ -66,6 +66,43 @@ export type Producto = {
  * Una foto de la tira de «Nuestros clientes» de la portada, servida por
  * `App\Models\Entrega::paraLaTira()`.
  */
+/** Un botón del hero: texto y destino (ruta del sitio o dirección completa). */
+export type HeroBoton = {
+    texto: string;
+    url: string;
+};
+
+/** Una casilla de la grilla de 3×3 del hero (`App\Enums\PosicionTexto`). */
+export type PosicionTexto =
+    `${'arriba' | 'centro' | 'abajo'}-${'izquierda' | 'centro' | 'derecha'}`;
+
+/** Lo que arma `HeroSlide::datos()`: un slide del hero de la portada. */
+export type HeroSlide = {
+    /** Null en el slide por defecto, que no es una fila. */
+    id: number | null;
+    tipoFondo: 'imagen' | 'video';
+    fondo: string;
+    eyebrow: string | null;
+    titulo: string;
+    bajada: string | null;
+    posicion: PosicionTexto;
+    botones: HeroBoton[];
+};
+
+/** La fila que arma `Panel\HeroSlideController::toListItem()`. */
+export type ManagedHeroSlide = HeroSlide & {
+    id: number;
+    boton1_texto: string | null;
+    boton1_url: string | null;
+    boton2_texto: string | null;
+    boton2_url: string | null;
+    activo: boolean;
+    desde: string | null;
+    hasta: string | null;
+    orden: number;
+    estado: 'activo' | 'programado' | 'vencido' | 'inactivo';
+};
+
 export type Entrega = {
     /** Ruta pública del archivo. */
     url: string;

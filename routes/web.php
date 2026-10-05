@@ -8,6 +8,7 @@ use App\Http\Controllers\Panel\AuditoriaController;
 use App\Http\Controllers\Panel\ClienteController;
 use App\Http\Controllers\Panel\ClienteExportController;
 use App\Http\Controllers\Panel\EntregaController;
+use App\Http\Controllers\Panel\HeroSlideController;
 use App\Http\Controllers\Panel\ProductoController as PanelProductoController;
 use App\Http\Controllers\Panel\ProductoImagenController;
 use App\Http\Controllers\Panel\ServicioController;
@@ -91,6 +92,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         /* El taller. Los servicios son un ABM normal; los turnos no tienen
            `create` ni `edit`: se cargan y se resuelven desde el calendario. */
         Route::resource('servicios', ServicioController::class)->except('show');
+
+        // Los slides del hero de la portada.
+        Route::resource('hero', HeroSlideController::class)
+            ->parameters(['hero' => 'slide'])
+            ->except('show');
 
         Route::get('turnos', [TurnoController::class, 'index'])->name('turnos.index');
         Route::post('turnos', [TurnoController::class, 'store'])->name('turnos.store');

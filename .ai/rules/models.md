@@ -8,6 +8,7 @@ paths:
   - 'app/Models/**'
   - app/Models/Cliente.php
   - app/Models/Ajuste.php
+  - app/Models/HeroSlide.php
 ---
 
 # Models
@@ -89,3 +90,9 @@ El número de WhatsApp es uno solo: `siteInfo()['whatsapp']` sale del ajuste (fa
 ## Botón de WhatsApp: varios contactos con horario y uno de respaldo
 `boton_whatsapp` guarda `titulo`, `subtitulo` y `contactos[]` (nombre, detalle, numero, mensaje, respaldo, horario {siempre, dias ISO 1–7, desde, hasta}). `Ajuste::whatsappDisponible(now())` es la única definición de quién se ofrece: los que están en horario, en el orden del panel; si no hay ninguno, el respaldo (exactamente uno, lo valida `AjusteWhatsappRequest::after()`) con `fueraDeHorario`. Una franja con desde > hasta cruza la medianoche y vale en la madrugada del día siguiente si el día anterior está en `dias`. `siteInfo()['whatsapp']` = el primer disponible, así los links sueltos siguen el mismo horario. El formato viejo (un solo `numero`) se lee como un contacto de respaldo.
 Trampas: `distinct` en `contactos.*.horario.dias.*` compara entre TODOS los contactos (rechaza dos que atienden el lunes): los repetidos se limpian en el controller. Los tests de horario que usan `Ajuste::guardar()` no pasan por la validación: hay uno que manda varios contactos por HTTP. En el form (useForm), los errores llegan con claves anidadas (`contactos.0.horario.dias.2`): el helper busca por prefijo.
+
+## Hero de la portada: vigentes() manda, porDefecto() cubre la base vacía
+`HeroSlide::vigentes()` (activo + desde/hasta inclusivas, orden por `orden` e id) es la única definición de qué slides ve el público; `estado()` es la misma regla para el panel: si se toca una, se toca la otra. Sin slides vigentes, `HomeController` manda `HeroSlide::porDefecto($whatsapp)` (el video `/assets/hero-ruta.mp4` de antes), así la primera vista nunca queda vacía; `HeroSlideSeeder` lo carga como fila copiando el video a `storage/app/public/hero/`. `datos()` es el payload compartido por la portada y la vista previa del panel: no se cambia de firma.
+
+## Posición del texto del hero: PosicionTexto `{vertical}-{horizontal}`
+`hero_slides.posicion` es `App\Enums\PosicionTexto` (9 casillas, default `abajo-izquierda` = la posición histórica) y viaja en `datos()`. `HeroSlideView` la parte en `data-vertical`/`data-horizontal` sobre `.hero__slide`, y `alfa.css` alinea el bloque y orienta el velo con las custom properties `--velo-vertical`/`--velo-horizontal`: si se agrega una posición, sumar su par de gradientes ahí para no perder contraste. La reserva de espacio para los controles del carrusel (`.hero--carrusel .hero__inner`) aplica a todas las posiciones.

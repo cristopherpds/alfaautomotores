@@ -12,6 +12,7 @@ export const TIPOS_AUDITORIA: Record<string, string> = {
     producto: 'Producto',
     foto_producto: 'Foto de producto',
     entrega: 'Entrega',
+    hero: 'Slide de portada',
     servicio: 'Servicio',
     turno: 'Turno',
     cliente: 'Cliente',

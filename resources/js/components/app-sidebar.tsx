@@ -6,6 +6,7 @@ import {
     Car,
     Contact,
     FolderGit2,
+    GalleryHorizontal,
     History,
     Images,
     LayoutGrid,
@@ -33,6 +34,7 @@ import { whatsapp as ajusteWhatsapp } from '@/routes/panel/ajustes';
 import { index as auditoriaIndex } from '@/routes/panel/auditoria';
 import { index as clientesIndex } from '@/routes/panel/clientes';
 import { index as entregasIndex } from '@/routes/panel/entregas';
+import { index as heroIndex } from '@/routes/panel/hero';
 import { index as serviciosIndex } from '@/routes/panel/servicios';
 import { index as turnosIndex } from '@/routes/panel/turnos';
 import { index as vehiculosIndex } from '@/routes/panel/vehiculos';
@@ -68,6 +70,11 @@ const catalogoNavItems: NavItem[] = [
         title: 'Entregas',
         href: entregasIndex(),
         icon: Images,
+    },
+    {
+        title: 'Portada',
+        href: heroIndex(),
+        icon: GalleryHorizontal,
     },
 ];
 

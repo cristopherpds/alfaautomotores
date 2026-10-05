@@ -1,12 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
 import { Entregas } from '@/components/alfa/entregas';
+import { Hero } from '@/components/alfa/hero';
 import { VehicleGrid } from '@/components/alfa/vehicle-card';
 import { whatsapp } from '@/lib/alfa';
 import { catalogo } from '@/routes';
-import type { Entrega, SiteInfo, Vehiculo } from '@/types';
+import type { Entrega, HeroSlide, SiteInfo, Vehiculo } from '@/types';
 
 type Props = {
     site: SiteInfo;
+    slides: HeroSlide[];
     destacados: Vehiculo[];
     totalStock: number;
     entregas: Entrega[];
@@ -20,6 +22,7 @@ const ARGUMENTOS = [
 
 export default function Welcome({
     site,
+    slides,
     destacados,
     totalStock,
     entregas,
@@ -38,60 +41,7 @@ export default function Welcome({
                 />
             </Head>
 
-            <section className="hero">
-                {/*
-                 * Fondo decorativo: va con `aria-hidden` y sin controles porque
-                 * no aporta contenido. `muted` + `playsInline` son los dos
-                 * requisitos para que el navegador (sobre todo iOS) deje
-                 * arrancar el autoplay.
-                 */}
-                <video
-                    className="hero__video"
-                    src="/assets/hero-ruta.mp4"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="auto"
-                    aria-hidden="true"
-                    tabIndex={-1}
-                />
-                <div className="hero__velo" aria-hidden="true" />
-
-                <div className="shell hero__inner">
-                    <p className="eyebrow">
-                        {site.ciudad} · {site.pais}
-                    </p>
-
-                    <h1>
-                        Tu elegís el destino,
-                        <br />
-                        nosotros ponemos
-                        <br />
-                        el vehículo.
-                    </h1>
-
-                    <p className="lede">
-                        Vehículos seleccionados, revisados y listos para
-                        entregar. Financiación disponible y recibimos tu usado
-                        como parte de pago.
-                    </p>
-
-                    <div className="hero__actions">
-                        <Link href={catalogo()} className="btn btn--light">
-                            Ver catálogo
-                        </Link>
-                        <a
-                            href={cotizar}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn--outline-light"
-                        >
-                            Cotizá tu auto
-                        </a>
-                    </div>
-                </div>
-            </section>
+            <Hero slides={slides} />
 
             <div className="strip">
                 <dl className="shell strip__grid">
