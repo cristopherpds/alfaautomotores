@@ -1110,6 +1110,16 @@
         color: var(--alfa-text-muted);
         max-width: 44ch;
         margin: 0;
+
+        & a {
+            color: inherit;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+
+            &:hover {
+                color: var(--alfa-blue);
+            }
+        }
     }
 
     /* La casilla de novedades del formulario de turno. Mismo tilde que el
@@ -1519,6 +1529,49 @@
             font-size: 15px;
             color: var(--alfa-text-muted);
             margin: 0;
+        }
+    }
+
+    /* Texto corrido de las páginas legales (política de privacidad). */
+    & .legal {
+        padding-block: 24px clamp(48px, 6vw, 88px);
+
+        & > * {
+            max-width: 70ch;
+        }
+
+        & h2 {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            margin: 36px 0 10px;
+        }
+
+        & p,
+        & li {
+            font-size: 15px;
+            line-height: 1.65;
+            color: var(--alfa-text-body);
+        }
+
+        & p {
+            margin: 0 0 12px;
+        }
+
+        & ul {
+            margin: 0 0 12px;
+            padding-left: 20px;
+        }
+
+        & li + li {
+            margin-top: 6px;
+        }
+
+        & a {
+            color: var(--alfa-blue);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            overflow-wrap: anywhere;
         }
     }
 
@@ -2175,7 +2228,8 @@
         font-weight: 700;
         letter-spacing: 0.24em;
         text-transform: uppercase;
-        color: var(--alfa-text-faint);
+        /* `muted` y no `faint`: a 9px el gris claro no llega al 4.5:1 de AA. */
+        color: var(--alfa-text-muted);
         margin: 0 0 14px;
     }
 
@@ -2192,9 +2246,23 @@
         font-size: 14px;
         align-items: flex-start;
 
+        /* 24px de alto como mínimo: el área táctil que pide WCAG 2.5.8. */
+        & a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 24px;
+        }
+
         & a:hover {
             color: var(--alfa-blue);
         }
+    }
+
+    & .footer__icono {
+        flex: none;
+        width: 16px;
+        height: 16px;
     }
 
     & .footer__legal {
@@ -2205,9 +2273,10 @@
         padding-block: 18px;
         font-size: 11px;
         letter-spacing: 0.1em;
-        color: var(--alfa-text-faint);
+        color: var(--alfa-text-muted);
         display: flex;
         justify-content: space-between;
+        align-items: center;
         gap: 16px;
         flex-wrap: wrap;
     }
@@ -2216,6 +2285,23 @@
        de entrada para el equipo, discreta al pie. */
     & .footer__panel:hover {
         color: var(--alfa-ink);
+    }
+
+    /* Con el botón flotante de WhatsApp la última franja deja libre su alto
+       (56px + el margen inferior del botón): si no, al llegar al final de la
+       página tapa «Panel» y, en móvil, el texto de precios. */
+    &.alfa--con-wpp .footer__legal-inner {
+        padding-bottom: calc(56px + clamp(16px, 3vw, 28px) + 12px);
+    }
+
+    & .footer__legal-inner a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+
+        &:hover {
+            color: var(--alfa-ink);
+        }
     }
 
     /* La franja pierde los separadores cuando colapsa a una sola columna */

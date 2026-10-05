@@ -16,7 +16,11 @@ export default function AlfaLayout({ children }: PropsWithChildren) {
     const { site } = usePage<{ site: SiteInfo }>().props;
 
     return (
-        <div className="alfa">
+        <div
+            className={
+                site.botonWhatsapp.activo ? 'alfa alfa--con-wpp' : 'alfa'
+            }
+        >
             <SiteHeader site={site} />
 
             <main>{children}</main>

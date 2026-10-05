@@ -29,6 +29,7 @@ trait ProvidesSiteInfo
             // el botón flotante.
             'whatsapp' => $disponible['contactos'][0]['numero'],
             'telefono' => config('alfa.telefono'),
+            'email' => config('alfa.email'),
             'botonWhatsapp' => [
                 'activo' => $boton['activo'],
                 'titulo' => $boton['titulo'],

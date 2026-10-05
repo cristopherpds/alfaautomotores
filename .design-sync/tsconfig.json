@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "jsx": "react-jsx",
+        "paths": {
+            "@/routes": ["../resources/js/routes/index.ts"],
+            "@/routes/productos": ["../resources/js/routes/productos/index.ts"],
+            "@/routes/vehiculos": ["../resources/js/routes/vehiculos/index.ts"],
+            "@/routes/panel/productos": ["../resources/js/routes/panel/productos/index.ts"],
+            "@/types": ["../resources/js/types/index.ts"],
+            "@/components/alfa/brand": ["./pkg/build/brand.tsx"],
+            "@/*": ["../resources/js/*"],
+            "@inertiajs/react": ["./shims/inertia-react.tsx"]
+        }
+    }
+}

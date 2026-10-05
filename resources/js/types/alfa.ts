@@ -129,6 +129,7 @@ export type SiteInfo = {
      */
     whatsapp: string;
     telefono: string;
+    email: string;
     /** El botón flotante, con los contactos que están en horario ahora. */
     botonWhatsapp: {
         activo: boolean;

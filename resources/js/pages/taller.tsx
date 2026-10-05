@@ -1,6 +1,7 @@
 import { Form, Head, router } from '@inertiajs/react';
 import { useMemo, useRef, useState } from 'react';
 import { whatsapp } from '@/lib/alfa';
+import { politicaPrivacidad } from '@/routes';
 import { store } from '@/routes/taller/turnos';
 import type { OpcionSelect, ServicioTaller, SiteInfo } from '@/types';
 
@@ -582,7 +583,8 @@ export default function Taller({
                                         value="1"
                                     />
                                     Quiero recibir novedades y recordatorios de
-                                    Alfa por WhatsApp o email.
+                                    Alfa por WhatsApp o email. Podés darte de
+                                    baja cuando quieras.
                                 </label>
 
                                 <div className="turno__enviar">
@@ -600,7 +602,16 @@ export default function Taller({
                                     <p className="turno__nota">
                                         Sin costo de reserva. Te confirmamos por
                                         WhatsApp con el presupuesto antes de que
-                                        traigas el auto.
+                                        traigas el auto. Al confirmar aceptás
+                                        nuestra{' '}
+                                        <a
+                                            href={politicaPrivacidad().url}
+                                            target="_blank"
+                                            rel="noopener"
+                                        >
+                                            Política de privacidad
+                                        </a>
+                                        .
                                     </p>
                                 </div>
                             </>

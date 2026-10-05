@@ -21,6 +21,7 @@ createInertiaApp({
             case name === 'bicicletas':
             case name === 'taller':
             case name === 'lavadero':
+            case name === 'politica-privacidad':
             case name.startsWith('vehiculos/'):
             case name.startsWith('productos/'):
                 return AlfaLayout;

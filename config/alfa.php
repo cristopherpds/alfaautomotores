@@ -39,4 +39,10 @@ return [
 
     'telefono' => env('ALFA_TELEFONO', '+59846222222'),
 
+    /*
+    | Casilla de contacto. Es la que figura en la política de privacidad para
+    | las consultas y los pedidos sobre datos personales.
+    */
+    'email' => env('ALFA_EMAIL', 'alfa@alfaautomotores.net'),
+
 ];

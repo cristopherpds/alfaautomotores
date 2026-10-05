@@ -1,0 +1,16 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "noEmit": false,
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "noEmitOnError": false,
+        "rootDir": "..",
+        "outDir": "./pkg/build/types",
+        "baseUrl": "..",
+        "paths": {
+            "@/*": ["./resources/js/*"]
+        }
+    },
+    "include": ["./pkg/entry.ts", "../resources/js/types/**/*.d.ts"]
+}

@@ -15,6 +15,7 @@ use App\Http\Controllers\Panel\TurnoController;
 use App\Http\Controllers\Panel\VehiculoController as PanelVehiculoController;
 use App\Http\Controllers\Panel\VehiculoImagenController;
 use App\Http\Controllers\Panel\VehiculoLoteController;
+use App\Http\Controllers\PoliticaPrivacidadController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\TallerController;
 use App\Http\Controllers\UserController;
@@ -40,6 +41,8 @@ Route::post('taller/turnos', [TallerController::class, 'store'])->name('taller.t
 
 Route::get('lavadero', [LavaderoController::class, 'index'])->name('lavadero');
 Route::post('lavadero/turnos', [LavaderoController::class, 'store'])->name('lavadero.turnos.store');
+
+Route::get('politica-de-privacidad', PoliticaPrivacidadController::class)->name('politica-privacidad');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');

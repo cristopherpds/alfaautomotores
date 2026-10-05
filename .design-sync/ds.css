@@ -1,0 +1,37 @@
+/*
+ * Stylesheet source for the Claude Design bundle. Same tokens and layers as the
+ * app (app.css pulls in Tailwind, tw-animate-css and alfa.css); build.mjs
+ * compiles it against resources/js + .design-sync/previews, plus the safelist
+ * below so the design agent has a predictable layout vocabulary.
+ */
+@import '../resources/css/app.css';
+
+/* Same variables laravel-vite-plugin/fonts injects at runtime (vite.config.ts bunny()); alfa.css reads --font-archivo. */
+:root {
+    --font-instrument-sans: 'Instrument Sans';
+    --font-archivo: 'Archivo';
+}
+
+@source inline("{sm:,md:,lg:,xl:,}{flex,inline-flex,grid,block,inline-block,hidden,contents}");
+@source inline("{sm:,md:,lg:,xl:,}flex-{row,col,wrap,1,none,row-reverse,col-reverse}");
+@source inline("{sm:,md:,lg:,xl:,}grid-cols-{1,2,3,4,5,6,8,12}");
+@source inline("{sm:,md:,lg:,xl:,}col-span-{1,2,3,4,5,6,8,12,full}");
+@source inline("{sm:,md:,lg:,}{items,self}-{start,center,end,stretch,baseline}");
+@source inline("{sm:,md:,lg:,}justify-{start,center,end,between,around,evenly}");
+@source inline("{sm:,md:,lg:,}{gap,gap-x,gap-y,space-x,space-y}-{0,0.5,1,1.5,2,2.5,3,4,5,6,8,10,12,16}");
+@source inline("{sm:,md:,lg:,}{p,px,py,pt,pb,pl,pr,m,mx,my,mt,mb,ml,mr}-{0,0.5,1,1.5,2,2.5,3,4,5,6,8,10,12,16,20,24}");
+@source inline("{mx,ml,mr}-auto");
+@source inline("{sm:,md:,lg:,}{w,h,min-h,min-w,size}-{0,1,2,3,4,5,6,8,10,12,16,20,24,32,40,48,64,72,80,96,full,auto,screen,fit,px}");
+@source inline("{sm:,md:,lg:,}max-w-{xs,sm,md,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl,full,prose,none}");
+@source inline("{sm:,md:,lg:,}text-{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,left,center,right}");
+@source inline("font-{normal,medium,semibold,bold,mono,sans}");
+@source inline("{leading,tracking}-{none,tight,snug,normal,relaxed,wide,tighter,wider}");
+@source inline("{truncate,uppercase,capitalize,tabular-nums,underline,line-through,whitespace-nowrap,break-words}");
+@source inline("{hover:,}text-{foreground,muted-foreground,primary,primary-foreground,secondary-foreground,accent-foreground,destructive,card-foreground,popover-foreground,sidebar-foreground}");
+@source inline("{hover:,}bg-{background,foreground,card,popover,muted,primary,secondary,accent,destructive,sidebar,sidebar-accent,border,transparent}{,/50,/80,/90}");
+@source inline("{border,border-t,border-b,border-l,border-r,border-0,border-2,border-dashed,border-border,border-input,border-primary,border-destructive}");
+@source inline("{ring,ring-1,ring-2,ring-ring,ring-offset-2,outline-none}");
+@source inline("rounded{,-none,-sm,-md,-lg,-xl,-2xl,-full}");
+@source inline("shadow{,-xs,-sm,-md,-lg,-none}");
+@source inline("{relative,absolute,fixed,sticky,inset-0,top-0,right-0,bottom-0,left-0,z-10,z-20,z-50,overflow-hidden,overflow-auto,overflow-x-auto,overflow-y-auto}");
+@source inline("{opacity-50,opacity-70,aspect-square,aspect-video,object-cover,shrink-0,grow,cursor-pointer,select-none,transition,transition-colors,divide-y,sr-only}");

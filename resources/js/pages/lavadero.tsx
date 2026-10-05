@@ -1,5 +1,6 @@
 import { Form, Head, router } from '@inertiajs/react';
 import { useRef, useState } from 'react';
+import { politicaPrivacidad } from '@/routes';
 import { store } from '@/routes/lavadero/turnos';
 import type { ServicioLavadero, SiteInfo } from '@/types';
 
@@ -536,7 +537,8 @@ export default function Lavadero({ site, servicios, ventana, huecos }: Props) {
                                         value="1"
                                     />
                                     Quiero recibir novedades y recordatorios de
-                                    Alfa por WhatsApp o email.
+                                    Alfa por WhatsApp o email. Podés darte de
+                                    baja cuando quieras.
                                 </label>
 
                                 <div className="turno__enviar">
@@ -553,7 +555,16 @@ export default function Lavadero({ site, servicios, ventana, huecos }: Props) {
 
                                     <p className="turno__nota">
                                         Sin costo de reserva. Te confirmamos por
-                                        WhatsApp y se paga al retirar el auto.
+                                        WhatsApp y se paga al retirar el auto.{' '}
+                                        Al confirmar aceptás nuestra{' '}
+                                        <a
+                                            href={politicaPrivacidad().url}
+                                            target="_blank"
+                                            rel="noopener"
+                                        >
+                                            Política de privacidad
+                                        </a>
+                                        .
                                     </p>
                                 </div>
                             </>
