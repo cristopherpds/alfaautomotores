@@ -247,3 +247,20 @@ test('only managers delete a conversation, and its files go with it', function (
     expect(Conversacion::count())->toBe(0);
     Storage::disk('local')->assertMissing($ruta);
 });
+
+test('the polling reload only sends the inbox and the open conversation', function () {
+    $conversacion = Conversacion::factory()->create();
+    MensajeWhatsapp::factory()->for($conversacion)->create(['cuerpo' => 'hola']);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('panel.whatsapp.show', $conversacion))
+        ->assertInertia(fn ($page) => $page
+            ->has('filtros')
+            ->reloadOnly(['conversaciones', 'conversacion'], fn ($recarga) => $recarga
+                ->has('conversaciones', 1)
+                ->where('conversacion.id', $conversacion->id)
+                ->missing('filtros')
+                ->missing('whatsappConfigurado')
+            )
+        );
+});

@@ -129,7 +129,8 @@ class ResponderConversacion implements ShouldQueue
         $this->configurarProveedor();
         $this->transcribirAudios($pendientes);
 
-        $texto = $pendientes->map(fn (MensajeWhatsapp $mensaje): string => self::comoTexto($mensaje))->implode("\n");
+        $veImagenes = self::modeloVeImagenes(Ajuste::conexionIa()['modelo']);
+        $texto = $pendientes->map(fn (MensajeWhatsapp $mensaje): string => self::comoTexto($mensaje, $veImagenes))->implode("\n");
 
         if (Guardas::pideHumano($texto)) {
             $this->derivarConAviso($conversacion, $mensajero, MotivoDerivacion::Cliente, 'Dale, te paso con alguien del equipo. En un ratito te escriben por acá 🙌');
@@ -305,7 +306,7 @@ class ResponderConversacion implements ShouldQueue
     /**
      * Cómo ve el modelo un mensaje entrante. Los [corchetes] son del sistema.
      */
-    public static function comoTexto(MensajeWhatsapp $mensaje): string
+    public static function comoTexto(MensajeWhatsapp $mensaje, bool $veImagenes = true): string
     {
         $cuerpo = trim((string) $mensaje->cuerpo);
 
@@ -314,13 +315,37 @@ class ResponderConversacion implements ShouldQueue
             TipoMensaje::Audio => isset($mensaje->meta['transcripcion']) && $mensaje->meta['transcripcion'] !== ''
                 ? '[Nota de voz, transcripta]: '.$mensaje->meta['transcripcion']
                 : '[Nota de voz que no se pudo escuchar]',
-            TipoMensaje::Imagen => $mensaje->media_ruta !== null ? '[Foto adjunta]' : '[Foto que no se pudo abrir]',
+            TipoMensaje::Imagen => match (true) {
+                $mensaje->media_ruta === null => '[Foto que no se pudo abrir]',
+                $veImagenes => '[Foto adjunta]',
+                default => '[Foto que mandó y vos no podés ver: queda guardada para la cotización]',
+            },
             TipoMensaje::Ubicacion => '[Ubicación]',
             TipoMensaje::Sticker => '[Sticker]',
             default => '['.$mensaje->tipo->etiqueta().' que no podés abrir]',
         };
 
         return trim(implode(' ', array_filter([$marca, $cuerpo !== '' ? $cuerpo : null])));
+    }
+
+    /**
+     * Si el modelo acepta imágenes, según la lista de OpenRouter que trae
+     * «Traer modelos» (guardada una hora). Sin la lista no se sabe y se
+     * asume que sí: mandarle una foto a un modelo que no la acepta hace
+     * fallar el turno entero, así que con la lista a mano no se arriesga.
+     */
+    public static function modeloVeImagenes(string $modelo): bool
+    {
+        $lista = Cache::get('openrouter:modelos');
+
+        if (! is_array($lista)) {
+            return true;
+        }
+
+        $datos = collect($lista)->firstWhere('id', $modelo);
+
+        return ! is_array($datos)
+            || in_array('image', (array) ($datos['architecture']['input_modalities'] ?? []), true);
     }
 
     /**
@@ -331,6 +356,10 @@ class ResponderConversacion implements ShouldQueue
      */
     private function imagenes(Collection $pendientes): array
     {
+        if (! self::modeloVeImagenes(Ajuste::conexionIa()['modelo'])) {
+            return [];
+        }
+
         return $pendientes
             ->filter(fn (MensajeWhatsapp $mensaje): bool => $mensaje->tipo === TipoMensaje::Imagen && $mensaje->media_ruta !== null)
             ->map(fn (MensajeWhatsapp $mensaje) => Image::fromStorage($mensaje->media_ruta, 'local'))

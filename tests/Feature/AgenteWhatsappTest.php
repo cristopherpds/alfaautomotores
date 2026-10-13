@@ -10,6 +10,7 @@ use App\Models\Conversacion;
 use App\Models\MensajeWhatsapp;
 use App\Services\Mensajero;
 use App\Services\WhatsappCloud;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Sleep;
@@ -310,4 +311,26 @@ test('the agent asks openrouter for the fast path', function () {
         'reasoning' => ['effort' => 'minimal'],
         'provider' => ['sort' => 'throughput'],
     ]);
+});
+
+test('photos are not sent to a model that cannot see them', function () {
+    AsistenteWhatsapp::fake(['Recibí la foto; contame marca, modelo y año.']);
+    Ajuste::guardarConexion(Ajuste::CONEXION_IA, ['modelo' => 'z-ai/glm-5.3-flash']);
+    Cache::put('openrouter:modelos', [
+        ['id' => 'z-ai/glm-5.3-flash', 'architecture' => ['input_modalities' => ['text']]],
+    ], now()->addHour());
+
+    $conversacion = Conversacion::factory()->create();
+    Storage::disk('local')->put('whatsapp/'.$conversacion->id.'/foto.jpg', 'jpg');
+    $foto = entranteDelCliente($conversacion, '', [
+        'tipo' => TipoMensaje::Imagen,
+        'cuerpo' => null,
+        'media_ruta' => 'whatsapp/'.$conversacion->id.'/foto.jpg',
+    ]);
+
+    ResponderConversacion::dispatchSync($conversacion->id, $foto->id);
+
+    AsistenteWhatsapp::assertPrompted(fn (AgentPrompt $prompt) => $prompt->attachments->isEmpty()
+        && $prompt->contains('vos no podés ver'));
+    expect(respuestasDeLaIa())->toHaveCount(1);
 });

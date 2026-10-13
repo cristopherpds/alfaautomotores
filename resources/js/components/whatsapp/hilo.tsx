@@ -1,6 +1,7 @@
-import { Form } from '@inertiajs/react';
+import { Form, Link, router } from '@inertiajs/react';
 import {
     AlertCircle,
+    ArrowLeft,
     Bot,
     Check,
     CheckCheck,
@@ -12,6 +13,7 @@ import {
     X,
 } from 'lucide-react';
 import { useLayoutEffect, useRef, useState } from 'react';
+import ConversacionController from '@/actions/App/Http/Controllers/Panel/ConversacionController';
 import MensajeWhatsappController from '@/actions/App/Http/Controllers/Panel/MensajeWhatsappController';
 import PlantillaWhatsappController from '@/actions/App/Http/Controllers/Panel/PlantillaWhatsappController';
 import InputError from '@/components/input-error';
@@ -28,6 +30,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import {
     Tooltip,
@@ -35,6 +38,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { index } from '@/routes/panel/whatsapp';
 import type {
     ConversacionAbierta,
     EstadoMensajeWhatsapp,
@@ -54,8 +58,62 @@ export function Hilo({ conversacion }: { conversacion: ConversacionAbierta }) {
         fondo.current?.scrollIntoView({ block: 'end' });
     }, [conversacion.id, ultimoId]);
 
+    const atiendeLaIa = conversacion.iaActiva && !conversacion.derivada;
+
     return (
         <div className="flex min-h-0 min-w-0 flex-col">
+            {/* Debajo de `xl` no hay panel del contacto: esta barra deja
+                volver a la lista y tomar o devolver la conversación. */}
+            <div className="flex items-center gap-2 border-b border-sidebar-border/70 px-2 py-2 xl:hidden">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden"
+                    asChild
+                >
+                    <Link href={index()} aria-label="Volver a la lista">
+                        <ArrowLeft />
+                    </Link>
+                </Button>
+                <div className="min-w-0 flex-1 px-1">
+                    <p className="truncate text-sm font-medium">
+                        {conversacion.nombre}
+                    </p>
+                    <p
+                        className={cn(
+                            'truncate text-xs',
+                            conversacion.derivada
+                                ? 'text-destructive'
+                                : 'text-muted-foreground',
+                        )}
+                    >
+                        {conversacion.derivada
+                            ? (conversacion.motivoDerivacion ??
+                              'Atención humana')
+                            : conversacion.telefono}
+                    </p>
+                </div>
+                <Label
+                    htmlFor="ia-activa-compacto"
+                    className="flex shrink-0 items-center gap-2 text-xs"
+                >
+                    <Bot className="size-4" />
+                    IA
+                </Label>
+                <Switch
+                    id="ia-activa-compacto"
+                    checked={atiendeLaIa}
+                    onCheckedChange={(activa) =>
+                        router.patch(
+                            ConversacionController.ia.url(conversacion.id),
+                            { activa },
+                            { preserveScroll: true, preserveState: true },
+                        )
+                    }
+                    data-test="ia-switch-compacto"
+                />
+            </div>
+
             <div className="min-h-0 flex-1 overflow-y-auto bg-muted/30 px-4 py-4">
                 <ol className="mx-auto flex max-w-3xl flex-col gap-2">
                     {conversacion.mensajes.map((mensaje) => (
