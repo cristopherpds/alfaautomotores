@@ -12,6 +12,7 @@ import {
     Images,
     LayoutGrid,
     MessageCircle,
+    MessagesSquare,
     Users,
     Wrench,
     Zap,
@@ -40,6 +41,7 @@ import { index as heroIndex } from '@/routes/panel/hero';
 import { index as serviciosIndex } from '@/routes/panel/servicios';
 import { index as turnosIndex } from '@/routes/panel/turnos';
 import { index as vehiculosIndex } from '@/routes/panel/vehiculos';
+import { index as whatsappIndex } from '@/routes/panel/whatsapp';
 import { index as usersIndex } from '@/routes/users';
 import type { NavItem } from '@/types';
 
@@ -48,6 +50,11 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'WhatsApp',
+        href: whatsappIndex(),
+        icon: MessagesSquare,
     },
 ];
 

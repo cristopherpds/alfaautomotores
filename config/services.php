@@ -28,6 +28,21 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /*
+     * WhatsApp Cloud API de Meta. Un solo número: el del local.
+     *
+     * `verify_token` va en la URL del webhook (`/webhooks/whatsapp/{token}`)
+     * y en el handshake de Meta; `app_secret` verifica la firma de cada POST.
+     */
+    'whatsapp' => [
+        'token' => env('WHATSAPP_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'waba_id' => env('WHATSAPP_WABA_ID'),
+        'app_secret' => env('WHATSAPP_APP_SECRET'),
+        'verify_token' => env('WHATSAPP_VERIFY_TOKEN'),
+        'graph_version' => env('WHATSAPP_GRAPH_VERSION', 'v23.0'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

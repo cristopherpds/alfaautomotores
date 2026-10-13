@@ -8,9 +8,12 @@ use App\Http\Controllers\Panel\AjusteController;
 use App\Http\Controllers\Panel\AuditoriaController;
 use App\Http\Controllers\Panel\ClienteController;
 use App\Http\Controllers\Panel\ClienteExportController;
+use App\Http\Controllers\Panel\ConversacionController;
 use App\Http\Controllers\Panel\CotizacionController as PanelCotizacionController;
 use App\Http\Controllers\Panel\EntregaController;
 use App\Http\Controllers\Panel\HeroSlideController;
+use App\Http\Controllers\Panel\MensajeWhatsappController;
+use App\Http\Controllers\Panel\PlantillaWhatsappController;
 use App\Http\Controllers\Panel\ProductoController as PanelProductoController;
 use App\Http\Controllers\Panel\ProductoImagenController;
 use App\Http\Controllers\Panel\ServicioController;
@@ -129,6 +132,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('cotizaciones.foto');
         Route::patch('cotizaciones/{cotizacion}/estado', [PanelCotizacionController::class, 'estado'])->name('cotizaciones.estado');
         Route::delete('cotizaciones/{cotizacion}', [PanelCotizacionController::class, 'destroy'])->name('cotizaciones.destroy');
+
+        /* La bandeja de WhatsApp. Las conversaciones nacen del webhook: no
+           hay alta. `plantillas/sincronizar` va antes de `{conversacion}`. */
+        Route::post('whatsapp/plantillas/sincronizar', [PlantillaWhatsappController::class, 'sincronizar'])->name('whatsapp.plantillas.sincronizar');
+        Route::get('whatsapp', [ConversacionController::class, 'index'])->name('whatsapp.index');
+        Route::get('whatsapp/{conversacion}', [ConversacionController::class, 'show'])->name('whatsapp.show');
+        Route::delete('whatsapp/{conversacion}', [ConversacionController::class, 'destroy'])->name('whatsapp.destroy');
+        Route::patch('whatsapp/{conversacion}/ia', [ConversacionController::class, 'ia'])->name('whatsapp.ia');
+        Route::patch('whatsapp/{conversacion}/archivar', [ConversacionController::class, 'archivar'])->name('whatsapp.archivar');
+        Route::get('whatsapp/{conversacion}/media/{mensaje}', [ConversacionController::class, 'media'])->name('whatsapp.media');
+        Route::post('whatsapp/{conversacion}/mensajes', [MensajeWhatsappController::class, 'store'])->name('whatsapp.mensajes.store');
+        Route::post('whatsapp/{conversacion}/plantillas', [PlantillaWhatsappController::class, 'enviar'])->name('whatsapp.plantillas.enviar');
 
         /* Sólo lectura: las entradas las escribe el trait `Auditable`. */
         Route::get('auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');

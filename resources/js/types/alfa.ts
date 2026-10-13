@@ -520,3 +520,72 @@ export type CotizacionDetalle = {
     creada: string | null;
     fotos: { lado: string; label: string; url: string }[];
 };
+
+/** Una fila de la bandeja de WhatsApp (`Panel\ConversacionController`). */
+export type ConversacionDeLista = {
+    id: number;
+    nombre: string;
+    telefono: string;
+    vistaPrevia: string | null;
+    ultimoSaliente: boolean;
+    ultimoMensajeAt: string | null;
+    noLeidos: number;
+    atiendeLaIa: boolean;
+    derivada: boolean;
+};
+
+export type EstadoMensajeWhatsapp =
+    'recibido' | 'pendiente' | 'enviado' | 'entregado' | 'leido' | 'fallido';
+
+export type MensajeWhatsapp = {
+    id: number;
+    entrante: boolean;
+    tipo: string;
+    tipoLabel: string;
+    cuerpo: string | null;
+    estado: EstadoMensajeWhatsapp;
+    error: string | null;
+    generadoPorIa: boolean;
+    autor: string | null;
+    plantilla: string | null;
+    media: { url: string; mime: string | null; nombre: string | null } | null;
+    mediaPendiente: boolean;
+    enviadoAt: string | null;
+};
+
+export type PlantillaWhatsapp = {
+    id: number;
+    nombre: string;
+    idioma: string;
+    cuerpo: string | null;
+    variables: number;
+};
+
+/** La conversación abierta, con su hilo y el panel del contacto. */
+export type ConversacionAbierta = {
+    id: number;
+    nombre: string;
+    nombrePerfil: string | null;
+    telefono: string;
+    iaActiva: boolean;
+    derivada: boolean;
+    motivoDerivacion: string | null;
+    archivada: boolean;
+    ventanaAbierta: boolean;
+    ventanaCierraAt: string | null;
+    ficha: Record<string, unknown>;
+    cliente: {
+        id: number;
+        nombre: string;
+        email: string | null;
+        turnos: {
+            id: number;
+            servicio: string;
+            iniciaAt: string;
+            estado: string;
+        }[];
+    } | null;
+    mensajes: MensajeWhatsapp[];
+    plantillas: PlantillaWhatsapp[];
+    can: { delete: boolean; administrar: boolean };
+};

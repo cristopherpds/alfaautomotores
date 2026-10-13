@@ -177,6 +177,28 @@ class Cliente extends Model
     }
 
     /**
+     * Cómo puede haber quedado guardado el celular de un número de WhatsApp.
+     *
+     * Meta manda el número internacional sin «+» (`59899123456`) y en las
+     * fichas se anota a la uruguaya (`099 123 456` → `099123456`): sin esta
+     * traducción no coincidirían nunca. Un número de otro país (Brasil, en
+     * Rivera, es lo común) se compara tal cual.
+     *
+     * @return list<string>
+     */
+    public static function celularesPosiblesDeWaId(string $waId): array
+    {
+        $digitos = self::normalizarCelular($waId);
+        $posibles = [$digitos];
+
+        if (str_starts_with($digitos, '598') && strlen($digitos) > 3) {
+            $posibles[] = '0'.substr($digitos, 3);
+        }
+
+        return $posibles;
+    }
+
+    /**
      * El cliente de una reserva: el que ya existe o uno nuevo.
      *
      * Busca por celular y, si no aparece, por email. Si lo encuentra, se

@@ -10,6 +10,7 @@ paths:
   - app/Models/Ajuste.php
   - app/Models/HeroSlide.php
   - app/Models/Cotizacion.php
+  - app/Models/Conversacion.php
 ---
 
 # Models
@@ -101,3 +102,8 @@ Trampas: `distinct` en `contactos.*.horario.dias.*` compara entre TODOS los cont
 ## Las fotos de «Cotizá tu auto» van en el disco privado
 `Cotizacion` guarda sus 4 fotos opcionales (`foto_derecha|izquierda|interior|tablero`, claves de `Cotizacion::FOTOS`) en el disco `local` (privado) bajo `cotizaciones/{id}/`, NO en `public`: son fotos del auto de un particular. Se sirven sólo por `panel.cotizaciones.foto` (login + policy). El hook `deleting` borra la carpeta. Tests: `Storage::fake('local')`, no `public`.
 `Cotizacion::recibir()` es la única entrada desde la web: crea/actualiza el lead con `Cliente::desdeReserva()` (email null) dentro de una transacción. «Cotizá tu auto» (header, portada, `HeroSlide::porDefecto()`) apunta a `/cotiza-tu-auto`, ya no a WhatsApp. Si se suma un campo, actualizar `politica-privacidad.tsx`.
+
+## WhatsApp: wa_id ↔ celular, ingesta silenciosa y un solo camino de salida
+El `wa_id` de Meta es internacional sin «+» (`59899123456`) y `clientes.celular_normalizado` es local (`099123456`): casarlos SIEMPRE con `Cliente::celularesPosiblesDeWaId()` (Brasil y otros países se comparan tal cual).
+`Conversacion` usa `Auditable` para lo que hace el equipo (tomarla, devolverla, archivar), pero la ingesta del webhook toca contadores con `saveQuietly()`/`forceFill()->saveQuietly()`: un `save()` ahí escribiría una fila de auditoría por cada mensaje. `MensajeWhatsapp` no se audita (ya es el registro).
+Todo envío a Meta pasa por `App\Services\Mensajero` (deja el mensaje `pendiente` y lo pasa a `enviado`/`fallido`); no llamar a `WhatsappCloud::enviar*` directo desde controllers ni del agente. Texto libre sólo con `ventanaAbierta()` (24 h desde el último entrante); si no, plantilla aprobada. Adjuntos en disco `local` bajo `whatsapp/{id}/`: tests con `Storage::fake('local')` y `Http::fake()`.
