@@ -8,6 +8,7 @@ use App\Http\Controllers\Panel\AjusteController;
 use App\Http\Controllers\Panel\AuditoriaController;
 use App\Http\Controllers\Panel\ClienteController;
 use App\Http\Controllers\Panel\ClienteExportController;
+use App\Http\Controllers\Panel\ConexionController;
 use App\Http\Controllers\Panel\ConversacionController;
 use App\Http\Controllers\Panel\CotizacionController as PanelCotizacionController;
 use App\Http\Controllers\Panel\EntregaController;
@@ -151,6 +152,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         /* Ajustes del sitio público, sólo para admins. */
         Route::get('ajustes/whatsapp', [AjusteController::class, 'whatsapp'])->name('ajustes.whatsapp');
         Route::put('ajustes/whatsapp', [AjusteController::class, 'guardarWhatsapp'])->name('ajustes.whatsapp.update');
+
+        /* Las credenciales de Meta y de la IA, como en la Configuración de
+           Vocero: cifradas en `ajustes`, con el `.env` de respaldo. */
+        Route::get('ajustes/conexiones', [ConexionController::class, 'show'])->name('ajustes.conexiones');
+        Route::put('ajustes/conexiones/whatsapp', [ConexionController::class, 'whatsapp'])->name('ajustes.conexiones.whatsapp');
+        Route::put('ajustes/conexiones/ia', [ConexionController::class, 'ia'])->name('ajustes.conexiones.ia');
+        Route::post('ajustes/conexiones/whatsapp/probar', [ConexionController::class, 'probarWhatsapp'])->name('ajustes.conexiones.whatsapp.probar');
+        Route::post('ajustes/conexiones/ia/probar', [ConexionController::class, 'probarIa'])->name('ajustes.conexiones.ia.probar');
+        Route::delete('ajustes/conexiones/{conexion}/{campo}', [ConexionController::class, 'olvidar'])
+            ->whereIn('conexion', ['whatsapp', 'ia'])
+            ->name('ajustes.conexiones.olvidar');
     });
 });
 

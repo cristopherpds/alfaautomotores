@@ -13,6 +13,7 @@ import {
     LayoutGrid,
     MessageCircle,
     MessagesSquare,
+    PlugZap,
     Users,
     Wrench,
     Zap,
@@ -32,7 +33,10 @@ import {
 } from '@/components/ui/sidebar';
 import { indiceDeSeccion } from '@/lib/productos-panel';
 import { dashboard } from '@/routes';
-import { whatsapp as ajusteWhatsapp } from '@/routes/panel/ajustes';
+import {
+    conexiones as ajusteConexiones,
+    whatsapp as ajusteWhatsapp,
+} from '@/routes/panel/ajustes';
 import { index as auditoriaIndex } from '@/routes/panel/auditoria';
 import { index as clientesIndex } from '@/routes/panel/clientes';
 import { index as cotizacionesIndex } from '@/routes/panel/cotizaciones';
@@ -128,6 +132,11 @@ const adminNavItems: NavItem[] = [
         title: 'Botón de WhatsApp',
         href: ajusteWhatsapp(),
         icon: MessageCircle,
+    },
+    {
+        title: 'Conexiones',
+        href: ajusteConexiones(),
+        icon: PlugZap,
     },
 ];
 

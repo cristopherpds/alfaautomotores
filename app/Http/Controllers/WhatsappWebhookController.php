@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\ProcesarWebhookWhatsapp;
+use App\Models\Ajuste;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -26,7 +27,7 @@ class WhatsappWebhookController extends Controller
 
         abort_unless(
             $request->query('hub_mode') === 'subscribe'
-                && hash_equals((string) config('services.whatsapp.verify_token'), (string) $request->query('hub_verify_token')),
+                && hash_equals((string) Ajuste::conexionWhatsapp()['verify_token'], (string) $request->query('hub_verify_token')),
             403,
         );
 
@@ -40,7 +41,7 @@ class WhatsappWebhookController extends Controller
     {
         $this->exigirToken($token);
 
-        $secreto = (string) config('services.whatsapp.app_secret');
+        $secreto = (string) Ajuste::conexionWhatsapp()['app_secret'];
 
         if ($secreto !== '') {
             $esperada = 'sha256='.hash_hmac('sha256', $request->getContent(), $secreto);
@@ -62,7 +63,7 @@ class WhatsappWebhookController extends Controller
      */
     private function exigirToken(string $token): void
     {
-        $esperado = (string) config('services.whatsapp.verify_token');
+        $esperado = (string) Ajuste::conexionWhatsapp()['verify_token'];
 
         abort_if($esperado === '' || ! hash_equals($esperado, $token), 404);
     }

@@ -43,6 +43,17 @@ return [
         'graph_version' => env('WHATSAPP_GRAPH_VERSION', 'v23.0'),
     ],
 
+    /*
+     * Los modelos del agente de WhatsApp en OpenRouter. La clave va en
+     * `config/ai.php` (`OPENROUTER_API_KEY`). Todo se puede pisar desde el
+     * panel (Ajustes → Conexiones). El modelo tiene que aceptar herramientas e
+     * imágenes; el de transcripción, audio.
+     */
+    'openrouter' => [
+        'modelo' => env('OPENROUTER_MODEL', 'google/gemini-2.5-flash'),
+        'modelo_transcripcion' => env('OPENROUTER_TRANSCRIPTION_MODEL', 'google/gemini-2.5-flash'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

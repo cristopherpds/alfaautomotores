@@ -6,6 +6,7 @@ use App\Enums\DireccionMensaje;
 use App\Enums\EstadoMensaje;
 use App\Enums\EstadoPlantilla;
 use App\Enums\TipoMensaje;
+use App\Models\Ajuste;
 use App\Models\Conversacion;
 use App\Models\MensajeWhatsapp;
 use App\Models\PlantillaWhatsapp;
@@ -53,7 +54,7 @@ class ProcesarWebhookWhatsapp implements ShouldQueue
         /* Otro número de la misma cuenta de Meta no es asunto de este local. */
         $numero = $valor['metadata']['phone_number_id'] ?? null;
 
-        if ($numero !== null && (string) $numero !== (string) config('services.whatsapp.phone_number_id')) {
+        if ($numero !== null && (string) $numero !== (string) Ajuste::conexionWhatsapp()['phone_number_id']) {
             return;
         }
 

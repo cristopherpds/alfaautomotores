@@ -4,10 +4,12 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use Carbon\CarbonInterface;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 
 /**
  * Un grupo de ajustes del sitio que se cambia desde el panel.
@@ -36,12 +38,35 @@ class Ajuste extends Model
     public const BOTON_WHATSAPP = 'boton_whatsapp';
 
     /**
+     * La conexión con la WhatsApp Cloud API de Meta.
+     */
+    public const CONEXION_WHATSAPP = 'conexion_whatsapp';
+
+    /**
+     * La conexión con el proveedor de IA (OpenRouter).
+     */
+    public const CONEXION_IA = 'conexion_ia';
+
+    /**
+     * Los campos de cada conexión que se guardan cifrados y nunca vuelven al
+     * navegador: el panel sólo ve si están cargados y sus últimos caracteres.
+     *
+     * @var array<string, list<string>>
+     */
+    public const SECRETOS = [
+        self::CONEXION_WHATSAPP => ['token', 'app_secret'],
+        self::CONEXION_IA => ['api_key'],
+    ];
+
+    /**
      * Cómo se llama cada grupo en la auditoría.
      *
      * @var array<string, string>
      */
     private const NOMBRES = [
         self::BOTON_WHATSAPP => 'Botón de WhatsApp',
+        self::CONEXION_WHATSAPP => 'Conexión de WhatsApp',
+        self::CONEXION_IA => 'Conexión de IA',
     ];
 
     /**
@@ -100,6 +125,120 @@ class Ajuste extends Model
         Cache::forget(self::claveDeCache($clave));
 
         return $ajuste;
+    }
+
+    /**
+     * La conexión con Meta: lo cargado en el panel y, campo por campo, el
+     * `.env` (`config('services.whatsapp')`) para lo que no se cargó.
+     *
+     * @return array{token: string|null, phone_number_id: string|null, waba_id: string|null, app_secret: string|null, verify_token: string|null, graph_version: string}
+     */
+    public static function conexionWhatsapp(): array
+    {
+        /** @var array{token: string|null, phone_number_id: string|null, waba_id: string|null, app_secret: string|null, verify_token: string|null, graph_version: string} */
+        return self::conexion(self::CONEXION_WHATSAPP, (array) config('services.whatsapp'), [
+            'token', 'phone_number_id', 'waba_id', 'app_secret', 'verify_token', 'graph_version',
+        ]);
+    }
+
+    /**
+     * La conexión con la IA, con el mismo respaldo en `.env`.
+     *
+     * @return array{api_key: string|null, modelo: string, modelo_transcripcion: string}
+     */
+    public static function conexionIa(): array
+    {
+        /** @var array{api_key: string|null, modelo: string, modelo_transcripcion: string} */
+        return self::conexion(self::CONEXION_IA, [
+            'api_key' => config('ai.providers.openrouter.key'),
+            'modelo' => config('services.openrouter.modelo'),
+            'modelo_transcripcion' => config('services.openrouter.modelo_transcripcion'),
+        ], ['api_key', 'modelo', 'modelo_transcripcion']);
+    }
+
+    /**
+     * Guardar una conexión. Un secreto que llega vacío no se toca: el panel
+     * nunca lo muestra, así que vacío quiere decir «dejá el que está».
+     *
+     * @param  array<string, string|null>  $nuevos
+     */
+    public static function guardarConexion(string $clave, array $nuevos): self
+    {
+        $guardado = self::where('clave', $clave)->value('valor') ?? [];
+        $secretos = self::SECRETOS[$clave] ?? [];
+
+        foreach ($nuevos as $campo => $valor) {
+            $valor = $valor === null ? null : trim($valor);
+
+            if (in_array($campo, $secretos, true)) {
+                if ($valor === null || $valor === '') {
+                    continue;
+                }
+
+                $valor = Crypt::encryptString($valor);
+            }
+
+            $guardado[$campo] = $valor === '' ? null : $valor;
+        }
+
+        return self::guardar($clave, $guardado);
+    }
+
+    /**
+     * Borrar un secreto guardado: vuelve a valer el del `.env`, si hay.
+     */
+    public static function olvidarSecreto(string $clave, string $campo): void
+    {
+        $guardado = self::where('clave', $clave)->value('valor') ?? [];
+        unset($guardado[$campo]);
+
+        self::guardar($clave, $guardado);
+    }
+
+    /**
+     * Cómo se muestra un secreto en el panel: cargado o no, y sus últimos
+     * cuatro caracteres.
+     *
+     * @return array{cargado: bool, final: string|null, origen: 'panel'|'env'|null}
+     */
+    public static function resumenDeSecreto(string $clave, string $campo, ?string $valorEfectivo): array
+    {
+        $enPanel = isset((self::valor($clave))[$campo]);
+
+        return [
+            'cargado' => filled($valorEfectivo),
+            'final' => filled($valorEfectivo) ? mb_substr((string) $valorEfectivo, -4) : null,
+            'origen' => filled($valorEfectivo) ? ($enPanel ? 'panel' : 'env') : null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $respaldo
+     * @param  list<string>  $campos
+     * @return array<string, mixed>
+     */
+    private static function conexion(string $clave, array $respaldo, array $campos): array
+    {
+        $guardado = self::valor($clave);
+        $secretos = self::SECRETOS[$clave] ?? [];
+        $conexion = [];
+
+        foreach ($campos as $campo) {
+            $valor = $guardado[$campo] ?? null;
+
+            if ($valor !== null && in_array($campo, $secretos, true)) {
+                try {
+                    $valor = Crypt::decryptString((string) $valor);
+                } catch (DecryptException) {
+                    // Cambió el APP_KEY: el secreto ya no se puede leer.
+                    $valor = null;
+                }
+            }
+
+            $conexion[$campo] = filled($valor) ? $valor : ($respaldo[$campo] ?? null);
+        }
+
+        return $conexion;
     }
 
     /**

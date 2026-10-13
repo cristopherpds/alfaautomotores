@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\WhatsappException;
+use App\Models\Ajuste;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
@@ -24,7 +25,7 @@ class WhatsappCloud
      */
     public function configurado(): bool
     {
-        return filled(config('services.whatsapp.token')) && filled(config('services.whatsapp.phone_number_id'));
+        return filled($this->dato('token')) && filled($this->dato('phone_number_id'));
     }
 
     /**
@@ -138,7 +139,7 @@ class WhatsappCloud
      */
     public function plantillas(): array
     {
-        $waba = (string) config('services.whatsapp.waba_id');
+        $waba = (string) $this->dato('waba_id');
 
         if ($waba === '') {
             throw WhatsappException::sinConfigurar();
@@ -189,7 +190,7 @@ class WhatsappCloud
         }
 
         try {
-            $respuesta = $pedido(Http::withToken((string) config('services.whatsapp.token'))
+            $respuesta = $pedido(Http::withToken((string) $this->dato('token'))
                 ->acceptJson()
                 ->timeout(20)
                 ->retry(2, 500, fn (\Throwable $error): bool => $error instanceof ConnectionException, throw: false));
@@ -204,13 +205,44 @@ class WhatsappCloud
         return $respuesta;
     }
 
+    /**
+     * Los datos del número tal como los ve Meta: sirve para probar la
+     * conexión desde el panel.
+     *
+     * @return array{numero: string|null, nombre: string|null, calidad: string|null}
+     *
+     * @throws WhatsappException
+     */
+    public function numero(): array
+    {
+        $datos = $this->llamar(fn (PendingRequest $http) => $http->get($this->url($this->phoneNumberId()), [
+            'fields' => 'display_phone_number,verified_name,quality_rating',
+        ]));
+
+        return [
+            'numero' => $datos->json('display_phone_number'),
+            'nombre' => $datos->json('verified_name'),
+            'calidad' => $datos->json('quality_rating'),
+        ];
+    }
+
     private function phoneNumberId(): string
     {
-        return (string) config('services.whatsapp.phone_number_id');
+        return (string) $this->dato('phone_number_id');
     }
 
     private function url(string $ruta): string
     {
-        return self::GRAPH.'/'.config('services.whatsapp.graph_version').'/'.$ruta;
+        return self::GRAPH.'/'.($this->dato('graph_version') ?: 'v23.0').'/'.$ruta;
+    }
+
+    /**
+     * Un dato de la conexión: el del panel o, si no se cargó, el del `.env`.
+     */
+    private function dato(string $campo): ?string
+    {
+        $valor = Ajuste::conexionWhatsapp()[$campo] ?? null;
+
+        return $valor === null ? null : (string) $valor;
     }
 }
