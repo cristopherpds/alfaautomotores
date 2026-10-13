@@ -125,8 +125,19 @@ class ProcesarWebhookWhatsapp implements ShouldQueue
             return $registro;
         });
 
-        if ($creado?->media_id !== null) {
+        if ($creado === null) {
+            return;
+        }
+
+        if ($creado->media_id !== null) {
             DescargarMediaWhatsapp::dispatch($creado);
+        }
+
+        /* Un turno del agente por mensaje, con espera: si entra otro antes de
+           que corra, éste no hace nada y el del último contesta todo junto. */
+        if ($tipo !== TipoMensaje::Reaccion && ResponderConversacion::puedeContestar($creado->conversacion)) {
+            ResponderConversacion::dispatch($creado->conversacion_id, $creado->id)
+                ->delay(now()->addSeconds(ResponderConversacion::ESPERA_SEGUNDOS));
         }
     }
 

@@ -436,7 +436,7 @@ export type DatosDelDashboard = {
     semana: {
         dias: { fecha: string; taller: number; lavadero: number }[];
         cancelados: number;
-        origen: { web: number; panel: number };
+        origen: { web: number; panel: number; whatsapp: number };
     };
     /** Null para quien no puede leer la auditoría. */
     actividad: Omit<EntradaAuditoria, 'cambios' | 'ip'>[] | null;

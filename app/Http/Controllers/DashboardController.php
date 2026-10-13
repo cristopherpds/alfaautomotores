@@ -273,6 +273,7 @@ class DashboardController extends Controller
             'origen' => [
                 'web' => (int) ($origen[OrigenTurno::Web->value] ?? 0),
                 'panel' => (int) ($origen[OrigenTurno::Panel->value] ?? 0),
+                'whatsapp' => (int) ($origen[OrigenTurno::Whatsapp->value] ?? 0),
             ],
         ];
     }

@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     Bike,
+    Bot,
     BookOpen,
     CalendarDays,
     Car,
@@ -45,7 +46,10 @@ import { index as heroIndex } from '@/routes/panel/hero';
 import { index as serviciosIndex } from '@/routes/panel/servicios';
 import { index as turnosIndex } from '@/routes/panel/turnos';
 import { index as vehiculosIndex } from '@/routes/panel/vehiculos';
-import { index as whatsappIndex } from '@/routes/panel/whatsapp';
+import {
+    agente as whatsappAgente,
+    index as whatsappIndex,
+} from '@/routes/panel/whatsapp';
 import { index as usersIndex } from '@/routes/users';
 import type { NavItem } from '@/types';
 
@@ -132,6 +136,11 @@ const adminNavItems: NavItem[] = [
         title: 'Botón de WhatsApp',
         href: ajusteWhatsapp(),
         icon: MessageCircle,
+    },
+    {
+        title: 'Agente de WhatsApp',
+        href: whatsappAgente(),
+        icon: Bot,
     },
     {
         title: 'Conexiones',

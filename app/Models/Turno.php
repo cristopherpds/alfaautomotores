@@ -39,7 +39,7 @@ use Zap\Facades\Zap;
  * @property Carbon $termina_at
  * @property string $nombre
  * @property string $apellido
- * @property string $email
+ * @property string|null $email
  * @property string $celular
  * @property string|null $vehiculo_marca
  * @property string|null $vehiculo_modelo

@@ -43,7 +43,7 @@ type EventoTurno = EventInput & {
         duracionLegible: string;
         puesto: string;
         cliente: string;
-        email: string;
+        email: string | null;
         celular: string;
         vehiculo: string | null;
         matricula: string | null;
@@ -72,6 +72,13 @@ type Props = {
 
 /** El valor del filtro que no filtra nada. */
 const TODOS = 'todos';
+
+/** Las etiquetas de `OrigenTurno`. */
+const ORIGENES: Record<string, string> = {
+    web: 'Reserva web',
+    whatsapp: 'Reserva por WhatsApp',
+    panel: 'Carga interna',
+};
 
 /** El color de cada estado sale de estas clases; el CSS vive en `app.css`. */
 const TONO: Record<
@@ -317,9 +324,9 @@ export default function TurnosIndex({
                                     </Badge>
 
                                     <span className="text-muted-foreground">
-                                        {abierto.extendedProps.origen === 'web'
-                                            ? 'Reserva web'
-                                            : 'Carga interna'}
+                                        {ORIGENES[
+                                            abierto.extendedProps.origen
+                                        ] ?? 'Carga interna'}
                                     </span>
                                 </div>
 
@@ -332,12 +339,14 @@ export default function TurnosIndex({
                                     {abierto.extendedProps.celular}
                                 </p>
 
-                                <p>
-                                    <span className="text-muted-foreground">
-                                        Correo:{' '}
-                                    </span>
-                                    {abierto.extendedProps.email}
-                                </p>
+                                {abierto.extendedProps.email && (
+                                    <p>
+                                        <span className="text-muted-foreground">
+                                            Correo:{' '}
+                                        </span>
+                                        {abierto.extendedProps.email}
+                                    </p>
+                                )}
 
                                 {abierto.extendedProps.vehiculo && (
                                     <p>

@@ -4,6 +4,7 @@ use App\Http\Controllers\CotizacionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LavaderoController;
+use App\Http\Controllers\Panel\AgenteController;
 use App\Http\Controllers\Panel\AjusteController;
 use App\Http\Controllers\Panel\AuditoriaController;
 use App\Http\Controllers\Panel\ClienteController;
@@ -137,6 +138,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         /* La bandeja de WhatsApp. Las conversaciones nacen del webhook: no
            hay alta. `plantillas/sincronizar` va antes de `{conversacion}`. */
         Route::post('whatsapp/plantillas/sincronizar', [PlantillaWhatsappController::class, 'sincronizar'])->name('whatsapp.plantillas.sincronizar');
+        // El agente de IA: perfil y conocimiento. Antes de `{conversacion}`.
+        Route::get('whatsapp/agente', [AgenteController::class, 'show'])->name('whatsapp.agente');
+        Route::put('whatsapp/agente', [AgenteController::class, 'update'])->name('whatsapp.agente.update');
+        Route::post('whatsapp/agente/conocimientos', [AgenteController::class, 'guardarConocimiento'])->name('whatsapp.conocimientos.store');
+        Route::put('whatsapp/agente/conocimientos/{conocimiento}', [AgenteController::class, 'actualizarConocimiento'])->name('whatsapp.conocimientos.update');
+        Route::delete('whatsapp/agente/conocimientos/{conocimiento}', [AgenteController::class, 'borrarConocimiento'])->name('whatsapp.conocimientos.destroy');
         Route::get('whatsapp', [ConversacionController::class, 'index'])->name('whatsapp.index');
         Route::get('whatsapp/{conversacion}', [ConversacionController::class, 'show'])->name('whatsapp.show');
         Route::delete('whatsapp/{conversacion}', [ConversacionController::class, 'destroy'])->name('whatsapp.destroy');

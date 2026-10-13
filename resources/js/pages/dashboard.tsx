@@ -294,7 +294,8 @@ export default function Dashboard({
     const turnosDeHoy = turnosIndex({
         query: { desde: hoyISO(), hasta: hoyISO() },
     });
-    const totalOrigen = semana.origen.web + semana.origen.panel;
+    const totalOrigen =
+        semana.origen.web + semana.origen.whatsapp + semana.origen.panel;
 
     return (
         <>
@@ -466,11 +467,15 @@ export default function Dashboard({
                                     </span>{' '}
                                     por la web ·{' '}
                                     <span className="font-medium text-foreground">
+                                        {semana.origen.whatsapp}
+                                    </span>{' '}
+                                    por WhatsApp ·{' '}
+                                    <span className="font-medium text-foreground">
                                         {semana.origen.panel}
                                     </span>{' '}
                                     desde el panel
                                     {totalOrigen > 0 &&
-                                        ` (${Math.round((semana.origen.web / totalOrigen) * 100)}% web)`}
+                                        ` (${Math.round(((semana.origen.web + semana.origen.whatsapp) / totalOrigen) * 100)}% online)`}
                                 </span>
                             </div>
                         </CardContent>

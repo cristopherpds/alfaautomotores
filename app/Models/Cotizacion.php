@@ -141,7 +141,10 @@ class Cotizacion extends Model
      * Todo o nada: si falla una foto no queda la fila a medias.
      *
      * @param  array{marca: string, modelo: string, anio: int, kilometros: int, detalles: string|null, nombre: string, apellido: string, celular: string}  $datos
-     * @param  array<string, UploadedFile|null>  $fotos  Por lado, con las claves de `FOTOS`.
+     *                                                                                                                                                             Las fotos llegan como archivo subido (el formulario del sitio) o como
+     *                                                                                                                                                             ruta ya guardada en el disco `local` (las que mandaron por WhatsApp):
+     *                                                                                                                                                             en los dos casos quedan copiadas en la carpeta de la cotización.
+     * @param  array<string, UploadedFile|string|null>  $fotos  Por lado, con las claves de `FOTOS`.
      */
     public static function recibir(array $datos, array $fotos): self
     {
@@ -162,6 +165,10 @@ class Cotizacion extends Model
 
                 if ($archivo instanceof UploadedFile) {
                     $cotizacion->{'foto_'.$lado} = $archivo->store(self::CARPETA.'/'.$cotizacion->id, 'local');
+                } elseif (is_string($archivo) && Storage::disk('local')->exists($archivo)) {
+                    $destino = self::CARPETA.'/'.$cotizacion->id.'/'.$lado.'.'.(pathinfo($archivo, PATHINFO_EXTENSION) ?: 'jpg');
+                    Storage::disk('local')->copy($archivo, $destino);
+                    $cotizacion->{'foto_'.$lado} = $destino;
                 }
             }
 

@@ -5,7 +5,8 @@ namespace App\Enums;
 use App\Concerns\ProvidesSelectOptions;
 
 /**
- * De dónde salió un turno: lo pidió un cliente o lo cargó el taller.
+ * De dónde salió un turno: lo pidió un cliente (por la web o por WhatsApp,
+ * con el agente de IA) o lo cargó el taller.
  */
 enum OrigenTurno: string
 {
@@ -13,6 +14,7 @@ enum OrigenTurno: string
 
     case Web = 'web';
     case Panel = 'panel';
+    case Whatsapp = 'whatsapp';
 
     /**
      * Get the human readable label for the origin.
@@ -22,6 +24,7 @@ enum OrigenTurno: string
         return match ($this) {
             self::Web => 'Reserva web',
             self::Panel => 'Carga interna',
+            self::Whatsapp => 'Reserva por WhatsApp',
         };
     }
 }

@@ -48,6 +48,11 @@ class Ajuste extends Model
     public const CONEXION_IA = 'conexion_ia';
 
     /**
+     * El perfil del agente de IA de WhatsApp: quién es y cómo habla.
+     */
+    public const AGENTE_IA = 'agente_ia';
+
+    /**
      * Los campos de cada conexión que se guardan cifrados y nunca vuelven al
      * navegador: el panel sólo ve si están cargados y sus últimos caracteres.
      *
@@ -67,6 +72,7 @@ class Ajuste extends Model
         self::BOTON_WHATSAPP => 'Botón de WhatsApp',
         self::CONEXION_WHATSAPP => 'Conexión de WhatsApp',
         self::CONEXION_IA => 'Conexión de IA',
+        self::AGENTE_IA => 'Agente de WhatsApp',
     ];
 
     /**
@@ -154,6 +160,25 @@ class Ajuste extends Model
             'modelo' => config('services.openrouter.modelo'),
             'modelo_transcripcion' => config('services.openrouter.modelo_transcripcion'),
         ], ['api_key', 'modelo', 'modelo_transcripcion']);
+    }
+
+    /**
+     * El perfil del agente de WhatsApp. Apagado hasta que alguien lo prenda
+     * desde el panel: contestarle a un cliente de verdad es una decisión.
+     *
+     * @return array{activo: bool, nombre: string, tono: string|null, instrucciones: string|null, reglas_escalado: string|null, saludo: string|null}
+     */
+    public static function agenteIa(): array
+    {
+        /** @var array{activo: bool, nombre: string, tono: string|null, instrucciones: string|null, reglas_escalado: string|null, saludo: string|null} */
+        return self::valor(self::AGENTE_IA, [
+            'activo' => false,
+            'nombre' => 'Alfi',
+            'tono' => null,
+            'instrucciones' => null,
+            'reglas_escalado' => null,
+            'saludo' => null,
+        ]);
     }
 
     /**

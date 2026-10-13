@@ -5,6 +5,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | Applies to | Rule file |
 | --- | --- |
 | resources/js/actions/** | .ai/rules/actions.md |
+| app/Ai/** | .ai/rules/ai.md |
 | resources/js/components/producto-form-fields.tsx, resources/js/components/hero-vista-previa.tsx | .ai/rules/components.md |
 | app/Http/Controllers/** | .ai/rules/controllers.md |
 | resources/css/alfa.css | .ai/rules/css.md |
