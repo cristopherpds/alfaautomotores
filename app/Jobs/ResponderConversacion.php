@@ -10,6 +10,7 @@ use App\Enums\DireccionMensaje;
 use App\Enums\MotivoDerivacion;
 use App\Enums\TipoMensaje;
 use App\Models\Ajuste;
+use App\Models\Auditoria;
 use App\Models\Conversacion;
 use App\Models\MensajeWhatsapp;
 use App\Services\Mensajero;
@@ -112,7 +113,7 @@ class ResponderConversacion implements ShouldQueue
         }
 
         try {
-            $this->turno($conversacion, $mensajero, $whatsapp);
+            Auditoria::como(Auditoria::AGENTE_IA, fn () => $this->turno($conversacion, $mensajero, $whatsapp));
         } finally {
             $candado->release();
         }

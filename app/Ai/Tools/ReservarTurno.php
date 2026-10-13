@@ -68,7 +68,40 @@ class ReservarTurno extends Herramienta
             return $this->json(['error' => 'Falta la confirmación de la persona: preguntale si te confirma ese día y hora.']);
         }
 
-        $cliente = $this->conversacion->cliente;
+        /* La persona, aunque la conversación todavía no esté enganchada a su
+           ficha: el celular alcanza para reconocerla. */
+        $cliente = $this->conversacion->cliente
+            ?? Cliente::whereIn('celular_normalizado', Cliente::celularesPosiblesDeWaId($this->conversacion->wa_id))->first();
+
+        /* Un turno por servicio. Pasó en vivo: el cliente volvió a decir «sí»
+           y el modelo reservó otra vez el mismo horario en el segundo puesto
+           del taller (con dos puestos, Turno::reservar() lo deja entrar). Si es
+           el mismo horario, se confirma el que ya está; si es otro, se mueve. */
+        $existente = $cliente === null ? null : Turno::query()
+            ->where('cliente_id', $cliente->id)
+            ->where('servicio_id', $servicio->id)
+            ->whereIn('estado', [EstadoTurno::Pendiente, EstadoTurno::Confirmado])
+            ->where('inicia_at', '>', now())
+            ->orderBy('inicia_at')
+            ->first();
+
+        if ($existente !== null) {
+            if ($existente->inicia_at->equalTo($inicio)) {
+                return $this->json([
+                    'reservado' => true,
+                    'ya_estaba' => true,
+                    'turno' => $existente->id,
+                    'servicio' => $servicio->nombre,
+                    'cuando' => Prompt::etiqueta($existente->inicia_at),
+                    'nota' => 'Ese turno ya estaba reservado: confirmáselo, no reserves otro.',
+                ]);
+            }
+
+            return $this->json([
+                'error' => 'La persona ya tiene un turno de '.$servicio->nombre.' el '.Prompt::etiqueta($existente->inicia_at).' (turno '.$existente->id.'). No reserves otro: si lo quiere cambiar, usá reprogramar_turno con ese turno.',
+            ]);
+        }
+
         $nombre = $cliente->nombre ?? trim((string) ($request['nombre'] ?? ''));
         $apellido = $cliente->apellido ?? trim((string) ($request['apellido'] ?? ''));
 

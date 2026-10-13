@@ -193,3 +193,50 @@ test('the profile notes and the hand over are saved on the conversation', functi
         ->ficha->toBe(['busca' => 'camioneta 4x4', 'para el equipo' => 'Quiere negociar la Hilux'])
         ->motivo_derivacion->toBe(MotivoDerivacion::Cliente);
 });
+
+test('booking the same slot twice confirms the existing turn instead of a second one', function () {
+    $lunes = abrirElTaller();
+    Servicio::factory()->duracion(30)->create(['slug' => 'service']);
+    $conversacion = Conversacion::factory()->create(['wa_id' => '59899123456']);
+    $horario = llamar(new ProponerHorarios($conversacion), ['servicio' => 'service', 'fecha' => $lunes->format('Y-m-d')])['horarios'][0];
+    $reserva = ['servicio' => 'service', 'inicio' => $horario['inicio'], 'confirmacion' => 'sí', 'nombre' => 'Ana', 'apellido' => 'Pérez'];
+
+    llamar(new ReservarTurno($conversacion), $reserva);
+    $otraVez = llamar(new ReservarTurno($conversacion->fresh()), [...$reserva, 'confirmacion' => 'sí, dale']);
+
+    expect(Turno::count())->toBe(1)
+        ->and($otraVez['ya_estaba'])->toBeTrue();
+});
+
+test('a second turn of the same service is pointed to rescheduling', function () {
+    $lunes = abrirElTaller();
+    Servicio::factory()->duracion(30)->create(['slug' => 'service']);
+    $conversacion = Conversacion::factory()->create(['wa_id' => '59899123456']);
+    $horarios = llamar(new ProponerHorarios($conversacion), ['servicio' => 'service', 'fecha' => $lunes->format('Y-m-d')])['horarios'];
+
+    llamar(new ReservarTurno($conversacion), ['servicio' => 'service', 'inicio' => $horarios[0]['inicio'], 'confirmacion' => 'sí', 'nombre' => 'Ana', 'apellido' => 'Pérez']);
+    $segundo = llamar(new ReservarTurno($conversacion->fresh()), ['servicio' => 'service', 'inicio' => $horarios[1]['inicio'], 'confirmacion' => 'sí']);
+
+    expect(Turno::count())->toBe(1)
+        ->and($segundo['error'])->toContain('reprogramar_turno');
+});
+
+test('a client already on file is recognized by phone before the chat is linked', function () {
+    $lunes = abrirElTaller();
+    $servicio = Servicio::factory()->duracion(30)->create(['slug' => 'service']);
+    $cliente = Cliente::factory()->create(['celular' => '099 123 456']);
+    Turno::factory()->create([
+        'cliente_id' => $cliente->id,
+        'servicio_id' => $servicio->id,
+        'estado' => EstadoTurno::Pendiente,
+        'inicia_at' => $lunes->copy()->setTime(15, 0),
+        'termina_at' => $lunes->copy()->setTime(15, 30),
+    ]);
+    $conversacion = Conversacion::factory()->create(['wa_id' => '59899123456']);
+    $horario = llamar(new ProponerHorarios($conversacion), ['servicio' => 'service', 'fecha' => $lunes->format('Y-m-d')])['horarios'][0];
+
+    $resultado = llamar(new ReservarTurno($conversacion), ['servicio' => 'service', 'inicio' => $horario['inicio'], 'confirmacion' => 'sí']);
+
+    expect($resultado['error'])->toContain('ya tiene un turno')
+        ->and(Turno::count())->toBe(1);
+});

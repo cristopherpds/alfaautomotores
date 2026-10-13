@@ -7,6 +7,7 @@ use App\Enums\EstadoMensaje;
 use App\Enums\EstadoPlantilla;
 use App\Enums\TipoMensaje;
 use App\Models\Ajuste;
+use App\Models\Auditoria;
 use App\Models\Conversacion;
 use App\Models\MensajeWhatsapp;
 use App\Models\PlantillaWhatsapp;
@@ -32,6 +33,11 @@ class ProcesarWebhookWhatsapp implements ShouldQueue
     public function __construct(public array $payload) {}
 
     public function handle(): void
+    {
+        Auditoria::como(Auditoria::CLIENTE_WHATSAPP, fn () => $this->procesar());
+    }
+
+    private function procesar(): void
     {
         foreach ($this->payload['entry'] ?? [] as $entrada) {
             foreach ($entrada['changes'] ?? [] as $cambio) {

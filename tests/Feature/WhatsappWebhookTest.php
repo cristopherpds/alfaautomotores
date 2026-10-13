@@ -3,6 +3,7 @@
 use App\Enums\EstadoMensaje;
 use App\Enums\EstadoPlantilla;
 use App\Enums\TipoMensaje;
+use App\Models\Auditoria;
 use App\Models\Cliente;
 use App\Models\Conversacion;
 use App\Models\MensajeWhatsapp;
@@ -251,4 +252,10 @@ test('the time from meta is stored in the app timezone', function () {
 
     expect(MensajeWhatsapp::sole()->wa_timestamp->format('H:i'))->toBe(now()->format('H:i'))
         ->and(Conversacion::sole()->ultimo_entrante_at->format('H:i'))->toBe(now()->format('H:i'));
+});
+
+test('what comes in through whatsapp is audited as the whatsapp client', function () {
+    postDeMeta(textoEntrante());
+
+    expect(Auditoria::where('tipo', 'conversacion')->sole()->usuario)->toBe(Auditoria::CLIENTE_WHATSAPP);
 });
