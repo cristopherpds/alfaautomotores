@@ -1389,6 +1389,123 @@
         }
     }
 
+    /* --- Cotizá tu auto ---------------------------------------------------- */
+
+    /*
+     * Reusa el formulario de turno (`.turno__*`); lo propio son los dos bloques
+     * con título y las cuatro casillas de foto con vista previa.
+     */
+    & .cotizacion {
+        border-top: none;
+        padding-top: clamp(20px, 3vw, 32px);
+    }
+
+    & .cotizacion__bloque {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(14px, 2vw, 20px);
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        border: none;
+
+        & + .cotizacion__bloque {
+            border-top: 1px solid var(--alfa-border-light);
+            padding-top: clamp(18px, 2.4vw, 26px);
+        }
+
+        & legend {
+            padding: 0;
+            margin-bottom: clamp(14px, 2vw, 20px);
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: var(--alfa-ink);
+        }
+    }
+
+    & .cotizacion__ayuda {
+        font-size: 13px;
+        color: var(--alfa-text-muted);
+        margin: 0;
+    }
+
+    & .cotizacion__fotos {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+        gap: 12px;
+    }
+
+    & .cotizacion__foto {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    & .cotizacion__casilla {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        background: var(--alfa-offwhite);
+        border: 1px dashed var(--alfa-border-input);
+        cursor: pointer;
+        transition: border-color 0.18s ease;
+
+        &:hover,
+        &:focus-within {
+            border-color: var(--alfa-ink);
+        }
+
+        &:focus-within {
+            outline: 2px solid var(--alfa-blue);
+            outline-offset: -1px;
+        }
+
+        &[data-con-foto] {
+            border-style: solid;
+        }
+
+        & img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    /* El input queda en el árbol (lo lee el FormData) pero no se ve. */
+    & .cotizacion__archivo {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    & .cotizacion__mas {
+        font-size: 28px;
+        font-weight: 300;
+        line-height: 1;
+        color: var(--alfa-text-muted);
+        margin-bottom: 18px;
+    }
+
+    & .cotizacion__lado {
+        position: absolute;
+        inset-inline: 0;
+        bottom: 0;
+        padding: 6px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        color: var(--alfa-ink);
+        background: rgb(255 255 255 / 0.88);
+    }
+
     /* --- Lavadero --------------------------------------------------------- */
 
     /*

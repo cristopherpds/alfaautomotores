@@ -34,6 +34,8 @@ class HeroSlideSeeder extends Seeder
             'bajada' => $porDefecto['bajada'],
             'boton1_texto' => 'Ver catálogo',
             'boton1_url' => '/catalogo',
+            'boton2_texto' => 'Cotizá tu auto',
+            'boton2_url' => '/cotiza-tu-auto',
             'activo' => true,
             'orden' => 0,
         ]);

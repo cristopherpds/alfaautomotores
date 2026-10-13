@@ -168,12 +168,9 @@ class HeroSlide extends Model
      * la portada antes de que fuera administrable. Así una base vacía nunca
      * deja la primera vista en negro.
      *
-     * El número de WhatsApp llega de afuera porque depende del horario de los
-     * contactos (`ProvidesSiteInfo`); sin él, el slide va sólo con el catálogo.
-     *
      * @return array{id: int|null, tipoFondo: string, fondo: string, eyebrow: string|null, titulo: string, bajada: string|null, posicion: string, botones: array<int, array{texto: string, url: string}>}
      */
-    public static function porDefecto(?string $whatsapp = null): array
+    public static function porDefecto(): array
     {
         return [
             'id' => null,
@@ -183,13 +180,10 @@ class HeroSlide extends Model
             'titulo' => "Tu elegís el destino,\nnosotros ponemos\nel vehículo.",
             'bajada' => 'Vehículos seleccionados, revisados y listos para entregar. Financiación disponible y recibimos tu usado como parte de pago.',
             'posicion' => PosicionTexto::AbajoIzquierda->value,
-            'botones' => array_values(array_filter([
+            'botones' => [
                 ['texto' => 'Ver catálogo', 'url' => '/catalogo'],
-                $whatsapp === null ? null : [
-                    'texto' => 'Cotizá tu auto',
-                    'url' => 'https://wa.me/'.$whatsapp.'?text='.rawurlencode('Hola, quiero cotizar mi auto con Alfa Automotores.'),
-                ],
-            ])),
+                ['texto' => 'Cotizá tu auto', 'url' => '/cotiza-tu-auto'],
+            ],
         ];
     }
 

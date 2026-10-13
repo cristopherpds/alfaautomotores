@@ -3,7 +3,7 @@ import { Entregas } from '@/components/alfa/entregas';
 import { Hero } from '@/components/alfa/hero';
 import { VehicleGrid } from '@/components/alfa/vehicle-card';
 import { whatsapp } from '@/lib/alfa';
-import { catalogo } from '@/routes';
+import { catalogo, cotizacion } from '@/routes';
 import type { Entrega, HeroSlide, SiteInfo, Vehiculo } from '@/types';
 
 type Props = {
@@ -27,11 +27,6 @@ export default function Welcome({
     totalStock,
     entregas,
 }: Props) {
-    const cotizar = whatsapp(
-        site.whatsapp,
-        'Hola, quiero cotizar mi auto con Alfa Automotores.',
-    );
-
     return (
         <>
             <Head title="Autos usados en Rivera">
@@ -92,21 +87,16 @@ export default function Welcome({
                         <p className="eyebrow">Tasación sin cargo</p>
                         <h2>¿Querés cotizar tu auto?</h2>
                         <p className="lede">
-                            Cargá los datos de tu vehículo y te damos un rango
-                            estimativo al instante. La oferta final se confirma
-                            tras la inspección en el local.
+                            Cargá los datos y unas fotos de tu vehículo y un
+                            asesor te contacta con la cotización. La oferta
+                            final se confirma tras la inspección en el local.
                         </p>
                     </div>
 
                     <div className="pitch__actions">
-                        <a
-                            href={cotizar}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn--light"
-                        >
+                        <Link href={cotizacion()} className="btn btn--light">
                             Cotizar mi auto
-                        </a>
+                        </Link>
                         <a
                             href={whatsapp(site.whatsapp)}
                             target="_blank"

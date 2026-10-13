@@ -7,6 +7,7 @@ import {
     Contact,
     FolderGit2,
     GalleryHorizontal,
+    HandCoins,
     History,
     Images,
     LayoutGrid,
@@ -33,6 +34,7 @@ import { dashboard } from '@/routes';
 import { whatsapp as ajusteWhatsapp } from '@/routes/panel/ajustes';
 import { index as auditoriaIndex } from '@/routes/panel/auditoria';
 import { index as clientesIndex } from '@/routes/panel/clientes';
+import { index as cotizacionesIndex } from '@/routes/panel/cotizaciones';
 import { index as entregasIndex } from '@/routes/panel/entregas';
 import { index as heroIndex } from '@/routes/panel/hero';
 import { index as serviciosIndex } from '@/routes/panel/servicios';
@@ -75,6 +77,12 @@ const catalogoNavItems: NavItem[] = [
         title: 'Portada',
         href: heroIndex(),
         icon: GalleryHorizontal,
+    },
+    /* Los usados que ofrecen desde «Cotizá tu auto». */
+    {
+        title: 'Cotizaciones',
+        href: cotizacionesIndex(),
+        icon: HandCoins,
     },
 ];
 

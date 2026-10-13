@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CotizacionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LavaderoController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\Panel\AjusteController;
 use App\Http\Controllers\Panel\AuditoriaController;
 use App\Http\Controllers\Panel\ClienteController;
 use App\Http\Controllers\Panel\ClienteExportController;
+use App\Http\Controllers\Panel\CotizacionController as PanelCotizacionController;
 use App\Http\Controllers\Panel\EntregaController;
 use App\Http\Controllers\Panel\HeroSlideController;
 use App\Http\Controllers\Panel\ProductoController as PanelProductoController;
@@ -21,6 +23,7 @@ use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\TallerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehiculoController;
+use App\Models\Cotizacion;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -42,6 +45,13 @@ Route::post('taller/turnos', [TallerController::class, 'store'])->name('taller.t
 
 Route::get('lavadero', [LavaderoController::class, 'index'])->name('lavadero');
 Route::post('lavadero/turnos', [LavaderoController::class, 'store'])->name('lavadero.turnos.store');
+
+/* «Cotizá tu auto»: la solicitud se guarda con sus fotos y se atiende desde
+   el panel. El tope frena a quien la use para llenar la base. */
+Route::get('cotiza-tu-auto', [CotizacionController::class, 'create'])->name('cotizacion');
+Route::post('cotiza-tu-auto', [CotizacionController::class, 'store'])
+    ->middleware('throttle:6,1')
+    ->name('cotizacion.store');
 
 Route::get('politica-de-privacidad', PoliticaPrivacidadController::class)->name('politica-privacidad');
 
@@ -108,6 +118,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
            `clientes/{cliente}` lo tomaría como un id. */
         Route::get('clientes/exportar', ClienteExportController::class)->name('clientes.exportar');
         Route::resource('clientes', ClienteController::class)->except(['edit']);
+
+        /* Las solicitudes de «Cotizá tu auto»: nacen en la web, acá no hay
+           alta ni edición. Las fotos están en el disco privado y se sirven
+           por `foto`. */
+        Route::get('cotizaciones', [PanelCotizacionController::class, 'index'])->name('cotizaciones.index');
+        Route::get('cotizaciones/{cotizacion}', [PanelCotizacionController::class, 'show'])->name('cotizaciones.show');
+        Route::get('cotizaciones/{cotizacion}/fotos/{lado}', [PanelCotizacionController::class, 'foto'])
+            ->whereIn('lado', array_keys(Cotizacion::FOTOS))
+            ->name('cotizaciones.foto');
+        Route::patch('cotizaciones/{cotizacion}/estado', [PanelCotizacionController::class, 'estado'])->name('cotizaciones.estado');
+        Route::delete('cotizaciones/{cotizacion}', [PanelCotizacionController::class, 'destroy'])->name('cotizaciones.destroy');
 
         /* Sólo lectura: las entradas las escribe el trait `Auditable`. */
         Route::get('auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');

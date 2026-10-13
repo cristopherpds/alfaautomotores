@@ -197,6 +197,6 @@ test('without slides in force the hero falls back to the route video', function 
             ->where('slides.0.tipoFondo', 'video')
             ->where('slides.0.fondo', '/assets/hero-ruta.mp4')
             ->where('slides.0.posicion', 'abajo-izquierda')
-            ->where('slides.0.botones.1.url', fn (string $url) => str_starts_with($url, 'https://wa.me/'.config('alfa.whatsapp')))
+            ->where('slides.0.botones.1.url', '/cotiza-tu-auto')
         );
 });

@@ -488,3 +488,35 @@ export type TurnoDeCliente = {
     vehiculo: string | null;
     comentario: string | null;
 };
+
+/** Por dónde va una solicitud de «Cotizá tu auto» (`EstadoCotizacion`). */
+export type EstadoCotizacion = 'nueva' | 'contactada' | 'descartada';
+
+/** La fila que arma `Panel\CotizacionController::index()`. */
+export type CotizacionDeLista = {
+    id: number;
+    vehiculo: string;
+    kilometros: number;
+    nombre: string;
+    celular: string;
+    fotos: number;
+    estado: EstadoCotizacion;
+    estadoLabel: string;
+    creada: string | null;
+};
+
+/** La solicitud completa de `Panel\CotizacionController::show()`. */
+export type CotizacionDetalle = {
+    id: number;
+    marca: string;
+    modelo: string;
+    anio: number;
+    kilometros: number;
+    detalles: string | null;
+    nombre: string;
+    celular: string;
+    clienteId: number | null;
+    estado: EstadoCotizacion;
+    creada: string | null;
+    fotos: { lado: string; label: string; url: string }[];
+};

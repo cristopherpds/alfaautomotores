@@ -22,7 +22,7 @@ class HomeController extends Controller
 
         return Inertia::render('welcome', [
             'site' => $site,
-            'slides' => $this->slides($site['whatsapp']),
+            'slides' => $this->slides(),
             'destacados' => Vehiculo::destacados(),
             'totalStock' => Vehiculo::contar(),
             'entregas' => Entrega::paraLaTira(),
@@ -35,10 +35,10 @@ class HomeController extends Controller
      *
      * @return array<int, array<string, mixed>>
      */
-    private function slides(string $whatsapp): array
+    private function slides(): array
     {
         $slides = HeroSlide::vigentes()->map(fn (HeroSlide $slide): array => $slide->datos());
 
-        return $slides->isEmpty() ? [HeroSlide::porDefecto($whatsapp)] : $slides->all();
+        return $slides->isEmpty() ? [HeroSlide::porDefecto()] : $slides->all();
     }
 }

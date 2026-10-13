@@ -6,6 +6,7 @@ import { whatsapp } from '@/lib/alfa';
 import {
     bicicletas,
     catalogo,
+    cotizacion,
     home,
     lavadero,
     movilidad,
@@ -40,6 +41,7 @@ export function SiteHeader({ site }: { site: SiteInfo }) {
     const enBicicletas = currentUrl.startsWith('/bicicletas');
     const enTaller = currentUrl.startsWith('/taller');
     const enLavadero = currentUrl.startsWith('/lavadero');
+    const enCotizacion = currentUrl.startsWith('/cotiza-tu-auto');
 
     const cerrarMenu = () => setMenuAbierto(false);
 
@@ -153,18 +155,15 @@ export function SiteHeader({ site }: { site: SiteInfo }) {
                             Lavadero
                         </Link>
 
-                        <a
-                            href={whatsapp(
-                                site.whatsapp,
-                                'Hola, quiero cotizar mi auto con Alfa Automotores.',
-                            )}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        <Link
+                            href={cotizacion()}
                             className="nav__link"
+                            data-active={enCotizacion}
+                            aria-current={enCotizacion ? 'page' : undefined}
                             onClick={cerrarMenu}
                         >
                             Cotizá tu auto
-                        </a>
+                        </Link>
 
                         <a
                             href={whatsapp(site.whatsapp)}

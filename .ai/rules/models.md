@@ -9,6 +9,7 @@ paths:
   - app/Models/Cliente.php
   - app/Models/Ajuste.php
   - app/Models/HeroSlide.php
+  - app/Models/Cotizacion.php
 ---
 
 # Models
@@ -96,3 +97,7 @@ Trampas: `distinct` en `contactos.*.horario.dias.*` compara entre TODOS los cont
 
 ## Posición del texto del hero: PosicionTexto `{vertical}-{horizontal}`
 `hero_slides.posicion` es `App\Enums\PosicionTexto` (9 casillas, default `abajo-izquierda` = la posición histórica) y viaja en `datos()`. `HeroSlideView` la parte en `data-vertical`/`data-horizontal` sobre `.hero__slide`, y `alfa.css` alinea el bloque y orienta el velo con las custom properties `--velo-vertical`/`--velo-horizontal`: si se agrega una posición, sumar su par de gradientes ahí para no perder contraste. La reserva de espacio para los controles del carrusel (`.hero--carrusel .hero__inner`) aplica a todas las posiciones.
+
+## Las fotos de «Cotizá tu auto» van en el disco privado
+`Cotizacion` guarda sus 4 fotos opcionales (`foto_derecha|izquierda|interior|tablero`, claves de `Cotizacion::FOTOS`) en el disco `local` (privado) bajo `cotizaciones/{id}/`, NO en `public`: son fotos del auto de un particular. Se sirven sólo por `panel.cotizaciones.foto` (login + policy). El hook `deleting` borra la carpeta. Tests: `Storage::fake('local')`, no `public`.
+`Cotizacion::recibir()` es la única entrada desde la web: crea/actualiza el lead con `Cliente::desdeReserva()` (email null) dentro de una transacción. «Cotizá tu auto» (header, portada, `HeroSlide::porDefecto()`) apunta a `/cotiza-tu-auto`, ya no a WhatsApp. Si se suma un campo, actualizar `politica-privacidad.tsx`.

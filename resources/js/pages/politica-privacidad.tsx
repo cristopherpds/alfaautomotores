@@ -59,6 +59,12 @@ export default function PoliticaPrivacidad({ site }: { site: SiteInfo }) {
                         vehículo, matrícula y el comentario que quieras agregar.
                     </li>
                     <li>
+                        Al pedir una cotización de tu auto: nombre, apellido,
+                        teléfono, marca, modelo, año y kilómetros del vehículo,
+                        los detalles que quieras agregar y las fotos que subas.
+                        Las fotos sólo las ve el equipo de Alfa.
+                    </li>
+                    <li>
                         Si tildás la casilla de novedades, tu consentimiento
                         para recibirlas y la fecha en que lo diste.
                     </li>
@@ -74,6 +80,7 @@ export default function PoliticaPrivacidad({ site }: { site: SiteInfo }) {
                         Agendar, confirmar y gestionar tu turno, y enviarte el
                         presupuesto.
                     </li>
+                    <li>Preparar y enviarte la cotización de tu auto.</li>
                     <li>
                         Responder tus consultas sobre vehículos, productos y
                         servicios.

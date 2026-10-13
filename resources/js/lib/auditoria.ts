@@ -16,6 +16,7 @@ export const TIPOS_AUDITORIA: Record<string, string> = {
     servicio: 'Servicio',
     turno: 'Turno',
     cliente: 'Cliente',
+    cotizacion: 'Cotización',
     usuario: 'Usuario',
     ajuste: 'Ajuste del sitio',
 };
