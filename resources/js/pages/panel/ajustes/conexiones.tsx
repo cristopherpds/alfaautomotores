@@ -99,7 +99,7 @@ export default function Conexiones({ whatsapp, ia, modelos }: Props) {
                                 {...ConexionController.whatsapp.form()}
                                 options={{ preserveScroll: true }}
                                 resetOnSuccess={['token', 'app_secret']}
-                                className="grid gap-4"
+                                className="grid grid-cols-1 gap-4 [&>*]:min-w-0"
                             >
                                 {({ processing, errors }) => (
                                     <>
@@ -210,7 +210,7 @@ export default function Conexiones({ whatsapp, ia, modelos }: Props) {
                                         </Campo>
 
                                         {whatsapp.webhookUrl && (
-                                            <div className="grid gap-2 rounded-md bg-muted p-3 text-sm">
+                                            <div className="grid min-w-0 grid-cols-1 gap-2 rounded-md bg-muted p-3 text-sm">
                                                 <p className="font-medium">
                                                     URL del webhook para Meta
                                                 </p>
@@ -288,7 +288,7 @@ export default function Conexiones({ whatsapp, ia, modelos }: Props) {
                                 {...ConexionController.ia.form()}
                                 options={{ preserveScroll: true }}
                                 resetOnSuccess={['api_key']}
-                                className="grid gap-4"
+                                className="grid grid-cols-1 gap-4 [&>*]:min-w-0"
                             >
                                 {({ processing, errors }) => (
                                     <>
