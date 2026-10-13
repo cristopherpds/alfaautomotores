@@ -166,11 +166,16 @@ class Ajuste extends Model
      * El perfil del agente de WhatsApp. Apagado hasta que alguien lo prenda
      * desde el panel: contestarle a un cliente de verdad es una decisión.
      *
-     * @return array{activo: bool, nombre: string, tono: string|null, instrucciones: string|null, reglas_escalado: string|null, saludo: string|null}
+     * `numeros_prueba` es la lista de nea-agent (`ALLOWED_WA_IDS`): con algo
+     * cargado, el agente sólo le contesta a esos números y el resto entra a
+     * la bandeja sin respuesta automática. Sirve para probar con el número
+     * real sin que la IA le hable a un cliente.
+     *
+     * @return array{activo: bool, nombre: string, tono: string|null, instrucciones: string|null, reglas_escalado: string|null, saludo: string|null, numeros_prueba: string|null}
      */
     public static function agenteIa(): array
     {
-        /** @var array{activo: bool, nombre: string, tono: string|null, instrucciones: string|null, reglas_escalado: string|null, saludo: string|null} */
+        /** @var array{activo: bool, nombre: string, tono: string|null, instrucciones: string|null, reglas_escalado: string|null, saludo: string|null, numeros_prueba: string|null} */
         return self::valor(self::AGENTE_IA, [
             'activo' => false,
             'nombre' => 'Alfi',
@@ -178,7 +183,27 @@ class Ajuste extends Model
             'instrucciones' => null,
             'reglas_escalado' => null,
             'saludo' => null,
+            'numeros_prueba' => null,
         ]);
+    }
+
+    /**
+     * Los números de prueba como `wa_id` (internacional, sin «+»). Se pueden
+     * escribir a la uruguaya (`099 123 456`) o con el código de país.
+     *
+     * @return list<string>
+     */
+    public static function numerosDePrueba(): array
+    {
+        $texto = (string) (self::agenteIa()['numeros_prueba'] ?? '');
+
+        return collect(preg_split('/[\n,;]+/', $texto) ?: [])
+            ->map(fn (string $numero): string => (string) preg_replace('/\D+/', '', $numero))
+            ->filter(fn (string $numero): bool => strlen($numero) >= 6)
+            ->map(fn (string $numero): string => str_starts_with($numero, '09') ? '598'.substr($numero, 1) : $numero)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**

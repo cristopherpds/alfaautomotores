@@ -129,3 +129,22 @@ test('the openrouter key is checked without spending tokens', function () {
 
     Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer sk-or-prueba'));
 });
+
+test('the openrouter model list is filtered by what the agent needs', function () {
+    Http::fake(['openrouter.ai/api/v1/models' => Http::response(['data' => [
+        ['id' => 'google/gemini-2.5-flash', 'name' => 'Gemini 2.5 Flash', 'supported_parameters' => ['tools'], 'architecture' => ['input_modalities' => ['text', 'image', 'audio']]],
+        ['id' => 'z-ai/glm-5.3-flash', 'name' => 'GLM', 'supported_parameters' => ['tools'], 'architecture' => ['input_modalities' => ['text']]],
+        ['id' => 'openai/whisper', 'name' => 'Whisper', 'supported_parameters' => [], 'architecture' => ['input_modalities' => ['audio']]],
+    ]])]);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('panel.ajustes.conexiones'))
+        ->assertInertia(fn ($page) => $page
+            ->missing('modelos')
+            ->reloadOnly('modelos', fn ($recarga) => $recarga
+                ->where('modelos.agente', [['id' => 'google/gemini-2.5-flash', 'nombre' => 'Gemini 2.5 Flash']])
+                ->where('modelos.audio.0.id', 'google/gemini-2.5-flash')
+                ->where('modelos.audio.1.id', 'openai/whisper')
+            )
+        );
+});

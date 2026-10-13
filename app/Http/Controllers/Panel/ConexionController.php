@@ -12,9 +12,11 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 /**
  * Las credenciales de WhatsApp (Meta) y de la IA (OpenRouter), como en la
@@ -63,7 +65,44 @@ class ConexionController extends Controller implements HasMiddleware
                 'modelo' => $ia['modelo'],
                 'modeloTranscripcion' => $ia['modelo_transcripcion'],
             ],
+            // «Traer modelos», como en Vocero: sólo se pide al tocar el botón.
+            'modelos' => Inertia::optional(fn (): array => self::modelosDeOpenRouter()),
         ]);
+    }
+
+    /**
+     * Los modelos de OpenRouter que sirven: para el agente, los que aceptan
+     * herramientas e imágenes; para las notas de voz, los que oyen audio.
+     * La lista es pública (no gasta la clave) y se guarda una hora.
+     *
+     * @return array{agente: list<array{id: string, nombre: string}>, audio: list<array{id: string, nombre: string}>, error: string|null}
+     */
+    private static function modelosDeOpenRouter(): array
+    {
+        try {
+            $modelos = Cache::remember('openrouter:modelos', now()->addHour(), function (): array {
+                $respuesta = Http::acceptJson()->timeout(15)->get('https://openrouter.ai/api/v1/models');
+                $respuesta->throw();
+
+                return (array) $respuesta->json('data', []);
+            });
+        } catch (Throwable) {
+            return ['agente' => [], 'audio' => [], 'error' => __('No se pudo traer la lista de OpenRouter. Probá de nuevo en un rato.')];
+        }
+
+        $comoOpcion = fn (array $modelo): array => ['id' => (string) $modelo['id'], 'nombre' => (string) ($modelo['name'] ?? $modelo['id'])];
+        $entradas = fn (array $modelo): array => (array) ($modelo['architecture']['input_modalities'] ?? []);
+
+        return [
+            'agente' => collect($modelos)
+                ->filter(fn (array $modelo): bool => in_array('tools', (array) ($modelo['supported_parameters'] ?? []), true)
+                    && in_array('image', $entradas($modelo), true))
+                ->map($comoOpcion)->sortBy('id')->values()->all(),
+            'audio' => collect($modelos)
+                ->filter(fn (array $modelo): bool => in_array('audio', $entradas($modelo), true))
+                ->map($comoOpcion)->sortBy('id')->values()->all(),
+            'error' => null,
+        ];
     }
 
     /**

@@ -35,6 +35,7 @@ type Perfil = {
     instrucciones: string | null;
     reglas_escalado: string | null;
     saludo: string | null;
+    numeros_prueba: string | null;
 };
 
 type Conocimiento = {
@@ -100,6 +101,12 @@ export default function Agente({ perfil, conocimientos, estado }: Props) {
                             ok={estado.ia}
                             texto="Clave de OpenRouter cargada"
                         />
+                        {perfil.numeros_prueba?.trim() && (
+                            <p className="text-muted-foreground">
+                                Modo prueba: contesta sólo a los números de la
+                                lista.
+                            </p>
+                        )}
                         {(!estado.whatsapp || !estado.ia) && (
                             <Link
                                 href={conexiones()}
@@ -234,6 +241,23 @@ export default function Agente({ perfil, conocimientos, estado }: Props) {
                                                 defaultValue={
                                                     perfil.reglas_escalado ?? ''
                                                 }
+                                            />
+                                        </Campo>
+
+                                        <Campo
+                                            name="numeros_prueba"
+                                            label="Sólo contestar a estos números (pruebas)"
+                                            error={errors.numeros_prueba}
+                                            ayuda="Uno por renglón, como 099 123 456. Con algo cargado, la IA le contesta sólo a esos números y el resto entra a la bandeja sin respuesta automática. Vacialo para atender a todos."
+                                        >
+                                            <Textarea
+                                                id="numeros_prueba"
+                                                name="numeros_prueba"
+                                                rows={2}
+                                                defaultValue={
+                                                    perfil.numeros_prueba ?? ''
+                                                }
+                                                placeholder="099 123 456"
                                             />
                                         </Campo>
 

@@ -12,6 +12,9 @@ use App\Services\Mensajero;
 use App\Services\WhatsappCloud;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Sleep;
+use Laravel\Ai\Exceptions\InsufficientCreditsException;
+use Laravel\Ai\Exceptions\ProviderOverloadedException;
 use Laravel\Ai\Prompts\AgentPrompt;
 use Laravel\Ai\Transcription;
 
@@ -227,4 +230,84 @@ test('the reply is stored as sent by the ai', function () {
     expect(MensajeWhatsapp::where('direccion', DireccionMensaje::Saliente)->sole())
         ->generado_por_ia->toBeTrue()
         ->wa_message_id->toBe('wamid.respuesta');
+});
+
+test('with test numbers loaded the agent only answers those', function () {
+    AsistenteWhatsapp::fake(['Hola']);
+    Ajuste::guardar(Ajuste::AGENTE_IA, ['activo' => true, 'nombre' => 'Alfi', 'numeros_prueba' => "099 123 456\n+55 55 99988 7766"]);
+
+    $deprueba = Conversacion::factory()->create(['wa_id' => '59899123456']);
+    $cliente = Conversacion::factory()->create(['wa_id' => '59899000111']);
+
+    ResponderConversacion::dispatchSync($deprueba->id, entranteDelCliente($deprueba, 'hola')->id);
+    ResponderConversacion::dispatchSync($cliente->id, entranteDelCliente($cliente, 'hola')->id);
+
+    expect(Ajuste::numerosDePrueba())->toBe(['59899123456', '5555999887766']);
+    AsistenteWhatsapp::assertPromptedTimes(1);
+    expect(MensajeWhatsapp::where('conversacion_id', $cliente->id)->where('generado_por_ia', true)->count())->toBe(0);
+});
+
+test('a passing provider failure is retried', function () {
+    Sleep::fake();
+    $llamadas = 0;
+
+    AsistenteWhatsapp::fake(function () use (&$llamadas) {
+        if (++$llamadas === 1) {
+            throw ProviderOverloadedException::forProvider('openrouter');
+        }
+
+        return 'Ya estoy, ¿en qué te ayudo?';
+    });
+
+    $conversacion = Conversacion::factory()->create();
+    ResponderConversacion::dispatchSync($conversacion->id, entranteDelCliente($conversacion, 'hola')->id);
+
+    expect($llamadas)->toBe(2)
+        ->and(respuestasDeLaIa())->toBe(['Ya estoy, ¿en qué te ayudo?'])
+        ->and($conversacion->fresh()->derivada_at)->toBeNull();
+    Sleep::assertSleptTimes(1);
+});
+
+test('without credits there is no retry', function () {
+    Sleep::fake();
+    $llamadas = 0;
+
+    AsistenteWhatsapp::fake(function () use (&$llamadas) {
+        $llamadas++;
+
+        throw InsufficientCreditsException::forProvider('openrouter');
+    });
+
+    $conversacion = Conversacion::factory()->create();
+    ResponderConversacion::dispatchSync($conversacion->id, entranteDelCliente($conversacion, 'hola')->id);
+
+    expect($llamadas)->toBe(1)
+        ->and($conversacion->fresh()->motivo_derivacion)->toBe(MotivoDerivacion::Error);
+});
+
+test('a model that rejects the speed options is asked again without them', function () {
+    $llamadas = 0;
+
+    AsistenteWhatsapp::fake(function () use (&$llamadas) {
+        if (++$llamadas === 1) {
+            throw new RuntimeException('Unsupported parameter: reasoning');
+        }
+
+        return 'Hola';
+    });
+
+    $conversacion = Conversacion::factory()->create();
+    ResponderConversacion::dispatchSync($conversacion->id, entranteDelCliente($conversacion, 'hola')->id);
+
+    expect(respuestasDeLaIa())->toBe(['Hola']);
+    AsistenteWhatsapp::assertPrompted(fn (AgentPrompt $prompt) => $prompt->agent->rapido === false);
+});
+
+test('the agent asks openrouter for the fast path', function () {
+    $agente = new AsistenteWhatsapp(Conversacion::factory()->create(), 'sistema');
+
+    expect($agente->providerOptions('openrouter'))->toBe([
+        'reasoning' => ['effort' => 'minimal'],
+        'provider' => ['sort' => 'throughput'],
+    ]);
 });

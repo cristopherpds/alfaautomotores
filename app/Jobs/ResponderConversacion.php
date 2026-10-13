@@ -19,11 +19,17 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Sleep;
 use Laravel\Ai\Ai;
+use Laravel\Ai\Exceptions\InsufficientCreditsException;
+use Laravel\Ai\Exceptions\ProviderConnectionException;
+use Laravel\Ai\Exceptions\ProviderOverloadedException;
+use Laravel\Ai\Exceptions\RateLimitedException;
 use Laravel\Ai\Files\Image;
 use Laravel\Ai\Messages\AssistantMessage;
 use Laravel\Ai\Messages\Message;
 use Laravel\Ai\Messages\UserMessage;
+use Laravel\Ai\Responses\AgentResponse;
 use Laravel\Ai\Transcription;
 use Throwable;
 
@@ -51,6 +57,18 @@ class ResponderConversacion implements ShouldQueue
      */
     private const HISTORIAL = 30;
 
+    /**
+     * Segundos que se espera al modelo en cada intento, como nea-agent.
+     */
+    private const TIMEOUT_SEGUNDOS = 45;
+
+    /**
+     * Esperas antes de cada reintento ante una falla pasajera.
+     *
+     * @var list<int>
+     */
+    private const ESPERAS_REINTENTO = [2, 5];
+
     public int $tries = 1;
 
     public int $timeout = 180;
@@ -62,7 +80,10 @@ class ResponderConversacion implements ShouldQueue
      */
     public static function puedeContestar(Conversacion $conversacion): bool
     {
+        $deprueba = Ajuste::numerosDePrueba();
+
         return Ajuste::agenteIa()['activo']
+            && ($deprueba === [] || in_array($conversacion->wa_id, $deprueba, true))
             && filled(Ajuste::conexionIa()['api_key'])
             && app(WhatsappCloud::class)->configurado()
             && $conversacion->atiendeLaIa()
@@ -120,20 +141,8 @@ class ResponderConversacion implements ShouldQueue
 
         $whatsapp->marcarLeido((string) $pendientes->last()->wa_message_id, escribiendo: true);
 
-        $ia = Ajuste::conexionIa();
-
         try {
-            $respuesta = AsistenteWhatsapp::make(
-                conversacion: $conversacion,
-                sistema: Prompt::construir($conversacion->load('cliente'), Ajuste::agenteIa(), $alertaHostil),
-                historial: $this->historial($conversacion, (int) $pendientes->first()->id),
-            )->prompt(
-                $texto,
-                attachments: $this->imagenes($pendientes),
-                provider: 'openrouter',
-                model: $ia['modelo'],
-                timeout: 90,
-            );
+            $respuesta = $this->pensar($conversacion, $texto, $pendientes, $alertaHostil);
         } catch (Throwable $error) {
             Log::error('El agente de WhatsApp no pudo contestar', [
                 'conversacion' => $conversacion->id,
@@ -172,6 +181,60 @@ class ResponderConversacion implements ShouldQueue
 
         if ($alertaHostil && $conversacion->refresh()->derivada_at === null) {
             $conversacion->derivar(MotivoDerivacion::Hostilidad);
+        }
+    }
+
+    /**
+     * Llamar al modelo, con los reintentos de nea-agent.
+     *
+     * Un corte de red, un proveedor saturado o un límite de pedidos se
+     * reintentan con espera; sin crédito no tiene sentido y se corta
+     * enseguida. Si el modelo rechaza las opciones de velocidad, se vuelve a
+     * pedir sin ellas: bajar el tiempo no puede costar la respuesta.
+     *
+     * @param  Collection<int, MensajeWhatsapp>  $pendientes
+     *
+     * @throws Throwable
+     */
+    private function pensar(Conversacion $conversacion, string $texto, Collection $pendientes, bool $alertaHostil): AgentResponse
+    {
+        $modelo = Ajuste::conexionIa()['modelo'];
+        $rapido = true;
+        $intento = 0;
+
+        while (true) {
+            $intento++;
+
+            try {
+                return AsistenteWhatsapp::make(
+                    conversacion: $conversacion,
+                    sistema: Prompt::construir($conversacion->load('cliente'), Ajuste::agenteIa(), $alertaHostil),
+                    historial: $this->historial($conversacion, (int) $pendientes->first()->id),
+                    rapido: $rapido,
+                )->prompt(
+                    $texto,
+                    attachments: $this->imagenes($pendientes),
+                    provider: 'openrouter',
+                    model: $modelo,
+                    timeout: self::TIMEOUT_SEGUNDOS,
+                );
+            } catch (InsufficientCreditsException $error) {
+                throw $error;
+            } catch (ProviderConnectionException|ProviderOverloadedException|RateLimitedException $error) {
+                if ($intento > count(self::ESPERAS_REINTENTO)) {
+                    throw $error;
+                }
+
+                Log::warning('Reintentando el turno del agente', ['conversacion' => $conversacion->id, 'intento' => $intento, 'error' => $error->getMessage()]);
+                Sleep::for(self::ESPERAS_REINTENTO[$intento - 1])->seconds();
+            } catch (Throwable $error) {
+                if (! $rapido) {
+                    throw $error;
+                }
+
+                Log::warning('Reintentando sin las opciones de velocidad', ['conversacion' => $conversacion->id, 'error' => $error->getMessage()]);
+                $rapido = false;
+            }
         }
     }
 

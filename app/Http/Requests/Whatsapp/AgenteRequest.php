@@ -21,6 +21,7 @@ class AgenteRequest extends FormRequest
             'instrucciones' => ['nullable', 'string', 'max:6000'],
             'reglas_escalado' => ['nullable', 'string', 'max:3000'],
             'saludo' => ['nullable', 'string', 'max:500'],
+            'numeros_prueba' => ['nullable', 'string', 'max:1000'],
         ];
     }
 }

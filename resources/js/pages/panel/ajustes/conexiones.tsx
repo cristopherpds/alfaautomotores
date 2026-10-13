@@ -3,6 +3,7 @@ import {
     Bot,
     Copy,
     KeyRound,
+    ListChecks,
     MessagesSquare,
     PlugZap,
     Shuffle,
@@ -46,6 +47,12 @@ type Props = {
         modelo: string;
         modeloTranscripcion: string;
     };
+    /** Sólo llega al tocar «Traer modelos» (prop opcional). */
+    modelos?: {
+        agente: { id: string; nombre: string }[];
+        audio: { id: string; nombre: string }[];
+        error: string | null;
+    };
 };
 
 /** Un token aleatorio para la URL del webhook. */
@@ -60,8 +67,9 @@ function tokenAleatorio(): string {
 /**
  * Las credenciales de WhatsApp (Meta) y de la IA (OpenRouter).
  */
-export default function Conexiones({ whatsapp, ia }: Props) {
+export default function Conexiones({ whatsapp, ia, modelos }: Props) {
     const [verifyToken, setVerifyToken] = useState(whatsapp.verifyToken ?? '');
+    const [trayendo, setTrayendo] = useState(false);
     const [, copiar] = useClipboard();
 
     return (
@@ -74,7 +82,7 @@ export default function Conexiones({ whatsapp, ia }: Props) {
                     description="Las credenciales de WhatsApp y de la IA. Las claves se guardan cifradas y no se vuelven a mostrar: dejá el campo vacío para conservar la que está."
                 />
 
-                <div className="grid gap-6 xl:grid-cols-2">
+                <div className="grid gap-6 xl:grid-cols-2 [&>*]:min-w-0">
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -308,7 +316,21 @@ export default function Conexiones({ whatsapp, ia }: Props) {
                                                 name="modelo"
                                                 defaultValue={ia.modelo}
                                                 className="font-mono"
+                                                list="modelos-agente"
+                                                autoComplete="off"
                                             />
+                                            <datalist id="modelos-agente">
+                                                {modelos?.agente.map(
+                                                    (modelo) => (
+                                                        <option
+                                                            key={modelo.id}
+                                                            value={modelo.id}
+                                                        >
+                                                            {modelo.nombre}
+                                                        </option>
+                                                    ),
+                                                )}
+                                            </datalist>
                                         </Campo>
 
                                         <Campo
@@ -324,8 +346,29 @@ export default function Conexiones({ whatsapp, ia }: Props) {
                                                     ia.modeloTranscripcion
                                                 }
                                                 className="font-mono"
+                                                list="modelos-audio"
+                                                autoComplete="off"
                                             />
+                                            <datalist id="modelos-audio">
+                                                {modelos?.audio.map(
+                                                    (modelo) => (
+                                                        <option
+                                                            key={modelo.id}
+                                                            value={modelo.id}
+                                                        >
+                                                            {modelo.nombre}
+                                                        </option>
+                                                    ),
+                                                )}
+                                            </datalist>
                                         </Campo>
+
+                                        {modelos ? (
+                                            <p className="text-xs text-muted-foreground">
+                                                {modelos.error ??
+                                                    `${modelos.agente.length} modelos para el agente y ${modelos.audio.length} para audio: empezá a escribir en el campo para elegir.`}
+                                            </p>
+                                        ) : null}
 
                                         <div className="flex flex-wrap gap-2">
                                             <Button
@@ -349,6 +392,25 @@ export default function Conexiones({ whatsapp, ia }: Props) {
                                             >
                                                 <PlugZap />
                                                 Probar clave
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                disabled={trayendo}
+                                                onClick={() =>
+                                                    router.reload({
+                                                        only: ['modelos'],
+                                                        onStart: () =>
+                                                            setTrayendo(true),
+                                                        onFinish: () =>
+                                                            setTrayendo(false),
+                                                    })
+                                                }
+                                            >
+                                                <ListChecks />
+                                                {trayendo
+                                                    ? 'Trayendo…'
+                                                    : 'Traer modelos'}
                                             </Button>
                                         </div>
                                     </>
