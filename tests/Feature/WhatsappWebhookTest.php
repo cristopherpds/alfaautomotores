@@ -243,3 +243,12 @@ test('a template status update reaches the local copy', function () {
         ->estado->toBe(EstadoPlantilla::Rechazada)
         ->motivo_rechazo->toBe('INVALID_FORMAT');
 });
+
+test('the time from meta is stored in the app timezone', function () {
+    $this->travelTo(now()->setTimezone(config('app.timezone'))->setTime(10, 0));
+
+    postDeMeta(textoEntrante());
+
+    expect(MensajeWhatsapp::sole()->wa_timestamp->format('H:i'))->toBe(now()->format('H:i'))
+        ->and(Conversacion::sole()->ultimo_entrante_at->format('H:i'))->toBe(now()->format('H:i'));
+});

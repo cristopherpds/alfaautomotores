@@ -67,7 +67,10 @@ export function ListaConversaciones({
     const [busqueda, setBusqueda] = useState(filtros.busqueda);
 
     return (
-        <div className="flex min-h-0 flex-col border-r border-sidebar-border/70">
+        /* `min-w-0` en toda la cadena: sin eso un item de grid no se achica por
+           debajo de su contenido y una vista previa larga empuja la columna
+           por encima del hilo en vez de recortarse. */
+        <div className="flex min-h-0 min-w-0 flex-col border-r border-sidebar-border/70">
             <div className="grid gap-3 border-b border-sidebar-border/70 p-3">
                 <form
                     className="relative"
@@ -121,7 +124,7 @@ export function ListaConversaciones({
                 </ToggleGroup>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
                 {conversaciones.length === 0 ? (
                     <Empty className="h-full">
                         <EmptyHeader>
@@ -149,7 +152,7 @@ export function ListaConversaciones({
                                     preserveScroll
                                     preserveState
                                     className={cn(
-                                        'flex gap-3 border-b border-sidebar-border/40 px-3 py-3 transition-colors hover:bg-muted/60',
+                                        'flex min-w-0 gap-3 border-b border-sidebar-border/40 px-3 py-3 transition-colors hover:bg-muted/60',
                                         abiertaId === conversacion.id &&
                                             'bg-muted',
                                     )}

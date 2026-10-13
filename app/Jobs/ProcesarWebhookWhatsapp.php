@@ -84,7 +84,12 @@ class ProcesarWebhookWhatsapp implements ShouldQueue
         $tipoMeta = (string) ($mensaje['type'] ?? '');
         $tipo = TipoMensaje::desdeMeta($tipoMeta);
         $media = $tipo->claveDeMedia() !== null ? (array) ($mensaje[$tipo->claveDeMedia()] ?? []) : [];
-        $cuando = isset($mensaje['timestamp']) ? Carbon::createFromTimestamp((int) $mensaje['timestamp']) : now();
+        /* Meta manda segundos Unix. `createFromTimestamp()` los devuelve en
+           UTC y la base guarda la hora sin zona: hay que pasarla a la hora de
+           la app o queda corrida tres horas (y la ventana de 24 h con ella). */
+        $cuando = isset($mensaje['timestamp'])
+            ? Carbon::createFromTimestamp((int) $mensaje['timestamp'])->setTimezone(config('app.timezone'))
+            : now();
 
         $creado = DB::transaction(function () use ($mensaje, $nombrePerfil, $waMessageId, $tipo, $tipoMeta, $media, $cuando): ?MensajeWhatsapp {
             $conversacion = Conversacion::delNumero((string) $mensaje['from'], $nombrePerfil);

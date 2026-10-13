@@ -125,7 +125,7 @@ export default function Whatsapp({
                     {/* En el celular se ve una sola columna: la lista o el hilo. */}
                     <div
                         className={cn(
-                            'min-h-0',
+                            'min-h-0 min-w-0',
                             conversacion ? 'hidden md:grid' : 'grid',
                         )}
                     >

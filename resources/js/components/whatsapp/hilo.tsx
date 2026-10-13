@@ -41,6 +41,7 @@ import type {
     MensajeWhatsapp,
 } from '@/types';
 import { cuandoCorto } from './lista-conversaciones';
+import { TextoWhatsapp } from './texto-whatsapp';
 
 /** El hilo de la conversación abierta y la caja para contestar. */
 export function Hilo({ conversacion }: { conversacion: ConversacionAbierta }) {
@@ -54,7 +55,7 @@ export function Hilo({ conversacion }: { conversacion: ConversacionAbierta }) {
     }, [conversacion.id, ultimoId]);
 
     return (
-        <div className="flex min-h-0 flex-col">
+        <div className="flex min-h-0 min-w-0 flex-col">
             <div className="min-h-0 flex-1 overflow-y-auto bg-muted/30 px-4 py-4">
                 <ol className="mx-auto flex max-w-3xl flex-col gap-2">
                     {conversacion.mensajes.map((mensaje) => (
@@ -117,8 +118,8 @@ function Burbuja({ mensaje }: { mensaje: MensajeWhatsapp }) {
                 <Adjunto mensaje={mensaje} />
 
                 {mensaje.cuerpo ? (
-                    <p className="break-words whitespace-pre-wrap">
-                        {mensaje.cuerpo}
+                    <p className="[overflow-wrap:anywhere] whitespace-pre-wrap">
+                        <TextoWhatsapp texto={mensaje.cuerpo} />
                     </p>
                 ) : (
                     !mensaje.media &&

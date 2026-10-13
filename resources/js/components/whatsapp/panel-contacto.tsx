@@ -50,7 +50,7 @@ export function PanelContacto({
         );
 
     return (
-        <aside className="hidden min-h-0 flex-col gap-5 overflow-y-auto border-l border-sidebar-border/70 p-4 xl:flex">
+        <aside className="hidden min-h-0 min-w-0 flex-col gap-5 overflow-y-auto border-l border-sidebar-border/70 p-4 xl:flex">
             <div>
                 <h2 className="font-semibold">{conversacion.nombre}</h2>
                 <p className="text-sm text-muted-foreground">
