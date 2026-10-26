@@ -153,7 +153,7 @@ export default function Whatsapp({
 
                 <div
                     className={cn(
-                        'grid min-h-0 flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 bg-background',
+                        'grid min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-background shadow-xs',
                         'grid-cols-1 md:grid-cols-[20rem_1fr]',
                         conversacion &&
                             panelAbierto &&

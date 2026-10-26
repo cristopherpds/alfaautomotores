@@ -76,8 +76,8 @@ export function ListaConversaciones({
         /* `min-w-0` en toda la cadena: sin eso un item de grid no se achica por
            debajo de su contenido y una vista previa larga empuja la columna
            por encima del hilo en vez de recortarse. */
-        <div className="flex min-h-0 min-w-0 flex-col border-r border-sidebar-border/70">
-            <div className="grid gap-3 border-b border-sidebar-border/70 p-3">
+        <div className="flex min-h-0 min-w-0 flex-col border-r border-border">
+            <div className="grid gap-3 border-b border-border p-3">
                 <form
                     className="relative"
                     onSubmit={(evento) => {
@@ -172,9 +172,9 @@ export function ListaConversaciones({
                                     preserveScroll
                                     preserveState
                                     className={cn(
-                                        'flex min-w-0 gap-3 border-b border-sidebar-border/40 px-3 py-3 transition-colors hover:bg-muted/60',
+                                        'flex min-w-0 gap-3 border-b border-border/70 px-3 py-3 transition-colors hover:bg-muted',
                                         abiertaId === conversacion.id &&
-                                            'bg-muted',
+                                            'bg-accent shadow-[inset_3px_0_0_var(--primary)]',
                                     )}
                                     data-test={`conversacion-${conversacion.id}`}
                                 >

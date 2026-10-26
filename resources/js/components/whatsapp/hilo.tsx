@@ -76,7 +76,7 @@ export function Hilo({
                 conversación y volver a abrir el panel. */}
             <div
                 className={cn(
-                    'flex items-center gap-2 border-b border-sidebar-border/70 px-2 py-2',
+                    'flex items-center gap-2 border-b border-border px-2 py-2',
                     panelAbierto && 'xl:hidden',
                 )}
             >
@@ -128,9 +128,9 @@ export function Hilo({
                     data-test="ia-switch-compacto"
                 />
                 <Button
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
-                    className="hidden xl:inline-flex"
+                    className="hidden size-8 xl:inline-flex"
                     onClick={onAbrirPanel}
                     aria-label="Mostrar el panel del contacto"
                     title="Mostrar el panel del contacto"
@@ -139,7 +139,7 @@ export function Hilo({
                 </Button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto bg-muted/30 px-4 py-4">
+            <div className="min-h-0 flex-1 overflow-y-auto bg-chat px-4 py-4">
                 <ol className="mx-auto flex max-w-3xl flex-col gap-2">
                     {conversacion.mensajes.map((mensaje) => (
                         <Burbuja key={mensaje.id} mensaje={mensaje} />
@@ -148,7 +148,7 @@ export function Hilo({
                 <div ref={fondo} />
             </div>
 
-            <div className="border-t border-sidebar-border/70 p-3">
+            <div className="border-t border-border p-3">
                 {conversacion.ventanaAbierta ? (
                     /* El `key` la vacía al cambiar de conversación: no se
                        arrastra el adjunto de la otra. */
@@ -176,7 +176,7 @@ function Burbuja({ mensaje }: { mensaje: MensajeWhatsapp }) {
                 className={cn(
                     'max-w-[80%] rounded-lg px-3 py-2 text-sm shadow-xs',
                     mensaje.entrante
-                        ? 'bg-background'
+                        ? 'border border-border bg-background'
                         : 'bg-primary text-primary-foreground',
                 )}
             >
@@ -207,11 +207,11 @@ function Burbuja({ mensaje }: { mensaje: MensajeWhatsapp }) {
                 ) : (
                     !mensaje.media &&
                     !mensaje.mediaPendiente && (
-                        <p className="italic opacity-70">{mensaje.tipoLabel}</p>
+                        <p className="italic opacity-80">{mensaje.tipoLabel}</p>
                     )
                 )}
 
-                <p className="mt-1 flex items-center justify-end gap-1 text-[11px] opacity-70">
+                <p className="mt-1 flex items-center justify-end gap-1 text-[11px] opacity-80">
                     {cuandoCorto(mensaje.enviadoAt)}
                     {!mensaje.entrante && (
                         <EstadoIcono
@@ -228,7 +228,7 @@ function Burbuja({ mensaje }: { mensaje: MensajeWhatsapp }) {
 function Adjunto({ mensaje }: { mensaje: MensajeWhatsapp }) {
     if (mensaje.mediaPendiente) {
         return (
-            <p className="mb-1 flex items-center gap-2 text-xs opacity-70">
+            <p className="mb-1 flex items-center gap-2 text-xs opacity-80">
                 <Loader2 className="size-3 animate-spin" />
                 {mensaje.error ?? `${mensaje.tipoLabel}: bajando el archivo…`}
             </p>
@@ -272,7 +272,7 @@ function Adjunto({ mensaje }: { mensaje: MensajeWhatsapp }) {
                         </p>
                     ) : (
                         mensaje.transcripcionFallida && (
-                            <p className="text-xs opacity-70">
+                            <p className="text-xs opacity-80">
                                 No se pudo transcribir.
                             </p>
                         )

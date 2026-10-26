@@ -57,12 +57,12 @@ export function PanelContacto({
         );
 
     return (
-        <aside className="hidden min-h-0 min-w-0 flex-col gap-5 overflow-y-auto border-l border-sidebar-border/70 p-4 xl:flex">
+        <aside className="hidden min-h-0 min-w-0 flex-col gap-5 overflow-y-auto border-l border-border bg-sidebar p-4 xl:flex">
             <div className="relative pr-8">
                 <Button
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
-                    className="absolute -top-1 -right-2 size-8"
+                    className="absolute -top-1 -right-1 size-8"
                     onClick={onCerrar}
                     aria-label="Ocultar el panel del contacto"
                     title="Ocultar el panel del contacto"

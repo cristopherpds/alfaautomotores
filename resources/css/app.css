@@ -46,6 +46,7 @@
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
+    --color-chat: var(--chat);
 
     --color-chart-1: var(--chart-1);
     --color-chart-2: var(--chart-2);
@@ -74,15 +75,20 @@
     --primary-foreground: oklch(0.985 0 0);
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
+    /*
+     * Grises con contraste suficiente (WCAG AA): el texto secundario da
+     * 4.5:1 también sobre `muted`, los bordes y el anillo de foco se ven
+     * sobre blanco y el gris de hover/selección se distingue del fondo.
+     */
+    --muted: oklch(0.955 0 0);
+    --muted-foreground: oklch(0.46 0 0);
+    --accent: oklch(0.945 0 0);
     --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
+    --destructive: oklch(0.53 0.22 27.325);
     --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
+    --border: oklch(0.87 0 0);
+    --input: oklch(0.8 0 0);
+    --ring: oklch(0.55 0 0);
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.704);
     --chart-3: oklch(0.398 0.07 227.392);
@@ -99,14 +105,17 @@
     --rubro-lavadero: oklch(0.62 0.13 195);
 
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
+    /* El fondo del hilo de WhatsApp: separa la charla de la lista y del panel. */
+    --chat: oklch(0.94 0.008 250);
+
+    --sidebar: oklch(0.97 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
     --sidebar-primary: oklch(0.205 0 0);
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent: oklch(0.92 0 0);
     --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+    --sidebar-border: oklch(0.85 0 0);
+    --sidebar-ring: oklch(0.55 0 0);
 }
 
 .dark {
@@ -120,15 +129,16 @@
     --primary-foreground: oklch(0.205 0 0);
     --secondary: oklch(0.269 0 0);
     --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
+    --muted: oklch(0.25 0 0);
+    --muted-foreground: oklch(0.74 0 0);
+    --accent: oklch(0.3 0 0);
     --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
+    /* Rojo legible como texto sobre el fondo oscuro y con blanco encima. */
+    --destructive: oklch(0.67 0.19 25);
     --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
+    --border: oklch(0.32 0 0);
+    --input: oklch(0.4 0 0);
+    --ring: oklch(0.65 0 0);
     --chart-1: oklch(0.488 0.243 264.376);
     --chart-2: oklch(0.696 0.17 162.48);
     --chart-3: oklch(0.769 0.188 70.08);
@@ -139,14 +149,16 @@
     --rubro-taller: oklch(0.68 0.16 255);
     --rubro-lavadero: oklch(0.75 0.13 195);
 
+    --chat: oklch(0.19 0.006 250);
+
     --sidebar: oklch(0.205 0 0);
     --sidebar-foreground: oklch(0.985 0 0);
     --sidebar-primary: oklch(0.985 0 0);
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent: oklch(0.3 0 0);
     --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    --sidebar-border: oklch(0.34 0 0);
+    --sidebar-ring: oklch(0.65 0 0);
 }
 
 @layer base {
@@ -174,6 +186,13 @@
     --fc-today-bg-color: var(--accent);
     --fc-now-indicator-color: var(--destructive);
     font-size: 0.875rem;
+}
+
+/* Los días del mes de al lado: FullCalendar los deja al 30 % de opacidad,
+   ilegibles. Se distinguen con el gris del texto secundario, que da AA. */
+.fc .fc-day-other .fc-daygrid-day-top {
+    opacity: 1;
+    color: var(--muted-foreground);
 }
 
 .fc .fc-toolbar-title {
