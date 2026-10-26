@@ -7,6 +7,7 @@ use App\Http\Controllers\LavaderoController;
 use App\Http\Controllers\Panel\AgenteController;
 use App\Http\Controllers\Panel\AjusteController;
 use App\Http\Controllers\Panel\AuditoriaController;
+use App\Http\Controllers\Panel\AvisoWhatsappController;
 use App\Http\Controllers\Panel\ClienteController;
 use App\Http\Controllers\Panel\ClienteExportController;
 use App\Http\Controllers\Panel\ConexionController;
@@ -144,6 +145,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('whatsapp/agente/conocimientos', [AgenteController::class, 'guardarConocimiento'])->name('whatsapp.conocimientos.store');
         Route::put('whatsapp/agente/conocimientos/{conocimiento}', [AgenteController::class, 'actualizarConocimiento'])->name('whatsapp.conocimientos.update');
         Route::delete('whatsapp/agente/conocimientos/{conocimiento}', [AgenteController::class, 'borrarConocimiento'])->name('whatsapp.conocimientos.destroy');
+        // Contadores y novedades para los avisos de todo el panel. Antes de `{conversacion}`.
+        Route::get('whatsapp/avisos', AvisoWhatsappController::class)->name('whatsapp.avisos');
         // Escribirle a un cliente desde su ficha, una cotización o un turno.
         Route::post('whatsapp/clientes/{cliente}', [ConversacionController::class, 'abrir'])->name('whatsapp.abrir');
         Route::get('whatsapp', [ConversacionController::class, 'index'])->name('whatsapp.index');
@@ -167,6 +170,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('ajustes/conexiones', [ConexionController::class, 'show'])->name('ajustes.conexiones');
         Route::put('ajustes/conexiones/whatsapp', [ConexionController::class, 'whatsapp'])->name('ajustes.conexiones.whatsapp');
         Route::put('ajustes/conexiones/ia', [ConexionController::class, 'ia'])->name('ajustes.conexiones.ia');
+        Route::put('ajustes/conexiones/sitio', [ConexionController::class, 'sitio'])->name('ajustes.conexiones.sitio');
         Route::post('ajustes/conexiones/whatsapp/probar', [ConexionController::class, 'probarWhatsapp'])->name('ajustes.conexiones.whatsapp.probar');
         Route::post('ajustes/conexiones/ia/probar', [ConexionController::class, 'probarIa'])->name('ajustes.conexiones.ia.probar');
         Route::delete('ajustes/conexiones/{conexion}/{campo}', [ConexionController::class, 'olvidar'])

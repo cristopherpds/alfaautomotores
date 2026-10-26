@@ -51,7 +51,13 @@ import {
     index as whatsappIndex,
 } from '@/routes/panel/whatsapp';
 import { index as usersIndex } from '@/routes/users';
-import type { NavItem } from '@/types';
+import type { ContadoresWhatsapp, NavItem } from '@/types';
+
+const whatsappNavItem: NavItem = {
+    title: 'WhatsApp',
+    href: whatsappIndex(),
+    icon: MessagesSquare,
+};
 
 const mainNavItems: NavItem[] = [
     {
@@ -59,11 +65,7 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
-    {
-        title: 'WhatsApp',
-        href: whatsappIndex(),
-        icon: MessagesSquare,
-    },
+    whatsappNavItem,
 ];
 
 const catalogoNavItems: NavItem[] = [
@@ -166,9 +168,33 @@ const footerNavItems: NavItem[] = [
     },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({
+    whatsapp = null,
+}: {
+    whatsapp?: ContadoresWhatsapp | null;
+}) {
     const { auth } = usePage().props;
     const isAdmin = auth.user?.role === 'admin';
+
+    /* Los badges de WhatsApp: sin leer y esperando a una persona. */
+    const itemsPrincipales: NavItem[] = mainNavItems.map((item) =>
+        item === whatsappNavItem && whatsapp
+            ? {
+                  ...item,
+                  badges: [
+                      {
+                          valor: whatsapp.noLeidos,
+                          etiqueta: 'sin leer',
+                      },
+                      {
+                          valor: whatsapp.atencionHumana,
+                          etiqueta: 'esperan atención humana',
+                          variant: 'destructive',
+                      },
+                  ],
+              }
+            : item,
+    );
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -185,7 +211,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={itemsPrincipales} />
 
                 <NavMain items={catalogoNavItems} label="Catálogo" />
                 <NavMain items={agendaNavItems} label="Taller y lavadero" />

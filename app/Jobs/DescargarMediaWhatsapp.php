@@ -8,6 +8,7 @@ use App\Models\MensajeWhatsapp;
 use App\Services\WhatsappCloud;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\DeleteWhenMissingModels;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -16,8 +17,10 @@ use Illuminate\Support\Str;
  *
  * Meta guarda los archivos poco tiempo y su URL vence en minutos, así que se
  * copian enseguida. Va aparte de la ingesta para que un archivo que no baja
- * reintente solo sin volver a procesar el webhook entero.
+ * reintente solo sin volver a procesar el webhook entero. Si el mensaje ya
+ * no existe (se borró la conversación), el trabajo se descarta sin fallar.
  */
+#[DeleteWhenMissingModels]
 class DescargarMediaWhatsapp implements ShouldQueue
 {
     use Queueable;

@@ -52,14 +52,20 @@ export function queryDeFiltros(
 
 type Props = {
     conversaciones: ConversacionDeLista[];
+    /** Las que esperan a una persona: el contador de «Atención humana». */
+    atencionHumana: number;
     filtros: FiltrosBandeja;
     abiertaId: number | null;
     onFiltrar: (cambio: Partial<FiltrosBandeja>) => void;
 };
 
-/** La columna de la izquierda: las conversaciones, la más reciente arriba. */
+/**
+ * La columna de la izquierda: las conversaciones, la más reciente arriba.
+ * «Todas» es lo que atiende la IA; lo derivado va a «Atención humana».
+ */
 export function ListaConversaciones({
     conversaciones,
+    atencionHumana,
     filtros,
     abiertaId,
     onFiltrar,
@@ -115,8 +121,20 @@ export function ListaConversaciones({
                     <ToggleGroupItem value="sin_leer" className="flex-1">
                         Sin leer
                     </ToggleGroupItem>
-                    <ToggleGroupItem value="humano" className="flex-1">
-                        Humano
+                    <ToggleGroupItem
+                        value="humano"
+                        className="flex-1 gap-1.5"
+                        data-test="filtro-atencion-humana"
+                    >
+                        Atención humana
+                        {atencionHumana > 0 && (
+                            <Badge
+                                variant="destructive"
+                                className="h-5 min-w-5 justify-center px-1.5 tabular-nums"
+                            >
+                                {atencionHumana}
+                            </Badge>
+                        )}
                     </ToggleGroupItem>
                     <ToggleGroupItem value="archivadas" className="flex-1">
                         Archivo

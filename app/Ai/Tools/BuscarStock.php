@@ -2,6 +2,7 @@
 
 namespace App\Ai\Tools;
 
+use App\Models\Ajuste;
 use App\Models\Producto;
 use App\Models\Vehiculo;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -60,7 +61,7 @@ class BuscarStock extends Herramienta
                     'combustible' => $vehiculo->comb->value,
                     'transmision' => $vehiculo->trans->value,
                     'estado' => $vehiculo->estado->value === 'reservado' ? 'reservado (con seña)' : 'disponible',
-                    'link' => route('vehiculos.show', $vehiculo->slug),
+                    'link' => Ajuste::enlacePublico('vehiculos.show', $vehiculo->slug),
                 ],
             ]));
         }
@@ -79,7 +80,7 @@ class BuscarStock extends Herramienta
                         ? $producto->moneda->value.' '.number_format((int) $producto->precio, 0, ',', '.')
                         : 'a consultar',
                     'estado' => $producto->estado->label(),
-                    'link' => route('productos.show', $producto->slug),
+                    'link' => Ajuste::enlacePublico('productos.show', $producto->slug),
                 ],
             ]));
         }

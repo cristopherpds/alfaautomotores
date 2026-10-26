@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Conversacion;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -42,6 +43,27 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'whatsapp' => fn (): ?array => $this->avisosDeWhatsapp($request),
         ];
+    }
+
+    /**
+     * Los contadores de WhatsApp para el primer pintado del menú lateral.
+     *
+     * Va en un closure: las recargas parciales que no lo piden (el polling
+     * de la bandeja, por ejemplo) no hacen las consultas. Después los
+     * mantiene al día `useAvisosWhatsapp` con su propio endpoint.
+     *
+     * @return array{noLeidos: int, atencionHumana: int}|null
+     */
+    private function avisosDeWhatsapp(Request $request): ?array
+    {
+        $user = $request->user();
+
+        if ($user === null || $user->cannot('viewAny', Conversacion::class)) {
+            return null;
+        }
+
+        return Conversacion::contadoresDeAvisos();
     }
 }

@@ -1,9 +1,13 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import AppearanceTabs from '@/components/appearance-tabs';
 import Heading from '@/components/heading';
+import { AvisosWhatsappAjustes } from '@/components/whatsapp/avisos-whatsapp-ajustes';
 import { edit as editAppearance } from '@/routes/appearance';
 
 export default function Appearance() {
+    // Sólo quien ve la bandeja tiene avisos que configurar.
+    const { whatsapp } = usePage().props;
+
     return (
         <>
             <Head title="Appearance settings" />
@@ -18,6 +22,8 @@ export default function Appearance() {
                 />
                 <AppearanceTabs />
             </div>
+
+            {whatsapp && <AvisosWhatsappAjustes />}
         </>
     );
 }

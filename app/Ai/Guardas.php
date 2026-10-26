@@ -45,6 +45,21 @@ class Guardas
         '/\b(atenci[oó]n\s+humana|no\s+quiero\s+(hablar\s+con\s+)?(un\s+)?(bot|robot|m[aá]quina|ia))\b/iu',
     ];
 
+    /**
+     * Promesas del modelo de pasar con una persona. Si las escribe sin
+     * llamar a `derivar_a_humano`, la persona queda esperando a alguien que
+     * nunca llega: la red de seguridad deriva igual.
+     *
+     * @var list<string>
+     */
+    private const PROMETE_HUMANO = [
+        '/\bte\s+(paso|derivo|comunico|transfiero|contacto|pongo\s+en\s+contacto)\s+con\s+(alguien|una?\s|el\s+equipo|nuestr[oa]s?\s|ventas\b|el\s+(vendedor|encargado|taller|asesor))/iu',
+        '/\bte\s+derivo\b/iu',
+        '/\b(una?|el|la|nuestr[oa])\s+(asesor[a]?|vendedor[a]?|encargad[oa]|persona|compañer[oa])\s+(del\s+(equipo|local|taller)\s+)?(te\s+va\s+a|te\s+van\s+a|se\s+va\s+a\s+(comunicar|contactar|poner))/iu',
+        '/\balguien\s+(del\s+(equipo|local|taller)\s+)?(te\s+va\s+a|se\s+va\s+a\s+(comunicar|contactar|poner)|te\s+(escribe|contacta|llama))/iu',
+        '/\b(el|nuestro)\s+equipo\s+(te\s+va\s+a|se\s+va\s+a\s+(comunicar|contactar|poner)|te\s+(escribe|contacta|llama))/iu',
+    ];
+
     public static function esHostil(string $texto): bool
     {
         foreach (self::HOSTILES as $patron) {
@@ -79,6 +94,21 @@ class Guardas
     public static function pideHumano(string $texto): bool
     {
         foreach (self::PIDE_HUMANO as $patron) {
+            if (preg_match($patron, $texto) === 1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Si el texto que sale le promete a la persona que la va a atender
+     * alguien del equipo («te paso con», «un asesor te va a escribir»).
+     */
+    public static function prometeHumano(string $texto): bool
+    {
+        foreach (self::PROMETE_HUMANO as $patron) {
             if (preg_match($patron, $texto) === 1) {
                 return true;
             }

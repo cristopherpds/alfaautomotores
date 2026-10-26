@@ -148,3 +148,67 @@ test('the openrouter model list is filtered by what the agent needs', function (
             )
         );
 });
+
+test('the public url is saved and warns when whatsapp will not link it', function () {
+    config()->set('app.url', 'http://localhost:8000');
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)
+        ->get(route('panel.ajustes.conexiones'))
+        ->assertInertia(fn ($page) => $page
+            ->where('sitio.urlPublica', null)
+            ->where('sitio.urlEfectiva', 'http://localhost:8000')
+            ->where('sitio.enlazable', false)
+        );
+
+    $this->actingAs($admin)
+        ->put(route('panel.ajustes.conexiones.sitio'), ['url_publica' => 'https://alfa.ngrok.app/'])
+        ->assertSessionHasNoErrors();
+
+    expect(Ajuste::urlPublica())->toBe('https://alfa.ngrok.app');
+
+    $this->actingAs($admin)
+        ->get(route('panel.ajustes.conexiones'))
+        ->assertInertia(fn ($page) => $page
+            ->where('sitio.urlPublica', 'https://alfa.ngrok.app')
+            ->where('sitio.enlazable', true)
+            ->where('sitio.ejemplo', 'https://alfa.ngrok.app/catalogo')
+        );
+
+    $this->actingAs($admin)
+        ->put(route('panel.ajustes.conexiones.sitio'), ['url_publica' => 'alfa sin protocolo'])
+        ->assertSessionHasErrors('url_publica');
+
+    $this->actingAs(User::factory()->role(UserRole::Vendedor)->create())
+        ->put(route('panel.ajustes.conexiones.sitio'), ['url_publica' => 'https://otro.com'])
+        ->assertForbidden();
+});
+
+test('only urls with a public domain count as linkable', function (string $url, bool $enlazable) {
+    expect(Ajuste::esUrlEnlazable($url))->toBe($enlazable);
+})->with([
+    ['http://localhost:8000', false],
+    ['http://127.0.0.1:8000', false],
+    ['http://alfa.test', false],
+    ['http://intranet', false],
+    ['https://alfa.ngrok.app', true],
+    ['https://alfaautomotores.com.uy', true],
+]);
+
+test('the transcription model has to be a speech to text model', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)
+        ->put(route('panel.ajustes.conexiones.ia'), ['modelo' => 'google/gemini-2.5-flash', 'modelo_transcripcion' => 'google/gemini-2.5-flash'])
+        ->assertSessionHasErrors('modelo_transcripcion');
+
+    $this->actingAs($admin)
+        ->put(route('panel.ajustes.conexiones.ia'), ['modelo' => 'google/gemini-2.5-flash', 'modelo_transcripcion' => 'openai/whisper-1'])
+        ->assertSessionHasNoErrors();
+
+    expect(Ajuste::conexionIa()['modelo_transcripcion'])->toBe('openai/whisper-1');
+});
+
+test('whisper is the default transcription model', function () {
+    expect(config('services.openrouter.modelo_transcripcion'))->toBe('openai/whisper-1');
+});

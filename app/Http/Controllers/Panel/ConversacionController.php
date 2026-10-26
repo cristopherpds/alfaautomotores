@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Panel;
 use App\Enums\DireccionMensaje;
 use App\Enums\MotivoDerivacion;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Whatsapp\EliminarConversacionRequest;
 use App\Models\Cliente;
 use App\Models\Conversacion;
 use App\Models\MensajeWhatsapp;
@@ -147,13 +148,18 @@ class ConversacionController extends Controller implements HasMiddleware
     }
 
     /**
-     * Delete a conversation with its messages and files.
+     * Delete a conversation with its messages and files, and optionally the
+     * linked client with their other conversations.
      */
-    public function destroy(Conversacion $conversacion): RedirectResponse
+    public function destroy(EliminarConversacionRequest $request, Conversacion $conversacion): RedirectResponse
     {
-        $conversacion->delete();
+        $tambienElCliente = $request->tambienElCliente();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Conversación eliminada.')]);
+        $conversacion->olvidar($tambienElCliente);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => $tambienElCliente
+            ? __('Conversación y cliente eliminados.')
+            : __('Conversación eliminada.')]);
 
         return to_route('panel.whatsapp.index');
     }
@@ -201,6 +207,7 @@ class ConversacionController extends Controller implements HasMiddleware
                     'derivada' => $conversacion->derivada_at !== null,
                 ])
                 ->all(),
+            'atencionHumana' => Conversacion::queAtiendeElEquipo()->count(),
             'filtros' => $filtros,
             'whatsappConfigurado' => app(WhatsappCloud::class)->configurado(),
         ];
@@ -270,6 +277,8 @@ class ConversacionController extends Controller implements HasMiddleware
                     'nombre' => $mensaje->media_nombre,
                 ],
                 'mediaPendiente' => $mensaje->media_id !== null && $mensaje->media_ruta === null,
+                'transcripcion' => filled($mensaje->meta['transcripcion'] ?? null) ? (string) $mensaje->meta['transcripcion'] : null,
+                'transcripcionFallida' => ($mensaje->meta['transcripcion_fallida'] ?? false) === true,
                 'enviadoAt' => ($mensaje->wa_timestamp ?? $mensaje->created_at)?->toIso8601String(),
             ])->all(),
             'plantillas' => $conversacion->ventanaAbierta() ? [] : PlantillaWhatsapp::aprobadas()

@@ -11,6 +11,7 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
+import { ActivarAvisosWhatsapp } from '@/components/whatsapp/avisos-whatsapp-ajustes';
 import { Hilo } from '@/components/whatsapp/hilo';
 import {
     filtrarBandeja,
@@ -24,6 +25,7 @@ import type { ConversacionAbierta, ConversacionDeLista } from '@/types';
 
 type Props = {
     conversaciones: ConversacionDeLista[];
+    atencionHumana: number;
     filtros: FiltrosBandeja;
     whatsappConfigurado: boolean;
     conversacion: ConversacionAbierta | null;
@@ -38,13 +40,14 @@ const REFRESCO_MS = 4000;
  */
 export default function Whatsapp({
     conversaciones,
+    atencionHumana,
     filtros,
     whatsappConfigurado,
     conversacion,
 }: Props) {
     usePoll(
         REFRESCO_MS,
-        { only: ['conversaciones', 'conversacion'] },
+        { only: ['conversaciones', 'atencionHumana', 'conversacion'] },
         { mode: 'rest' },
     );
 
@@ -93,6 +96,11 @@ export default function Whatsapp({
                     </Alert>
                 )}
 
+                {/* Sólo mientras no se decidió el permiso del navegador. */}
+                <div className="flex justify-end empty:hidden">
+                    <ActivarAvisosWhatsapp />
+                </div>
+
                 {conversacion?.can.administrar &&
                     !conversacion.ventanaAbierta && (
                         <div className="flex justify-end">
@@ -131,6 +139,7 @@ export default function Whatsapp({
                     >
                         <ListaConversaciones
                             conversaciones={conversaciones}
+                            atencionHumana={atencionHumana}
                             filtros={filtros}
                             abiertaId={conversacion?.id ?? null}
                             onFiltrar={filtrar}
