@@ -111,15 +111,40 @@ export function sonarAviso(): void {
 
 let registro: Promise<ServiceWorkerRegistration | null> | null = null;
 
+/**
+ * Hasta dónde controla el service worker: sólo el panel, nunca el sitio
+ * público. `/sw.js` puede registrarse con un alcance más chico que su
+ * carpeta sin el encabezado `Service-Worker-Allowed`.
+ */
+const ALCANCE_SERVICE_WORKER = '/panel/';
+
 /** El service worker de `public/sw.js`: sólo maneja el clic en la notificación. */
 export function registrarServiceWorker(): Promise<ServiceWorkerRegistration | null> {
     if (!('serviceWorker' in navigator)) {
         return Promise.resolve(null);
     }
 
-    registro ??= navigator.serviceWorker.register('/sw.js').catch(() => null);
+    registro ??= olvidarRegistroDeTodoElSitio()
+        .then(() =>
+            navigator.serviceWorker.register('/sw.js', {
+                scope: ALCANCE_SERVICE_WORKER,
+            }),
+        )
+        .catch(() => null);
 
     return registro;
+}
+
+/** Las primeras versiones lo registraban con alcance `/`, sitio público incluido. */
+async function olvidarRegistroDeTodoElSitio(): Promise<void> {
+    const raiz = new URL('/', window.location.origin).href;
+    const registros = await navigator.serviceWorker.getRegistrations();
+
+    await Promise.all(
+        registros
+            .filter((registro) => registro.scope === raiz)
+            .map((registro) => registro.unregister()),
+    );
 }
 
 type Aviso = {

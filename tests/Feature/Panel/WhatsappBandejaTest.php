@@ -16,6 +16,7 @@ use App\Models\MensajeWhatsapp;
 use App\Models\PlantillaWhatsapp;
 use App\Models\Turno;
 use App\Models\User;
+use App\Services\WhatsappCloud;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Queue\Attributes\DeleteWhenMissingModels;
@@ -320,6 +321,42 @@ test('deleting the contact also deletes the client and all of their chats', func
     Storage::disk('local')->assertExists('whatsapp/'.$ajena->id.'/foto.jpg');
 });
 
+test('a seller cannot delete the client along with the chat', function () {
+    $cliente = Cliente::factory()->create();
+    $conversacion = Conversacion::factory()->create();
+    $conversacion->cliente()->associate($cliente)->saveQuietly();
+    $vendedor = User::factory()->role(UserRole::Vendedor)->create();
+
+    $this->actingAs($vendedor)
+        ->get(route('panel.whatsapp.show', $conversacion))
+        ->assertInertia(fn ($page) => $page
+            ->where('conversacion.can.delete', true)
+            ->where('conversacion.puedeBorrarCliente', false)
+        );
+
+    $this->actingAs($vendedor)
+        ->delete(route('panel.whatsapp.destroy', $conversacion), ['alcance' => 'contacto'])
+        ->assertForbidden();
+
+    expect($cliente->fresh())->not->toBeNull()
+        ->and($conversacion->fresh())->not->toBeNull();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('panel.whatsapp.show', $conversacion))
+        ->assertInertia(fn ($page) => $page->where('conversacion.puedeBorrarCliente', true));
+});
+
+test('deleting the contact of a chat without a client just deletes the chat', function () {
+    $conversacion = Conversacion::factory()->create();
+
+    $this->actingAs(User::factory()->role(UserRole::Vendedor)->create())
+        ->delete(route('panel.whatsapp.destroy', $conversacion), ['alcance' => 'contacto'])
+        ->assertRedirect(route('panel.whatsapp.index'))
+        ->assertInertiaFlash('toast.message', 'Conversación eliminada.');
+
+    expect(Conversacion::count())->toBe(0);
+});
+
 test('deleting is blocked while the client has an upcoming appointment', function (EstadoTurno $estado, string $alcance) {
     $cliente = Cliente::factory()->create();
     $conversacion = Conversacion::factory()->create();
@@ -388,6 +425,25 @@ test('pending queued jobs of the deleted chat are dropped', function () {
         ->and($comandos->contains(fn (string $comando) => str_contains($comando, 'MensajeWhatsapp";s:2:"id";i:'.$mensajeAjeno->id.';')))->toBeTrue();
 });
 
+test('a file downloaded after its chat was deleted is not left behind', function () {
+    $conversacion = Conversacion::factory()->create();
+    $mensaje = MensajeWhatsapp::factory()->for($conversacion)->create(['media_id' => 'media-123', 'media_mime' => 'image/jpeg']);
+
+    Http::fake([
+        'graph.facebook.com/v23.0/media-123' => Http::response(['url' => 'https://lookaside.fbsbx.com/foto', 'mime_type' => 'image/jpeg']),
+        'lookaside.fbsbx.com/*' => function () use ($conversacion) {
+            $conversacion->olvidar(false);
+
+            return Http::response('jpg-binario', 200, ['Content-Type' => 'image/jpeg']);
+        },
+    ]);
+
+    (new DescargarMediaWhatsapp($mensaje))->handle(app(WhatsappCloud::class));
+
+    expect(Storage::disk('local')->allFiles('whatsapp/'.$conversacion->id))->toBe([])
+        ->and(MensajeWhatsapp::find($mensaje->id))->toBeNull();
+});
+
 test('the jobs of a deleted chat do nothing if they still run', function () {
     $conversacion = Conversacion::factory()->create();
     $mensaje = MensajeWhatsapp::factory()->for($conversacion)->create(['media_id' => 'media-1']);
@@ -402,6 +458,24 @@ test('the jobs of a deleted chat do nothing if they still run', function () {
     expect(fn () => unserialize($serializado))->toThrow(ModelNotFoundException::class)
         ->and((new ReflectionClass(DescargarMediaWhatsapp::class))->getAttributes(DeleteWhenMissingModels::class))->toHaveCount(1);
     Http::assertNothingSent();
+});
+
+test('a search with only zeros does not match every number', function () {
+    Conversacion::factory()->create(['wa_id' => '59899123456', 'nombre_perfil' => 'Ana']);
+    Conversacion::factory()->create(['wa_id' => '59898765432', 'nombre_perfil' => 'Beto']);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('panel.whatsapp.index', ['busqueda' => '000']))
+        ->assertInertia(fn ($page) => $page->has('conversaciones', 0));
+});
+
+test('a one character inbox search is ignored', function () {
+    Conversacion::factory()->create(['nombre_perfil' => 'Ana']);
+    Conversacion::factory()->create(['nombre_perfil' => 'Beto']);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('panel.whatsapp.index', ['busqueda' => 'z']))
+        ->assertInertia(fn ($page) => $page->has('conversaciones', 2));
 });
 
 test('all shows what the ai handles and human attention what waits for a person', function () {

@@ -154,10 +154,11 @@ class ConversacionController extends Controller implements HasMiddleware
     public function destroy(EliminarConversacionRequest $request, Conversacion $conversacion): RedirectResponse
     {
         $tambienElCliente = $request->tambienElCliente();
+        $teniaCliente = $conversacion->cliente_id !== null;
 
         $conversacion->olvidar($tambienElCliente);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => $tambienElCliente
+        Inertia::flash('toast', ['type' => 'success', 'message' => $tambienElCliente && $teniaCliente
             ? __('Conversación y cliente eliminados.')
             : __('Conversación eliminada.')]);
 
@@ -295,6 +296,7 @@ class ConversacionController extends Controller implements HasMiddleware
                 'delete' => $request->user()->can('delete', $conversacion),
                 'administrar' => $request->user()->can('administrar', Conversacion::class),
             ],
+            'puedeBorrarCliente' => $cliente !== null && $request->user()->can('delete', $cliente),
         ];
     }
 }

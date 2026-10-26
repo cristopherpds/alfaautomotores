@@ -14,7 +14,7 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
-            whatsapp?: ContadoresWhatsapp | null;
+            whatsapp: ContadoresWhatsapp | null;
             [key: string]: unknown;
         };
     }

@@ -23,6 +23,12 @@ use Illuminate\Support\Str;
  * derivaciones de la IA. Sin cursor sólo devuelve contadores y el cursor
  * actual, para no avisar de lo viejo al abrir el panel.
  *
+ * El cursor de derivaciones es el par (`derivada_at`, `id`) de la última:
+ * `derivada_at` tiene resolución de segundos y dos derivaciones en el mismo
+ * segundo no pueden perderse. Los dos cursores también acotan por arriba lo
+ * que se devuelve, así lo que entra mientras se arma la respuesta llega en
+ * el pedido siguiente y no dos veces.
+ *
  * Del mensaje viaja sólo una vista previa corta: el cuerpo completo se lee
  * en la bandeja.
  */
@@ -58,10 +64,13 @@ class AvisoWhatsappController extends Controller implements HasMiddleware
         $cursor = $request->validate([
             'mensaje' => ['nullable', 'integer', 'min:0'],
             'derivacion' => ['nullable', 'integer', 'min:0'],
+            'derivacionId' => ['nullable', 'integer', 'min:0'],
         ]);
 
         $desdeMensaje = isset($cursor['mensaje']) ? (int) $cursor['mensaje'] : null;
         $desdeDerivacion = isset($cursor['derivacion']) ? (int) $cursor['derivacion'] : null;
+        // Un cursor sin id (pestaña abierta antes del cambio): todo ese segundo ya se avisó.
+        $desdeDerivacionId = isset($cursor['derivacionId']) ? (int) $cursor['derivacionId'] : PHP_INT_MAX;
 
         $ultimoMensaje = (int) MensajeWhatsapp::query()
             ->where('direccion', DireccionMensaje::Entrante)
@@ -69,11 +78,13 @@ class AvisoWhatsappController extends Controller implements HasMiddleware
 
         $ultimaDerivacion = Conversacion::query()
             ->whereNotNull('derivada_at')
-            ->max('derivada_at');
+            ->orderByDesc('derivada_at')
+            ->orderByDesc('id')
+            ->first(['id', 'derivada_at']);
 
         $eventos = [
-            ...$desdeMensaje === null ? [] : $this->mensajesNuevos($desdeMensaje),
-            ...$desdeDerivacion === null ? [] : $this->derivacionesNuevas($desdeDerivacion),
+            ...$desdeMensaje === null ? [] : $this->mensajesNuevos($desdeMensaje, $ultimoMensaje),
+            ...$desdeDerivacion === null || $ultimaDerivacion === null ? [] : $this->derivacionesNuevas($desdeDerivacion, $desdeDerivacionId, $ultimaDerivacion),
         ];
 
         usort($eventos, fn (array $a, array $b): int => strcmp($b['at'], $a['at']));
@@ -82,23 +93,26 @@ class AvisoWhatsappController extends Controller implements HasMiddleware
             ...Conversacion::contadoresDeAvisos(),
             'cursor' => [
                 'mensaje' => $ultimoMensaje,
-                'derivacion' => $ultimaDerivacion === null ? 0 : CarbonImmutable::parse($ultimaDerivacion)->getTimestamp(),
+                'derivacion' => $ultimaDerivacion?->derivada_at?->getTimestamp() ?? 0,
+                'derivacionId' => $ultimaDerivacion === null ? 0 : $ultimaDerivacion->id,
             ],
             'eventos' => array_slice($eventos, 0, self::MAX_EVENTOS),
         ]);
     }
 
     /**
-     * El último mensaje entrante de cada conversación que escribió después del cursor.
+     * El último mensaje entrante de cada conversación que escribió después
+     * del cursor y hasta el cursor nuevo.
      *
      * @return list<array{conversacionId: int, nombre: string, preview: string, tipo: string, at: string}>
      */
-    private function mensajesNuevos(int $desde): array
+    private function mensajesNuevos(int $desde, int $hasta): array
     {
         $ultimos = MensajeWhatsapp::query()
             ->selectRaw('max(id) as id')
             ->where('direccion', DireccionMensaje::Entrante)
             ->where('id', '>', $desde)
+            ->where('id', '<=', $hasta)
             ->groupBy('conversacion_id');
 
         return MensajeWhatsapp::query()
@@ -124,12 +138,19 @@ class AvisoWhatsappController extends Controller implements HasMiddleware
      *
      * @return list<array{conversacionId: int, nombre: string, preview: string, tipo: string, at: string}>
      */
-    private function derivacionesNuevas(int $desde): array
+    private function derivacionesNuevas(int $desde, int $desdeId, Conversacion $hasta): array
     {
+        // En la zona de la app: así se guardan las fechas en la base.
+        $desdeAt = CarbonImmutable::createFromTimestamp($desde, config('app.timezone'));
+
         return Conversacion::query()
             ->with('cliente')
-            // En la zona de la app: así se guardan las fechas en la base.
-            ->where('derivada_at', '>', CarbonImmutable::createFromTimestamp($desde, config('app.timezone')))
+            ->where(fn ($query) => $query
+                ->where('derivada_at', '>', $desdeAt)
+                ->orWhere(fn ($query) => $query->where('derivada_at', $desdeAt)->where('id', '>', $desdeId)))
+            ->where(fn ($query) => $query
+                ->where('derivada_at', '<', $hasta->derivada_at)
+                ->orWhere(fn ($query) => $query->where('derivada_at', $hasta->derivada_at)->where('id', '<=', $hasta->id)))
             ->where(fn ($query) => $query
                 ->whereNull('motivo_derivacion')
                 ->orWhere('motivo_derivacion', '!=', MotivoDerivacion::Manual))

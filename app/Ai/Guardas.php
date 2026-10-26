@@ -53,12 +53,21 @@ class Guardas
      * @var list<string>
      */
     private const PROMETE_HUMANO = [
-        '/\bte\s+(paso|derivo|comunico|transfiero|contacto|pongo\s+en\s+contacto)\s+con\s+(alguien|una?\s|el\s+equipo|nuestr[oa]s?\s|ventas\b|el\s+(vendedor|encargado|taller|asesor))/iu',
+        '/\bte\s+(paso|derivo|comunico|transfiero|contacto|pongo\s+en\s+contacto)\s+con\s+(alguien|una\s+persona|un\s+humano|ventas\b|(el|la|un|una|nuestr[oa]s?|los|las)\s+(asesor|vendedor|encargad|compañer|operador|equipo|persona|taller))/iu',
         '/\bte\s+derivo\b/iu',
-        '/\b(una?|el|la|nuestr[oa])\s+(asesor[a]?|vendedor[a]?|encargad[oa]|persona|compañer[oa])\s+(del\s+(equipo|local|taller)\s+)?(te\s+va\s+a|te\s+van\s+a|se\s+va\s+a\s+(comunicar|contactar|poner))/iu',
-        '/\balguien\s+(del\s+(equipo|local|taller)\s+)?(te\s+va\s+a|se\s+va\s+a\s+(comunicar|contactar|poner)|te\s+(escribe|contacta|llama))/iu',
-        '/\b(el|nuestro)\s+equipo\s+(te\s+va\s+a|se\s+va\s+a\s+(comunicar|contactar|poner)|te\s+(escribe|contacta|llama))/iu',
+        '/\b(una?|el|la|nuestr[oa])\s+(asesor[a]?|vendedor[a]?|encargad[oa]|persona|compañer[oa])\s+(del\s+(equipo|local|taller)\s+)?('.self::VERBO_DE_CONTACTO.')/iu',
+        '/\balguien\s+(del\s+(equipo|local|taller)\s+)?('.self::VERBO_DE_CONTACTO.')/iu',
+        '/\b(el|nuestro)\s+equipo\s+('.self::VERBO_DE_CONTACTO.')/iu',
     ];
+
+    /**
+     * Lo que sigue al sujeto para que sea una promesa de contacto: «te va a
+     * escribir», «se va a comunicar», «te llama». «Te va a esperar en el
+     * taller» o «te va a mostrar el auto» no prometen que alguien escriba.
+     */
+    private const VERBO_DE_CONTACTO = 'te\s+van?\s+a\s+(escribir|contactar|comunicar|llamar|atender|responder)'
+        .'|se\s+van?\s+a\s+(comunicar|contactar|poner)'
+        .'|te\s+(escribe|contacta|llama|atiende|responde)n?\b';
 
     public static function esHostil(string $texto): bool
     {

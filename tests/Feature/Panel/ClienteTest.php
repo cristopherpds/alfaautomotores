@@ -139,6 +139,17 @@ test('the list searches by name, phone, email and plate', function (string $busq
     'matrícula' => 'sbc12',
 ]);
 
+test('a one character search is ignored instead of decrypting everyone', function () {
+    Cliente::factory()->create(['nombre' => 'Ana', 'apellido' => 'Pérez']);
+    Cliente::factory()->create(['nombre' => 'Juan', 'apellido' => 'Díaz']);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('panel.clientes.index', ['busqueda' => 'x']))
+        ->assertInertia(fn ($page) => $page->has('clientes.data', 2));
+
+    expect(Cliente::idsQueCoinciden('x'))->toBeNull();
+});
+
 test('the list filters by business and by consent', function () {
     $taller = Servicio::factory()->create();
     $lavadero = Servicio::factory()->lavadero()->create();

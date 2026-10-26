@@ -184,8 +184,15 @@ class Ajuste extends Model
     public static function urlPublica(): string
     {
         $guardada = self::valor(self::SITIO_PUBLICO)['url_publica'] ?? null;
+        $url = rtrim(filled($guardada) ? (string) $guardada : (string) config('app.url'), '/');
+        $partes = parse_url($url);
 
-        return rtrim(filled($guardada) ? (string) $guardada : (string) config('app.url'), '/');
+        // Sólo el origen: una ruta guardada antes de validarlo rompería cada link.
+        if (! is_array($partes) || ! isset($partes['scheme'], $partes['host'])) {
+            return $url;
+        }
+
+        return $partes['scheme'].'://'.$partes['host'].(isset($partes['port']) ? ':'.$partes['port'] : '');
     }
 
     /**

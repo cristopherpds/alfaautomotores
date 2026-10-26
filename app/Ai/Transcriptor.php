@@ -36,16 +36,26 @@ class Transcriptor
     public const PEDIDO_RESPALDO = 'Transcribí literalmente esta nota de voz de un cliente, en el idioma en que habla. Devolvé sólo el texto, sin comillas ni comentarios. Si no se entiende nada, devolvé una línea vacía.';
 
     /**
-     * El texto de la nota de voz, o null si no se pudo.
+     * Por debajo de esto no vale la pena arrancar el respaldo.
      */
-    public static function transcribir(string $ruta, ?string $mime): ?string
+    private const MINIMO_RESPALDO_SEGUNDOS = 5;
+
+    /**
+     * El texto de la nota de voz, o null si no se pudo.
+     *
+     * Con `$presupuestoSegundos`, whisper y el respaldo juntos no pasan de
+     * ese tiempo: el job que transcribe tiene su propio límite.
+     */
+    public static function transcribir(string $ruta, ?string $mime, ?int $presupuestoSegundos = null): ?string
     {
         $conexion = Ajuste::conexionIa();
         $mime = self::mimeDeAudio($mime, $ruta);
+        $inicio = now();
+        $presupuesto = $presupuestoSegundos ?? self::TIMEOUT_SEGUNDOS * 2;
 
         try {
             $texto = trim((string) Transcription::of(Audio::fromStorage($ruta, 'local')->withMimeType($mime))
-                ->timeout(self::TIMEOUT_SEGUNDOS)
+                ->timeout(max(1, min(self::TIMEOUT_SEGUNDOS, $presupuesto)))
                 ->generate('openrouter', $conexion['modelo_transcripcion']));
 
             if ($texto !== '') {
@@ -57,12 +67,14 @@ class Transcriptor
             Log::warning('No se pudo transcribir una nota de voz', ['ruta' => $ruta, 'modelo' => $conexion['modelo_transcripcion'], 'error' => $error->getMessage()]);
         }
 
-        if (! self::modeloAcepta($conexion['modelo'], 'audio')) {
+        $restante = $presupuesto - (int) ceil($inicio->diffInSeconds(now(), true));
+
+        if ($restante < self::MINIMO_RESPALDO_SEGUNDOS || ! self::modeloAcepta($conexion['modelo'], 'audio')) {
             return null;
         }
 
         try {
-            return self::porChat($ruta, $mime, $conexion['modelo'], (string) $conexion['api_key']);
+            return self::porChat($ruta, $mime, $conexion['modelo'], (string) $conexion['api_key'], min(self::TIMEOUT_SEGUNDOS, $restante));
         } catch (Throwable $error) {
             Log::warning('Tampoco se pudo transcribir con el modelo del agente', ['ruta' => $ruta, 'modelo' => $conexion['modelo'], 'error' => $error->getMessage()]);
 
@@ -129,7 +141,7 @@ class Transcriptor
      *
      * @throws Throwable
      */
-    private static function porChat(string $ruta, string $mime, string $modelo, string $clave): ?string
+    private static function porChat(string $ruta, string $mime, string $modelo, string $clave, int $timeout): ?string
     {
         $formato = match ($mime) {
             'audio/mpeg' => 'mp3',
@@ -141,7 +153,7 @@ class Transcriptor
 
         $respuesta = Http::withToken($clave)
             ->acceptJson()
-            ->timeout(self::TIMEOUT_SEGUNDOS)
+            ->timeout($timeout)
             ->post($url.'/chat/completions', [
                 'model' => $modelo,
                 'messages' => [[

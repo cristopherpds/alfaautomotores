@@ -601,4 +601,5 @@ export type ConversacionAbierta = {
     mensajes: MensajeWhatsapp[];
     plantillas: PlantillaWhatsapp[];
     can: { delete: boolean; administrar: boolean };
+    puedeBorrarCliente: boolean;
 };

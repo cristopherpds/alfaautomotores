@@ -61,6 +61,14 @@ class DescargarMediaWhatsapp implements ShouldQueue
 
         Storage::disk('local')->put($ruta, $archivo['contenido']);
 
+        /* La conversación se borró mientras bajaba: `olvidar()` ya limpió la
+           carpeta y este archivo quedaría huérfano. */
+        if (! MensajeWhatsapp::whereKey($this->mensaje->getKey())->exists()) {
+            Storage::disk('local')->delete($ruta);
+
+            return;
+        }
+
         $this->mensaje->update(['media_ruta' => $ruta, 'media_mime' => $mime]);
     }
 

@@ -261,23 +261,25 @@ export function PanelContacto({
                                         tambienElCliente ? 'contacto' : 'hilo'
                                     }
                                 />
-                                {conversacion.cliente && (
-                                    <div className="flex items-center gap-2">
-                                        <Checkbox
-                                            id="borrar-cliente"
-                                            checked={tambienElCliente}
-                                            onCheckedChange={(tildado) =>
-                                                setTambienElCliente(
-                                                    tildado === true,
-                                                )
-                                            }
-                                            data-test="borrar-cliente"
-                                        />
-                                        <Label htmlFor="borrar-cliente">
-                                            Borrar también el cliente y su ficha
-                                        </Label>
-                                    </div>
-                                )}
+                                {conversacion.cliente &&
+                                    conversacion.puedeBorrarCliente && (
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox
+                                                id="borrar-cliente"
+                                                checked={tambienElCliente}
+                                                onCheckedChange={(tildado) =>
+                                                    setTambienElCliente(
+                                                        tildado === true,
+                                                    )
+                                                }
+                                                data-test="borrar-cliente"
+                                            />
+                                            <Label htmlFor="borrar-cliente">
+                                                Borrar también el cliente y su
+                                                ficha
+                                            </Label>
+                                        </div>
+                                    )}
                                 <p className="text-sm font-medium text-destructive">
                                     No se puede deshacer.
                                 </p>

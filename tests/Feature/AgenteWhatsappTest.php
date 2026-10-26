@@ -356,6 +356,8 @@ test('a reply that promises a person without handing over is handed over anyway'
     'Perfecto, un asesor te va a escribir en un rato.',
     'Listo, alguien del equipo te va a contactar hoy.',
     'Anotado. El equipo te escribe por acá enseguida.',
+    'Te comunico con una persona del local.',
+    'Un vendedor se va a comunicar con vos mañana.',
 ]);
 
 test('an ordinary reply does not hand over', function (string $respuesta) {
@@ -371,6 +373,10 @@ test('an ordinary reply does not hand over', function (string $respuesta) {
     'Te paso el link de la Hilux: https://alfa.test/vehiculos/hilux',
     'Te paso con gusto las fotos que tenemos.',
     '¿Querés que te reserve un turno para el service?',
+    'Nuestro equipo te va a esperar en el taller.',
+    'El vendedor te va a mostrar el auto cuando vengas.',
+    'Alguien del taller te va a recibir el auto.',
+    'Te paso con una foto del auto',
 ]);
 
 test('the safety net keeps the reason when the tool already handed over', function () {
@@ -488,6 +494,46 @@ test('when whisper fails the audio goes to the agent model if it hears audio', f
         && $request['messages'][0]['content'][1]['input_audio']['format'] === 'ogg'
         && $request->hasHeader('Authorization', 'Bearer sk-or-prueba'));
     AsistenteWhatsapp::assertPrompted(fn (AgentPrompt $prompt) => $prompt->contains('[Nota de voz, transcripta]: quiero ver la hilux'));
+});
+
+test('voice notes past the per-turn budget are left for the next turn without spending an attempt', function () {
+    AsistenteWhatsapp::fake(['Dale.']);
+    $llamadas = 0;
+    Transcription::fake(function () use (&$llamadas) {
+        $llamadas++;
+        $this->travel(ResponderConversacion::PRESUPUESTO_TRANSCRIPCION_SEGUNDOS + 1)->seconds();
+
+        return 'primera nota';
+    });
+
+    $conversacion = Conversacion::factory()->create();
+    $primera = notaDeVoz($conversacion);
+    Storage::disk('local')->put('whatsapp/'.$conversacion->id.'/otra.ogg', 'ogg');
+    $segunda = notaDeVoz($conversacion, ['media_id' => 'media-2', 'media_ruta' => 'whatsapp/'.$conversacion->id.'/otra.ogg']);
+
+    ResponderConversacion::dispatchSync($conversacion->id, $segunda->id);
+
+    expect($llamadas)->toBe(1)
+        ->and($primera->fresh()->meta)->toMatchArray(['transcripcion' => 'primera nota', 'transcripcion_intentos' => 1])
+        ->and($segunda->fresh()->meta)->toBe(['transcripcion_fallida' => true]);
+    AsistenteWhatsapp::assertPrompted(fn (AgentPrompt $prompt) => $prompt->contains('[Nota de voz que no se pudo escuchar]'));
+});
+
+test('older failed voice notes are not retried while the turn waits for a download', function () {
+    Queue::fake();
+    AsistenteWhatsapp::fake(['Dale.']);
+    Transcription::fake(['no debería llamarse']);
+
+    $conversacion = Conversacion::factory()->create();
+    $vieja = notaDeVoz($conversacion, ['meta' => ['transcripcion_fallida' => true, 'transcripcion_intentos' => 1]]);
+    MensajeWhatsapp::factory()->for($conversacion)->saliente()->create(['cuerpo' => '¿Me lo escribís?']);
+    $texto = entranteDelCliente($conversacion, 'te mandé un audio');
+
+    (new ResponderConversacion($conversacion->id, $texto->id, esperasDeMedia: 1))
+        ->handle(app(Mensajero::class), app(WhatsappCloud::class));
+
+    Transcription::assertNothingGenerated();
+    expect($vieja->fresh()->meta)->toBe(['transcripcion_fallida' => true, 'transcripcion_intentos' => 1]);
 });
 
 test('a voice note still downloading delays the turn instead of skipping it', function () {

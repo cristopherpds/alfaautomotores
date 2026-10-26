@@ -5,6 +5,7 @@ use App\Enums\UserRole;
 use App\Models\Conversacion;
 use App\Models\MensajeWhatsapp;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 test('guests cannot read the notices', function () {
@@ -90,6 +91,60 @@ test('handoffs by the AI after the cursor are events, manual ones are not', func
         ->assertJsonPath('eventos.0.nombre', 'Beto')
         ->assertJsonPath('eventos.0.tipo', 'derivacion')
         ->assertJsonPath('eventos.0.preview', MotivoDerivacion::Cliente->label());
+});
+
+test('two handoffs in the same second are both notified', function () {
+    $this->freezeSecond();
+    $usuario = User::factory()->create();
+    $primera = Conversacion::factory()->derivada(MotivoDerivacion::Cliente)->create(['derivada_at' => now()]);
+
+    $cursor = $this->actingAs($usuario)
+        ->getJson(route('panel.whatsapp.avisos'))
+        ->assertJsonPath('cursor.derivacionId', $primera->id)
+        ->json('cursor');
+
+    $segunda = Conversacion::factory()->derivada(MotivoDerivacion::Cliente)->create(['derivada_at' => now()]);
+
+    $siguiente = $this->actingAs($usuario)
+        ->getJson(route('panel.whatsapp.avisos', $cursor))
+        ->assertOk()
+        ->assertJsonCount(1, 'eventos')
+        ->assertJsonPath('eventos.0.conversacionId', $segunda->id)
+        ->assertJsonPath('cursor.derivacionId', $segunda->id)
+        ->json('cursor');
+
+    $this->actingAs($usuario)
+        ->getJson(route('panel.whatsapp.avisos', $siguiente))
+        ->assertJsonPath('eventos', []);
+});
+
+test('a cursor without the handoff id does not repeat that second', function () {
+    $this->freezeSecond();
+    Conversacion::factory()->derivada(MotivoDerivacion::Cliente)->create(['derivada_at' => now()]);
+
+    $this->actingAs(User::factory()->create())
+        ->getJson(route('panel.whatsapp.avisos', ['mensaje' => 0, 'derivacion' => now()->getTimestamp()]))
+        ->assertJsonPath('eventos', []);
+});
+
+test('a message that arrives while the response is built waits for the next poll', function () {
+    $vieja = MensajeWhatsapp::factory()->create();
+    $nueva = MensajeWhatsapp::factory()->create();
+    $tardia = null;
+
+    DB::listen(function ($query) use (&$tardia) {
+        if ($tardia === null && str_contains($query->sql, 'max("id")')) {
+            $tardia = MensajeWhatsapp::factory()->create();
+        }
+    });
+
+    $this->actingAs(User::factory()->create())
+        ->getJson(route('panel.whatsapp.avisos', ['mensaje' => $vieja->id, 'derivacion' => now()->getTimestamp()]))
+        ->assertJsonCount(1, 'eventos')
+        ->assertJsonPath('eventos.0.conversacionId', $nueva->conversacion_id)
+        ->assertJsonPath('cursor.mensaje', $nueva->id);
+
+    expect($tardia)->not->toBeNull();
 });
 
 test('the cursor must be numeric', function () {

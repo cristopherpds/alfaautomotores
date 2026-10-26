@@ -30,7 +30,7 @@ export type EventoWhatsapp = {
 
 /** La respuesta de `panel.whatsapp.avisos`. */
 export type AvisosWhatsapp = ContadoresWhatsapp & {
-    cursor: { mensaje: number; derivacion: number };
+    cursor: { mensaje: number; derivacion: number; derivacionId: number };
     eventos: EventoWhatsapp[];
 };
 

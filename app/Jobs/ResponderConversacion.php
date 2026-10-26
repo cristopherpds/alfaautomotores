@@ -83,6 +83,14 @@ class ResponderConversacion implements ShouldQueue
      */
     public const INTENTOS_TRANSCRIPCION = 3;
 
+    /**
+     * Segundos de transcripción por turno, entre todas las notas de voz. Cada
+     * una puede llevar 45 s de whisper más 45 s de respaldo y el job tiene
+     * `$timeout` 180: pasado el presupuesto, las que faltan quedan para el
+     * turno siguiente sin gastar un intento.
+     */
+    public const PRESUPUESTO_TRANSCRIPCION_SEGUNDOS = 60;
+
     public int $tries = 1;
 
     public int $timeout = 180;
@@ -309,7 +317,12 @@ class ResponderConversacion implements ShouldQueue
      *
      * Si falla no se guarda nada como texto: queda `transcripcion_fallida`
      * con los intentos, y el turno siguiente lo vuelve a probar (también las
-     * de turnos anteriores) hasta `INTENTOS_TRANSCRIPCION`.
+     * de turnos anteriores) hasta `INTENTOS_TRANSCRIPCION`. Las de turnos
+     * anteriores se reintentan sólo en la primera pasada del turno, no en las
+     * re-despachadas esperando una descarga; en esas tampoco se reintenta una
+     * de la ráfaga que ya falló. Todo dentro de
+     * `PRESUPUESTO_TRANSCRIPCION_SEGUNDOS`: lo que no entra queda fallido y
+     * reintentable sin gastar un intento.
      *
      * @param  Collection<int, MensajeWhatsapp>  $pendientes
      * @return bool si alguna nota de la ráfaga todavía no terminó de bajar
@@ -317,8 +330,9 @@ class ResponderConversacion implements ShouldQueue
     private function transcribirAudios(Conversacion $conversacion, Collection $pendientes): bool
     {
         $faltaBajar = false;
+        $inicio = now();
 
-        $anteriores = $conversacion->mensajes()
+        $anteriores = $this->esperasDeMedia > 0 ? collect() : $conversacion->mensajes()
             ->where('direccion', DireccionMensaje::Entrante)
             ->where('tipo', TipoMensaje::Audio)
             ->where('id', '<', (int) $pendientes->first()->id)
@@ -345,7 +359,23 @@ class ResponderConversacion implements ShouldQueue
                 continue;
             }
 
-            $transcripcion = Transcriptor::transcribir($mensaje->media_ruta, $mensaje->media_mime);
+            // Ya se probó en la primera pasada de este turno.
+            if ($this->esperasDeMedia > 0 && ($mensaje->meta['transcripcion_fallida'] ?? false) === true) {
+                continue;
+            }
+
+            $restante = self::PRESUPUESTO_TRANSCRIPCION_SEGUNDOS - (int) ceil($inicio->diffInSeconds(now(), true));
+
+            if ($restante <= 0) {
+                if (($mensaje->meta['transcripcion_fallida'] ?? false) !== true) {
+                    $mensaje->meta = [...($mensaje->meta ?? []), 'transcripcion_fallida' => true];
+                    $mensaje->save();
+                }
+
+                continue;
+            }
+
+            $transcripcion = Transcriptor::transcribir($mensaje->media_ruta, $mensaje->media_mime, $restante);
             $meta = [...($mensaje->meta ?? []), 'transcripcion_intentos' => $intentos + 1];
             unset($meta['transcripcion'], $meta['transcripcion_fallida']);
 

@@ -412,6 +412,8 @@ class Conversacion extends Model
     {
         $busqueda = trim((string) ($filtros['busqueda'] ?? ''));
         $digitos = Cliente::normalizarCelular($busqueda);
+        // null: no hay búsqueda o es muy corta y se ignora.
+        $ids = $busqueda !== '' ? self::idsQueCoinciden($busqueda, $digitos) : null;
 
         return self::query()
             ->with(['cliente', 'ultimoMensaje'])
@@ -426,7 +428,7 @@ class Conversacion extends Model
             ->when(($filtros['filtro'] ?? null) === 'humano', fn (Builder $query) => $query->where(
                 fn (Builder $query) => $query->whereNotNull('derivada_at')->orWhere('ia_activa', false),
             ))
-            ->when($busqueda !== '', fn (Builder $query) => $query->whereIn('id', self::idsQueCoinciden($busqueda, $digitos)))
+            ->when($ids !== null, fn (Builder $query) => $query->whereIn('id', $ids))
             ->orderByDesc('ultimo_mensaje_at')
             ->orderByDesc('id');
     }
@@ -436,11 +438,13 @@ class Conversacion extends Model
      *
      * Un número completo se busca por el índice ciego (como lo manda Meta o
      * como se anota en la ficha). Si no aparece así, se descifra y se compara
-     * en PHP el perfil, el nombre del cliente y un pedazo del número.
+     * en PHP el perfil, el nombre del cliente y un pedazo del número. Con
+     * menos de `Cliente::MINIMO_BUSQUEDA_PARCIAL` caracteres devuelve null y
+     * la búsqueda se ignora.
      *
-     * @return list<int>
+     * @return list<int>|null
      */
-    private static function idsQueCoinciden(string $busqueda, string $digitos): array
+    private static function idsQueCoinciden(string $busqueda, string $digitos): ?array
     {
         if (strlen($digitos) >= 8) {
             $exactos = self::query()
@@ -453,14 +457,19 @@ class Conversacion extends Model
             }
         }
 
+        if (mb_strlen($busqueda) < Cliente::MINIMO_BUSQUEDA_PARCIAL) {
+            return null;
+        }
+
         $texto = mb_strtolower($busqueda);
+        // «000» no deja dígitos: un pedazo vacío coincidiría con todos.
         $numero = ltrim($digitos, '0');
         $ids = [];
 
         foreach (self::query()->with('cliente:id,nombre,apellido')->lazyById(200) as $conversacion) {
             $coincide = str_contains(mb_strtolower((string) $conversacion->nombre_perfil), $texto)
                 || ($conversacion->cliente !== null && str_contains(mb_strtolower($conversacion->cliente->nombreCompleto()), $texto))
-                || (strlen($digitos) >= 3 && str_contains($conversacion->wa_id, $numero));
+                || (strlen($digitos) >= 3 && $numero !== '' && str_contains($conversacion->wa_id, $numero));
 
             if ($coincide) {
                 $ids[] = $conversacion->id;

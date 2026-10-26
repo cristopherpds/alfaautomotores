@@ -45,6 +45,12 @@ use Illuminate\Support\Collection;
 #[Fillable(['nombre', 'apellido', 'email', 'celular', 'acepta_novedades', 'notas'])]
 class Cliente extends Model
 {
+    /**
+     * Caracteres mínimos para la búsqueda parcial, que descifra todas las
+     * filas en PHP. Una sola letra traería a casi todos.
+     */
+    public const MINIMO_BUSQUEDA_PARCIAL = 2;
+
     /** @use HasFactory<ClienteFactory> */
     use Auditable, HasFactory;
 
@@ -159,9 +165,11 @@ class Cliente extends Model
     public static function filtrados(array $filtros): Builder
     {
         $busqueda = trim((string) ($filtros['busqueda'] ?? ''));
+        // null: no hay búsqueda o es muy corta y se ignora.
+        $ids = $busqueda !== '' ? self::idsQueCoinciden($busqueda) : null;
 
         return self::query()
-            ->when($busqueda !== '', fn (Builder $query) => $query->whereIn('id', self::idsQueCoinciden($busqueda)))
+            ->when($ids !== null, fn (Builder $query) => $query->whereIn('id', $ids))
             ->when(
                 Rubro::tryFrom((string) ($filtros['rubro'] ?? '')),
                 fn (Builder $query, Rubro $rubro) => $query->whereHas('turnos.servicio', fn (Builder $servicios) => $servicios->where('rubro', $rubro)),
@@ -179,11 +187,13 @@ class Cliente extends Model
      * Un celular, un email o una matrícula exactos se buscan por el índice
      * ciego, sin descifrar nada. Si no aparece así (un nombre, un pedazo de
      * número), se descifra y se compara en PHP: son pocos clientes, y es la
-     * única forma de buscar parcial sobre datos cifrados.
+     * única forma de buscar parcial sobre datos cifrados. Con menos de
+     * `MINIMO_BUSQUEDA_PARCIAL` caracteres no se descifra a todos: devuelve
+     * null y la búsqueda se ignora.
      *
-     * @return list<int>
+     * @return list<int>|null
      */
-    public static function idsQueCoinciden(string $busqueda): array
+    public static function idsQueCoinciden(string $busqueda): ?array
     {
         $digitos = self::normalizarCelular($busqueda);
         $matricula = IndiceCiego::deMatricula($busqueda);
@@ -206,6 +216,10 @@ class Cliente extends Model
 
         if ($exactos !== []) {
             return $exactos;
+        }
+
+        if (mb_strlen($busqueda) < self::MINIMO_BUSQUEDA_PARCIAL) {
+            return null;
         }
 
         $texto = mb_strtolower($busqueda);

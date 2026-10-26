@@ -184,6 +184,29 @@ test('the public url is saved and warns when whatsapp will not link it', functio
         ->assertForbidden();
 });
 
+test('the public url only takes the origin, not a path or a query', function (string $url) {
+    $this->actingAs(User::factory()->admin()->create())
+        ->put(route('panel.ajustes.conexiones.sitio'), ['url_publica' => $url])
+        ->assertSessionHasErrors(['url_publica' => 'Sólo la dirección del sitio, sin nada después del dominio (https://alfaautomotores.com.uy, no https://alfaautomotores.com.uy/catalogo).']);
+})->with([
+    'https://alfaautomotores.com.uy/catalogo',
+    'https://alfaautomotores.com.uy/?ref=wa',
+    'https://alfaautomotores.com.uy/#inicio',
+]);
+
+test('the public url keeps the port and drops a path saved before', function () {
+    $this->actingAs(User::factory()->admin()->create())
+        ->put(route('panel.ajustes.conexiones.sitio'), ['url_publica' => 'http://alfa.ngrok.app:8080'])
+        ->assertSessionHasNoErrors();
+
+    expect(Ajuste::urlPublica())->toBe('http://alfa.ngrok.app:8080');
+
+    Ajuste::guardar(Ajuste::SITIO_PUBLICO, ['url_publica' => 'https://alfa.ngrok.app/viejo?x=1']);
+
+    expect(Ajuste::urlPublica())->toBe('https://alfa.ngrok.app')
+        ->and(Ajuste::enlacePublico('home'))->toBe('https://alfa.ngrok.app/');
+});
+
 test('only urls with a public domain count as linkable', function (string $url, bool $enlazable) {
     expect(Ajuste::esUrlEnlazable($url))->toBe($enlazable);
 })->with([
