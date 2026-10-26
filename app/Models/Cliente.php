@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use App\Enums\Rubro;
+use App\Support\IndiceCiego;
 use Database\Factories\ClienteFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,12 +23,18 @@ use Illuminate\Support\Collection;
  * persona. Cada turno guarda igual su propia copia de los datos, que es el
  * registro de esa reserva.
  *
+ * Los datos personales van cifrados (casts `encrypted`): no se buscan con
+ * `where`, sino por su índice ciego (`celular_hash`, `email_hash`, ver
+ * `App\Support\IndiceCiego`), que el hook `saving` mantiene al día.
+ *
  * @property int $id
  * @property string $nombre
  * @property string $apellido
  * @property string|null $email
  * @property string $celular
  * @property string $celular_normalizado
+ * @property string $celular_hash
+ * @property string|null $email_hash
  * @property bool $acepta_novedades
  * @property Carbon|null $acepta_novedades_at
  * @property string|null $notas
@@ -55,6 +62,8 @@ class Cliente extends Model
             $cliente->email = $cliente->email === null || trim($cliente->email) === ''
                 ? null
                 : mb_strtolower(trim($cliente->email));
+            $cliente->celular_hash = IndiceCiego::de($cliente->celular_normalizado);
+            $cliente->email_hash = IndiceCiego::deEmail($cliente->email);
 
             if ($cliente->isDirty('acepta_novedades')) {
                 $cliente->acepta_novedades_at = $cliente->acepta_novedades ? now() : null;
@@ -70,6 +79,12 @@ class Cliente extends Model
     protected function casts(): array
     {
         return [
+            'nombre' => 'encrypted',
+            'apellido' => 'encrypted',
+            'email' => 'encrypted',
+            'celular' => 'encrypted',
+            'celular_normalizado' => 'encrypted',
+            'notas' => 'encrypted',
             'acepta_novedades' => 'boolean',
             'acepta_novedades_at' => 'datetime',
         ];
@@ -135,28 +150,18 @@ class Cliente extends Model
      * menos. La usan el listado y el CSV, así lo que se baja es exactamente
      * lo que se ve.
      *
+     * Con los datos cifrados la búsqueda no puede ser un `like`: ver
+     * `idsQueCoinciden()`.
+     *
      * @param  array{busqueda?: string|null, rubro?: string|null, novedades?: bool|null}  $filtros
      * @return Builder<self>
      */
     public static function filtrados(array $filtros): Builder
     {
         $busqueda = trim((string) ($filtros['busqueda'] ?? ''));
-        $digitos = self::normalizarCelular($busqueda);
 
         return self::query()
-            ->when($busqueda !== '', function (Builder $query) use ($busqueda, $digitos): void {
-                $query->where(function (Builder $query) use ($busqueda, $digitos): void {
-                    $query->whereRaw("lower(nombre || ' ' || apellido) like ?", ['%'.mb_strtolower($busqueda).'%'])
-                        ->orWhere('email', 'like', '%'.mb_strtolower($busqueda).'%')
-                        ->orWhereHas('turnos', fn (Builder $turnos) => $turnos->whereRaw('upper(matricula) like ?', ['%'.mb_strtoupper($busqueda).'%']));
-
-                    // Sólo si hay dígitos suficientes: «a» no tiene que
-                    // traer a todos los celulares.
-                    if (strlen($digitos) >= 3) {
-                        $query->orWhere('celular_normalizado', 'like', '%'.$digitos.'%');
-                    }
-                });
-            })
+            ->when($busqueda !== '', fn (Builder $query) => $query->whereIn('id', self::idsQueCoinciden($busqueda)))
             ->when(
                 Rubro::tryFrom((string) ($filtros['rubro'] ?? '')),
                 fn (Builder $query, Rubro $rubro) => $query->whereHas('turnos.servicio', fn (Builder $servicios) => $servicios->where('rubro', $rubro)),
@@ -166,6 +171,63 @@ class Cliente extends Model
             // nunca reservaron.
             ->orderByRaw('coalesce((select max(turnos.created_at) from turnos where turnos.cliente_id = clientes.id), clientes.created_at) desc')
             ->orderByDesc('id');
+    }
+
+    /**
+     * Los ids de los clientes que coinciden con lo que se buscó.
+     *
+     * Un celular, un email o una matrícula exactos se buscan por el índice
+     * ciego, sin descifrar nada. Si no aparece así (un nombre, un pedazo de
+     * número), se descifra y se compara en PHP: son pocos clientes, y es la
+     * única forma de buscar parcial sobre datos cifrados.
+     *
+     * @return list<int>
+     */
+    public static function idsQueCoinciden(string $busqueda): array
+    {
+        $digitos = self::normalizarCelular($busqueda);
+        $matricula = IndiceCiego::deMatricula($busqueda);
+
+        $exactos = self::query()
+            ->where(function (Builder $query) use ($busqueda, $digitos, $matricula): void {
+                $query->where('email_hash', IndiceCiego::deEmail($busqueda))
+                    ->when($matricula !== null, fn (Builder $query) => $query
+                        ->orWhereHas('turnos', fn (Builder $turnos) => $turnos->where('matricula_hash', $matricula)));
+
+                if (strlen($digitos) >= 6) {
+                    $query->orWhereIn('celular_hash', array_map(
+                        IndiceCiego::de(...),
+                        array_unique([$digitos, ...self::celularesPosiblesDeWaId($digitos)]),
+                    ));
+                }
+            })
+            ->pluck('id')
+            ->all();
+
+        if ($exactos !== []) {
+            return $exactos;
+        }
+
+        $texto = mb_strtolower($busqueda);
+        $placa = IndiceCiego::normalizarMatricula($busqueda);
+        $ids = [];
+
+        foreach (self::query()->with('turnos:id,cliente_id,matricula')->lazyById(200) as $cliente) {
+            $coincide = str_contains(mb_strtolower($cliente->nombreCompleto()), $texto)
+                || str_contains((string) $cliente->email, $texto)
+                // Sólo si hay dígitos suficientes: «a» no tiene que traer a
+                // todos los celulares.
+                || (strlen($digitos) >= 3 && str_contains($cliente->celular_normalizado, $digitos))
+                || ($placa !== '' && $cliente->turnos->contains(
+                    fn (Turno $turno): bool => str_contains(IndiceCiego::normalizarMatricula($turno->matricula), $placa),
+                ));
+
+            if ($coincide) {
+                $ids[] = $cliente->id;
+            }
+        }
+
+        return $ids;
     }
 
     /**
@@ -196,6 +258,17 @@ class Cliente extends Model
         }
 
         return $posibles;
+    }
+
+    /**
+     * El cliente de un número de WhatsApp, buscado por el índice ciego de
+     * cada forma en que pudo quedar anotado su celular.
+     */
+    public static function delWaId(string $waId): ?self
+    {
+        return self::query()
+            ->whereIn('celular_hash', array_map(IndiceCiego::de(...), self::celularesPosiblesDeWaId($waId)))
+            ->first();
     }
 
     /**
@@ -233,10 +306,10 @@ class Cliente extends Model
      */
     public static function desdeReserva(array $datos, bool $aceptaNovedades = false): self
     {
-        $email = $datos['email'] === null ? null : mb_strtolower(trim($datos['email']));
+        $emailHash = IndiceCiego::deEmail($datos['email']);
 
-        $cliente = self::where('celular_normalizado', self::normalizarCelular($datos['celular']))->first()
-            ?? ($email === null ? null : self::where('email', $email)->first())
+        $cliente = self::where('celular_hash', IndiceCiego::deCelular($datos['celular']))->first()
+            ?? ($emailHash === null ? null : self::where('email_hash', $emailHash)->first())
             ?? new self;
 
         $cliente->fill([

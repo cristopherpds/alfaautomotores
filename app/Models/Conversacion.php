@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use App\Enums\MotivoDerivacion;
+use App\Support\IndiceCiego;
 use Carbon\CarbonInterface;
 use Database\Factories\ConversacionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -32,6 +33,7 @@ use Illuminate\Support\Facades\Storage;
  *
  * @property int $id
  * @property string $wa_id
+ * @property string $wa_id_hash
  * @property string|null $nombre_perfil
  * @property int|null $cliente_id
  * @property bool $ia_activa
@@ -71,6 +73,11 @@ class Conversacion extends Model
 
     protected static function booted(): void
     {
+        /* El número va cifrado: se lo encuentra por su índice ciego. */
+        static::saving(function (self $conversacion): void {
+            $conversacion->wa_id_hash = IndiceCiego::deCelular($conversacion->wa_id);
+        });
+
         static::deleting(function (self $conversacion): void {
             Storage::disk('local')->deleteDirectory(self::CARPETA.'/'.$conversacion->id);
         });
@@ -84,12 +91,14 @@ class Conversacion extends Model
     protected function casts(): array
     {
         return [
+            'wa_id' => 'encrypted',
+            'nombre_perfil' => 'encrypted',
             'ia_activa' => 'boolean',
             'derivada_at' => 'datetime',
             'motivo_derivacion' => MotivoDerivacion::class,
             'ultimo_entrante_at' => 'datetime',
             'ultimo_mensaje_at' => 'datetime',
-            'ficha' => 'array',
+            'ficha' => 'encrypted:array',
             'archivada_at' => 'datetime',
         ];
     }
@@ -201,9 +210,7 @@ class Conversacion extends Model
             return;
         }
 
-        $cliente = Cliente::query()
-            ->whereIn('celular_normalizado', Cliente::celularesPosiblesDeWaId($this->wa_id))
-            ->first();
+        $cliente = Cliente::delWaId($this->wa_id);
 
         if ($cliente !== null) {
             $this->cliente()->associate($cliente);
@@ -216,7 +223,10 @@ class Conversacion extends Model
      */
     public static function delNumero(string $waId, ?string $nombrePerfil = null): self
     {
-        $conversacion = self::firstOrCreate(['wa_id' => $waId], ['nombre_perfil' => $nombrePerfil]);
+        $conversacion = self::firstOrCreate(
+            ['wa_id_hash' => IndiceCiego::deCelular($waId)],
+            ['wa_id' => $waId, 'nombre_perfil' => $nombrePerfil],
+        );
 
         if ($nombrePerfil !== null && $conversacion->nombre_perfil !== $nombrePerfil) {
             $conversacion->nombre_perfil = $nombrePerfil;
@@ -236,7 +246,7 @@ class Conversacion extends Model
     public static function paraCliente(Cliente $cliente): self
     {
         $conversacion = self::where('cliente_id', $cliente->id)->latest('ultimo_mensaje_at')->first()
-            ?? self::firstOrCreate(['wa_id' => Cliente::waIdDelCelular($cliente->celular)]);
+            ?? self::delNumero(Cliente::waIdDelCelular($cliente->celular));
 
         if ($conversacion->cliente_id === null) {
             $conversacion->cliente()->associate($cliente);
@@ -267,18 +277,47 @@ class Conversacion extends Model
             ->when(($filtros['filtro'] ?? null) === 'humano', fn (Builder $query) => $query->where(
                 fn (Builder $query) => $query->whereNotNull('derivada_at')->orWhere('ia_activa', false),
             ))
-            ->when($busqueda !== '', function (Builder $query) use ($busqueda, $digitos): void {
-                $query->where(function (Builder $query) use ($busqueda, $digitos): void {
-                    $query->whereRaw('lower(nombre_perfil) like ?', ['%'.mb_strtolower($busqueda).'%'])
-                        ->orWhereHas('cliente', fn (Builder $clientes) => $clientes
-                            ->whereRaw("lower(nombre || ' ' || apellido) like ?", ['%'.mb_strtolower($busqueda).'%']));
-
-                    if (strlen($digitos) >= 3) {
-                        $query->orWhere('wa_id', 'like', '%'.ltrim($digitos, '0').'%');
-                    }
-                });
-            })
+            ->when($busqueda !== '', fn (Builder $query) => $query->whereIn('id', self::idsQueCoinciden($busqueda, $digitos)))
             ->orderByDesc('ultimo_mensaje_at')
             ->orderByDesc('id');
+    }
+
+    /**
+     * Los ids de las conversaciones que coinciden con lo que se buscó.
+     *
+     * Un número completo se busca por el índice ciego (como lo manda Meta o
+     * como se anota en la ficha). Si no aparece así, se descifra y se compara
+     * en PHP el perfil, el nombre del cliente y un pedazo del número.
+     *
+     * @return list<int>
+     */
+    private static function idsQueCoinciden(string $busqueda, string $digitos): array
+    {
+        if (strlen($digitos) >= 8) {
+            $exactos = self::query()
+                ->whereIn('wa_id_hash', array_map(IndiceCiego::de(...), array_unique([$digitos, Cliente::waIdDelCelular($digitos)])))
+                ->pluck('id')
+                ->all();
+
+            if ($exactos !== []) {
+                return $exactos;
+            }
+        }
+
+        $texto = mb_strtolower($busqueda);
+        $numero = ltrim($digitos, '0');
+        $ids = [];
+
+        foreach (self::query()->with('cliente:id,nombre,apellido')->lazyById(200) as $conversacion) {
+            $coincide = str_contains(mb_strtolower((string) $conversacion->nombre_perfil), $texto)
+                || ($conversacion->cliente !== null && str_contains(mb_strtolower($conversacion->cliente->nombreCompleto()), $texto))
+                || (strlen($digitos) >= 3 && str_contains($conversacion->wa_id, $numero));
+
+            if ($coincide) {
+                $ids[] = $conversacion->id;
+            }
+        }
+
+        return $ids;
     }
 }

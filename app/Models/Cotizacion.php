@@ -98,6 +98,10 @@ class Cotizacion extends Model
         return [
             'anio' => 'integer',
             'kilometros' => 'integer',
+            'detalles' => 'encrypted',
+            'nombre' => 'encrypted',
+            'apellido' => 'encrypted',
+            'celular' => 'encrypted',
             'estado' => EstadoCotizacion::class,
             'origen' => OrigenCotizacion::class,
         ];

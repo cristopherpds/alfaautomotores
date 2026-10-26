@@ -71,7 +71,7 @@ class ReservarTurno extends Herramienta
         /* La persona, aunque la conversación todavía no esté enganchada a su
            ficha: el celular alcanza para reconocerla. */
         $cliente = $this->conversacion->cliente
-            ?? Cliente::whereIn('celular_normalizado', Cliente::celularesPosiblesDeWaId($this->conversacion->wa_id))->first();
+            ?? Cliente::delWaId($this->conversacion->wa_id);
 
         /* Un turno por servicio. Pasó en vivo: el cliente volvió a decir «sí»
            y el modelo reservó otra vez el mismo horario en el segundo puesto

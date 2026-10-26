@@ -28,6 +28,7 @@ trait Auditable
     private static array $camposSinAuditar = [
         'id', 'created_at', 'updated_at', 'remember_token',
         'two_factor_secret', 'two_factor_recovery_codes', 'two_factor_confirmed_at',
+        'celular_hash', 'email_hash', 'wa_id_hash', 'matricula_hash',
     ];
 
     /**
@@ -147,6 +148,14 @@ trait Auditable
      */
     private function valorAuditable(string $campo, mixed $valor): mixed
     {
+        /* Un dato cifrado se guarda en claro adentro de `cambios`, que va
+           cifrado entero: si no, la auditoría mostraría el texto cifrado. */
+        if (is_string($valor) && $this->hasCast($campo, ['encrypted', 'encrypted:array', 'encrypted:collection', 'encrypted:json', 'encrypted:object'])) {
+            $valor = $this->fromEncryptedString($valor);
+
+            return $this->hasCast($campo, ['encrypted']) ? $valor : json_decode($valor, true);
+        }
+
         if (is_string($valor) && $this->hasCast($campo, ['array', 'json', 'collection', 'object'])) {
             return json_decode($valor, true);
         }

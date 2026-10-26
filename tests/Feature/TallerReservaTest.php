@@ -5,6 +5,7 @@ use App\Enums\OrigenTurno;
 use App\Models\Puesto;
 use App\Models\Servicio;
 use App\Models\Turno;
+use App\Support\IndiceCiego;
 
 /*
  * La reserva desde la web. El turno entra pendiente y ya ocupa el horario: la
@@ -222,7 +223,7 @@ test('the plate number is optional and gets stored when given', function () {
         'matricula' => 'ABC 1234',
     ]))->assertSessionHasNoErrors();
 
-    expect(Turno::where('matricula', 'ABC 1234')->sole())->not->toBeNull();
+    expect(Turno::where('matricula_hash', IndiceCiego::deMatricula('ABC 1234'))->sole())->matricula->toBe('ABC 1234');
 });
 
 test('an overlong plate number is rejected', function () {

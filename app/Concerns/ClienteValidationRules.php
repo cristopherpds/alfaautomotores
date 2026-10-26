@@ -3,6 +3,7 @@
 namespace App\Concerns;
 
 use App\Models\Cliente;
+use App\Support\IndiceCiego;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Validator;
@@ -47,7 +48,7 @@ trait ClienteValidationRules
             }
 
             $existe = Cliente::query()
-                ->where('celular_normalizado', Cliente::normalizarCelular((string) $this->input('celular')))
+                ->where('celular_hash', IndiceCiego::deCelular((string) $this->input('celular')))
                 ->when($ignorarId, fn ($query, int $id) => $query->whereKeyNot($id))
                 ->exists();
 

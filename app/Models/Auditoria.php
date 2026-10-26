@@ -95,7 +95,8 @@ class Auditoria extends Model
     {
         return [
             'accion' => AccionAuditoria::class,
-            'cambios' => 'array',
+            'etiqueta' => 'encrypted',
+            'cambios' => 'encrypted:array',
             'created_at' => 'datetime',
         ];
     }

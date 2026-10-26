@@ -63,10 +63,13 @@ class MensajeWhatsapp extends Model
         return [
             'direccion' => DireccionMensaje::class,
             'tipo' => TipoMensaje::class,
+            'cuerpo' => 'encrypted',
+            'media_nombre' => 'encrypted',
             'estado' => EstadoMensaje::class,
+            'error' => 'encrypted',
             'generado_por_ia' => 'boolean',
             'wa_timestamp' => 'datetime',
-            'meta' => 'array',
+            'meta' => 'encrypted:array',
         ];
     }
 

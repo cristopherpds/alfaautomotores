@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Concerns\Auditable;
 use App\Enums\EstadoTurno;
 use App\Enums\OrigenTurno;
+use App\Support\IndiceCiego;
 use Carbon\CarbonInterface;
 use Database\Factories\TurnoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -45,6 +46,7 @@ use Zap\Facades\Zap;
  * @property string|null $vehiculo_modelo
  * @property int|null $vehiculo_anio
  * @property string|null $matricula
+ * @property string|null $matricula_hash
  * @property string|null $comentario
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -86,6 +88,11 @@ class Turno extends Model
      */
     protected static function booted(): void
     {
+        /* La matrícula va cifrada: se la busca por su índice ciego. */
+        static::saving(function (self $turno): void {
+            $turno->matricula_hash = IndiceCiego::deMatricula($turno->matricula);
+        });
+
         static::deleting(function (self $turno): void {
             $turno->borrarLaCita();
         });
@@ -103,6 +110,12 @@ class Turno extends Model
             'origen' => OrigenTurno::class,
             'inicia_at' => 'datetime',
             'termina_at' => 'datetime',
+            'nombre' => 'encrypted',
+            'apellido' => 'encrypted',
+            'email' => 'encrypted',
+            'celular' => 'encrypted',
+            'matricula' => 'encrypted',
+            'comentario' => 'encrypted',
         ];
     }
 

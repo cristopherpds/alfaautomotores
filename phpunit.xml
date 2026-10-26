@@ -20,6 +20,8 @@
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="CIFRADO_KEY" value="base64:j++gBVaMD0qDhwixtLQlOd4MLWT6Xd2RWgo0jYKQHAE="/>
+        <env name="INDICE_CIEGO_KEY" value="base64:wWcqpAM8030K4W021NSmpM+BPf4GHsQJv8hwm/v++i0="/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>

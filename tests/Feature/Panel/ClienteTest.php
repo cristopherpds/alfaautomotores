@@ -6,6 +6,7 @@ use App\Models\Cliente;
 use App\Models\Servicio;
 use App\Models\Turno;
 use App\Models\User;
+use App\Support\IndiceCiego;
 
 /**
  * Una reserva pública del taller, con los datos que se le pasen encima.
@@ -197,7 +198,9 @@ test('a lead can be added by hand, and the phone cannot repeat', function () {
         ])
         ->assertSessionHasNoErrors();
 
-    expect(Cliente::firstWhere('nombre', 'Lucía'))->acepta_novedades->toBeTrue();
+    expect(Cliente::firstWhere('celular_hash', IndiceCiego::deCelular('098 777 888')))
+        ->nombre->toBe('Lucía')
+        ->acepta_novedades->toBeTrue();
 
     $this->actingAs($vendedor)
         ->from(route('panel.clientes.create'))

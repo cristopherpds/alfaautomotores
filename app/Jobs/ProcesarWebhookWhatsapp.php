@@ -11,6 +11,7 @@ use App\Models\Auditoria;
 use App\Models\Conversacion;
 use App\Models\MensajeWhatsapp;
 use App\Models\PlantillaWhatsapp;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Carbon;
@@ -23,7 +24,7 @@ use Illuminate\Support\Facades\DB;
  * baja a los webhooks lentos o que fallan) y encola esto. Todo es idempotente:
  * un mensaje repetido no se duplica y un estado viejo no pisa uno nuevo.
  */
-class ProcesarWebhookWhatsapp implements ShouldQueue
+class ProcesarWebhookWhatsapp implements ShouldBeEncrypted, ShouldQueue
 {
     use Queueable;
 
