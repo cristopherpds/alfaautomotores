@@ -4,6 +4,7 @@ import {
     ArchiveRestore,
     Bot,
     Contact,
+    PanelRightClose,
     Trash2,
     UserRound,
 } from 'lucide-react';
@@ -35,8 +36,10 @@ const fechaHora = new Intl.DateTimeFormat('es-UY', {
 /** La columna de la derecha: quién es, quién la atiende y qué hacer con ella. */
 export function PanelContacto({
     conversacion,
+    onCerrar,
 }: {
     conversacion: ConversacionAbierta;
+    onCerrar: () => void;
 }) {
     const [confirmando, setConfirmando] = useState(false);
     const [tambienElCliente, setTambienElCliente] = useState(false);
@@ -55,7 +58,17 @@ export function PanelContacto({
 
     return (
         <aside className="hidden min-h-0 min-w-0 flex-col gap-5 overflow-y-auto border-l border-sidebar-border/70 p-4 xl:flex">
-            <div>
+            <div className="relative pr-8">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute -top-1 -right-2 size-8"
+                    onClick={onCerrar}
+                    aria-label="Ocultar el panel del contacto"
+                    title="Ocultar el panel del contacto"
+                >
+                    <PanelRightClose />
+                </Button>
                 <h2 className="font-semibold">{conversacion.nombre}</h2>
                 <p className="text-sm text-muted-foreground">
                     {conversacion.telefono}

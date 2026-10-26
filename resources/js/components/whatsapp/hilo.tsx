@@ -8,6 +8,7 @@ import {
     Clock,
     FileText,
     Loader2,
+    PanelRightOpen,
     Paperclip,
     SendHorizontal,
     X,
@@ -48,7 +49,15 @@ import { cuandoCorto } from './lista-conversaciones';
 import { TextoWhatsapp } from './texto-whatsapp';
 
 /** El hilo de la conversación abierta y la caja para contestar. */
-export function Hilo({ conversacion }: { conversacion: ConversacionAbierta }) {
+export function Hilo({
+    conversacion,
+    panelAbierto,
+    onAbrirPanel,
+}: {
+    conversacion: ConversacionAbierta;
+    panelAbierto: boolean;
+    onAbrirPanel: () => void;
+}) {
     const fondo = useRef<HTMLDivElement>(null);
     const ultimoId = conversacion.mensajes.at(-1)?.id;
 
@@ -62,9 +71,15 @@ export function Hilo({ conversacion }: { conversacion: ConversacionAbierta }) {
 
     return (
         <div className="flex min-h-0 min-w-0 flex-col">
-            {/* Debajo de `xl` no hay panel del contacto: esta barra deja
-                volver a la lista y tomar o devolver la conversación. */}
-            <div className="flex items-center gap-2 border-b border-sidebar-border/70 px-2 py-2 xl:hidden">
+            {/* Sin el panel del contacto (debajo de `xl` o cerrado) esta
+                barra deja volver a la lista, tomar o devolver la
+                conversación y volver a abrir el panel. */}
+            <div
+                className={cn(
+                    'flex items-center gap-2 border-b border-sidebar-border/70 px-2 py-2',
+                    panelAbierto && 'xl:hidden',
+                )}
+            >
                 <Button
                     variant="ghost"
                     size="icon"
@@ -112,6 +127,16 @@ export function Hilo({ conversacion }: { conversacion: ConversacionAbierta }) {
                     }
                     data-test="ia-switch-compacto"
                 />
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="hidden xl:inline-flex"
+                    onClick={onAbrirPanel}
+                    aria-label="Mostrar el panel del contacto"
+                    title="Mostrar el panel del contacto"
+                >
+                    <PanelRightOpen />
+                </Button>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto bg-muted/30 px-4 py-4">

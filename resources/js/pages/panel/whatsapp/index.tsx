@@ -1,5 +1,6 @@
 import { Head, router, setLayoutProps, usePoll } from '@inertiajs/react';
 import { MessageSquareDashed, RefreshCw, TriangleAlert } from 'lucide-react';
+import { useState } from 'react';
 import ConversacionController from '@/actions/App/Http/Controllers/Panel/ConversacionController';
 import PlantillaWhatsappController from '@/actions/App/Http/Controllers/Panel/PlantillaWhatsappController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -35,6 +36,17 @@ type Props = {
     pestaña en segundo plano Inertia lo espacia solo. */
 const REFRESCO_MS = 4000;
 
+/** Dónde recuerda este navegador si el panel del contacto queda abierto. */
+const PANEL_CONTACTO = 'alfa.bandeja.panel-contacto';
+
+function panelContactoGuardado(): boolean {
+    try {
+        return window.localStorage.getItem(PANEL_CONTACTO) !== 'cerrado';
+    } catch {
+        return true;
+    }
+}
+
 /**
  * La bandeja de WhatsApp: conversaciones, hilo abierto y contacto.
  */
@@ -45,6 +57,21 @@ export default function Whatsapp({
     whatsappConfigurado,
     conversacion,
 }: Props) {
+    const [panelAbierto, setPanelAbierto] = useState(panelContactoGuardado);
+
+    const mostrarPanel = (abierto: boolean) => {
+        setPanelAbierto(abierto);
+
+        try {
+            window.localStorage.setItem(
+                PANEL_CONTACTO,
+                abierto ? 'abierto' : 'cerrado',
+            );
+        } catch {
+            // Sin almacenamiento, el panel vuelve a abrirse al recargar.
+        }
+    };
+
     usePoll(
         REFRESCO_MS,
         { only: ['conversaciones', 'atencionHumana', 'conversacion'] },
@@ -127,7 +154,10 @@ export default function Whatsapp({
                 <div
                     className={cn(
                         'grid min-h-0 flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 bg-background',
-                        'grid-cols-1 md:grid-cols-[20rem_1fr] xl:grid-cols-[20rem_1fr_18rem]',
+                        'grid-cols-1 md:grid-cols-[20rem_1fr]',
+                        conversacion &&
+                            panelAbierto &&
+                            'xl:grid-cols-[20rem_1fr_18rem]',
                     )}
                 >
                     {/* En el celular se ve una sola columna: la lista o el hilo. */}
@@ -148,11 +178,20 @@ export default function Whatsapp({
 
                     {conversacion ? (
                         <>
-                            <Hilo conversacion={conversacion} />
-                            <PanelContacto conversacion={conversacion} />
+                            <Hilo
+                                conversacion={conversacion}
+                                panelAbierto={panelAbierto}
+                                onAbrirPanel={() => mostrarPanel(true)}
+                            />
+                            {panelAbierto && (
+                                <PanelContacto
+                                    conversacion={conversacion}
+                                    onCerrar={() => mostrarPanel(false)}
+                                />
+                            )}
                         </>
                     ) : (
-                        <Empty className="hidden md:flex xl:col-span-2">
+                        <Empty className="hidden md:flex">
                             <EmptyHeader>
                                 <EmptyMedia variant="icon">
                                     <MessageSquareDashed />

@@ -1,9 +1,7 @@
 import { Form, Head, router } from '@inertiajs/react';
 import {
-    AlertTriangle,
     Bot,
     Copy,
-    Globe,
     KeyRound,
     ListChecks,
     MessagesSquare,
@@ -15,7 +13,6 @@ import { useState } from 'react';
 import ConexionController from '@/actions/App/Http/Controllers/Panel/ConexionController';
 import { Campo } from '@/components/form-campo';
 import Heading from '@/components/heading';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,15 +47,6 @@ type Props = {
         modelo: string;
         modeloTranscripcion: string;
     };
-    sitio: {
-        /** La guardada en el panel; null si vale `APP_URL`. */
-        urlPublica: string | null;
-        urlEfectiva: string;
-        appUrl: string;
-        /** Si WhatsApp la va a mostrar como link en el celular. */
-        enlazable: boolean;
-        ejemplo: string;
-    };
     /** Sólo llega al tocar «Traer modelos» (prop opcional). */
     modelos?: {
         agente: { id: string; nombre: string }[];
@@ -86,7 +74,7 @@ function tokenAleatorio(): string {
 /**
  * Las credenciales de WhatsApp (Meta) y de la IA (OpenRouter).
  */
-export default function Conexiones({ whatsapp, ia, sitio, modelos }: Props) {
+export default function Conexiones({ whatsapp, ia, modelos }: Props) {
     const [verifyToken, setVerifyToken] = useState(whatsapp.verifyToken ?? '');
     const [trayendo, setTrayendo] = useState(false);
     const [, copiar] = useClipboard();
@@ -428,84 +416,6 @@ export default function Conexiones({ whatsapp, ia, sitio, modelos }: Props) {
                                                 {trayendo
                                                     ? 'Trayendo…'
                                                     : 'Traer modelos'}
-                                            </Button>
-                                        </div>
-                                    </>
-                                )}
-                            </Form>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Globe className="size-5" />
-                                Links del agente
-                            </CardTitle>
-                            <CardDescription>
-                                La dirección pública del sitio. Con ella arma el
-                                agente los links que manda por WhatsApp (fichas,
-                                catálogo, cotización). Vacía, vale la del .env (
-                                {sitio.appUrl}).
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Form
-                                {...ConexionController.sitio.form()}
-                                options={{ preserveScroll: true }}
-                                className="grid grid-cols-1 gap-4 [&>*]:min-w-0"
-                            >
-                                {({ processing, errors }) => (
-                                    <>
-                                        <Campo
-                                            name="url_publica"
-                                            label="URL pública del sitio"
-                                            error={errors.url_publica}
-                                            ayuda="El dominio real en producción (https://alfaautomotores.com.uy) o un túnel como ngrok para probar desde el celular."
-                                        >
-                                            <Input
-                                                id="url_publica"
-                                                name="url_publica"
-                                                type="url"
-                                                inputMode="url"
-                                                placeholder={sitio.appUrl}
-                                                defaultValue={
-                                                    sitio.urlPublica ?? ''
-                                                }
-                                                className="font-mono"
-                                            />
-                                        </Campo>
-
-                                        <p className="text-xs text-muted-foreground">
-                                            Así sale un link:{' '}
-                                            <code className="[overflow-wrap:anywhere]">
-                                                {sitio.ejemplo}
-                                            </code>
-                                        </p>
-
-                                        {!sitio.enlazable && (
-                                            <Alert>
-                                                <AlertTriangle />
-                                                <AlertTitle>
-                                                    WhatsApp no va a mostrar
-                                                    estos links como link
-                                                </AlertTitle>
-                                                <AlertDescription>
-                                                    {sitio.urlEfectiva} no es un
-                                                    dominio público: en el
-                                                    celular queda como texto y
-                                                    no abre. Cargá el dominio
-                                                    del sitio o un túnel.
-                                                </AlertDescription>
-                                            </Alert>
-                                        )}
-
-                                        <div className="flex flex-wrap gap-2">
-                                            <Button
-                                                type="submit"
-                                                disabled={processing}
-                                            >
-                                                Guardar
                                             </Button>
                                         </div>
                                     </>

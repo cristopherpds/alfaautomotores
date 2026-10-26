@@ -246,21 +246,12 @@ test('a client already on file is recognized by phone before the chat is linked'
         ->and(Turno::count())->toBe(1);
 });
 
-test('stock links are built on the public url from the panel', function () {
+test('stock links are built on the public url', function () {
     $vehiculo = Vehiculo::factory()->publicado()->create(['marca' => 'Toyota', 'modelo' => 'Hilux', 'anio' => 2018]);
-    Ajuste::guardar(Ajuste::SITIO_PUBLICO, ['url_publica' => 'https://alfa.ngrok.app']);
+    config()->set('app.url', 'https://alfa.ngrok.app/');
 
     $resultado = llamar(new BuscarStock(Conversacion::factory()->create()), ['consulta' => 'hilux', 'tipo' => 'vehiculo']);
 
     expect($resultado['resultados'][0]['link'])->toBe('https://alfa.ngrok.app/vehiculos/'.$vehiculo->slug)
         ->and(Prompt::construir(Conversacion::factory()->create(), Ajuste::agenteIa()))->toContain('https://alfa.ngrok.app/catalogo');
-});
-
-test('without a public url the agent links fall back to app url', function () {
-    config()->set('app.url', 'https://alfaautomotores.com.uy/');
-    $vehiculo = Vehiculo::factory()->publicado()->create(['marca' => 'Toyota', 'modelo' => 'Hilux', 'anio' => 2018]);
-
-    $resultado = llamar(new BuscarStock(Conversacion::factory()->create()), ['consulta' => 'hilux', 'tipo' => 'vehiculo']);
-
-    expect($resultado['resultados'][0]['link'])->toBe('https://alfaautomotores.com.uy/vehiculos/'.$vehiculo->slug);
 });
