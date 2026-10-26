@@ -11,4 +11,12 @@ export type NavItem = {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    badges?: NavBadge[];
+};
+
+/** Un contador al costado del ítem del menú. Con 0 no se muestra. */
+export type NavBadge = {
+    valor: number;
+    etiqueta: string;
+    variant?: 'default' | 'secondary' | 'destructive' | 'outline';
 };

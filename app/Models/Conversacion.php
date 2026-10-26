@@ -430,4 +430,19 @@ class Conversacion extends Model
             ->orderByDesc('ultimo_mensaje_at')
             ->orderByDesc('id');
     }
+
+    /**
+     * Los contadores de los avisos del panel (menú lateral y título de la
+     * pestaña): mensajes sin leer y conversaciones que esperan a una persona,
+     * sin contar las archivadas.
+     *
+     * @return array{noLeidos: int, atencionHumana: int}
+     */
+    public static function contadoresDeAvisos(): array
+    {
+        return [
+            'noLeidos' => (int) self::query()->whereNull('archivada_at')->sum('no_leidos'),
+            'atencionHumana' => self::queAtiendeElEquipo()->count(),
+        ];
+    }
 }
