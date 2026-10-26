@@ -20,4 +20,5 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Http/Controllers/Panel/** | .ai/rules/panel.md |
 | app/Policies/** | .ai/rules/policies.md |
 | routes/** | .ai/rules/routes.md |
+| app/Support/** | .ai/rules/support.md |
 | resources/js/pages/panel/turnos/** | .ai/rules/turnos.md |
