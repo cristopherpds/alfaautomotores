@@ -89,7 +89,7 @@ class RegistrarCotizacion extends Herramienta
         ], array_combine(
             array_slice(array_keys(Cotizacion::FOTOS), 0, count($fotos)),
             $fotos,
-        ) ?: []);
+        ) ?: [], $this->conversacion);
 
         $this->conversacion->cliente()->associate($cotizacion->cliente_id);
         $this->conversacion->saveQuietly();

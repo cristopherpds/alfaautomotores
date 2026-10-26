@@ -489,6 +489,9 @@ export type TurnoDeCliente = {
     comentario: string | null;
 };
 
+/** Por dónde llegó una solicitud de «Cotizá tu auto» (`OrigenCotizacion`). */
+export type OrigenCotizacion = 'web' | 'whatsapp';
+
 /** Por dónde va una solicitud de «Cotizá tu auto» (`EstadoCotizacion`). */
 export type EstadoCotizacion = 'nueva' | 'contactada' | 'descartada';
 
@@ -500,6 +503,8 @@ export type CotizacionDeLista = {
     nombre: string;
     celular: string;
     fotos: number;
+    origen: OrigenCotizacion;
+    origenLabel: string;
     estado: EstadoCotizacion;
     estadoLabel: string;
     creada: string | null;
@@ -516,6 +521,9 @@ export type CotizacionDetalle = {
     nombre: string;
     celular: string;
     clienteId: number | null;
+    conversacionId: number | null;
+    origen: OrigenCotizacion;
+    origenLabel: string;
     estado: EstadoCotizacion;
     creada: string | null;
     fotos: { lado: string; label: string; url: string }[];
@@ -573,6 +581,8 @@ export type ConversacionAbierta = {
     archivada: boolean;
     ventanaAbierta: boolean;
     ventanaCierraAt: string | null;
+    /** Todavía no mandó ningún mensaje (la conversación la abrió el equipo). */
+    nuncaEscribio: boolean;
     ficha: Record<string, unknown>;
     cliente: {
         id: number;

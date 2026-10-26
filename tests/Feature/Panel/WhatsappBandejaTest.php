@@ -4,6 +4,7 @@ use App\Enums\EstadoMensaje;
 use App\Enums\MotivoDerivacion;
 use App\Enums\TipoMensaje;
 use App\Enums\UserRole;
+use App\Models\Cliente;
 use App\Models\Conversacion;
 use App\Models\MensajeWhatsapp;
 use App\Models\PlantillaWhatsapp;
@@ -57,6 +58,7 @@ test('opening a conversation marks it read, also for the client', function () {
             ->where('conversacion.id', $conversacion->id)
             ->has('conversacion.mensajes', 1)
             ->where('conversacion.ventanaAbierta', true)
+            ->where('conversacion.nuncaEscribio', false)
         );
 
     expect($conversacion->fresh()->no_leidos)->toBe(0);
@@ -264,3 +266,63 @@ test('the polling reload only sends the inbox and the open conversation', functi
             )
         );
 });
+
+test('writing to a client opens the chat already linked to their file', function () {
+    $cliente = Cliente::factory()->create(['celular' => '099 123 456']);
+    $conversacion = Conversacion::factory()->create(['wa_id' => '59899999999']);
+    $conversacion->cliente()->associate($cliente)->saveQuietly();
+
+    $this->actingAs(User::factory()->role(UserRole::Equipo)->create())
+        ->post(route('panel.whatsapp.abrir', $cliente))
+        ->assertRedirect(route('panel.whatsapp.show', $conversacion));
+
+    expect(Conversacion::count())->toBe(1);
+});
+
+test('writing to a client finds the chat of their number and links it', function () {
+    $cliente = Cliente::factory()->create(['celular' => '099 123 456']);
+    $conversacion = Conversacion::factory()->create(['wa_id' => '59899123456']);
+
+    $this->actingAs(User::factory()->create())
+        ->post(route('panel.whatsapp.abrir', $cliente))
+        ->assertRedirect(route('panel.whatsapp.show', $conversacion));
+
+    expect($conversacion->fresh()->cliente_id)->toBe($cliente->id);
+});
+
+test('writing to a client who never wrote starts an empty chat', function () {
+    $cliente = Cliente::factory()->create(['celular' => '099 123 456']);
+
+    $this->actingAs(User::factory()->create())
+        ->post(route('panel.whatsapp.abrir', $cliente));
+
+    $conversacion = Conversacion::sole();
+
+    expect($conversacion->wa_id)->toBe('59899123456')
+        ->and($conversacion->cliente_id)->toBe($cliente->id)
+        ->and($conversacion->ventanaAbierta())->toBeFalse();
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('panel.whatsapp.show', $conversacion))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('conversacion.id', $conversacion->id)
+            ->where('conversacion.nuncaEscribio', true));
+});
+
+test('guests cannot open a client chat', function () {
+    $cliente = Cliente::factory()->create();
+
+    $this->post(route('panel.whatsapp.abrir', $cliente))->assertRedirect(route('login'));
+
+    expect(Conversacion::count())->toBe(0);
+});
+
+test('a file phone turns into a WhatsApp number', function (string $celular, string $waId) {
+    expect(Cliente::waIdDelCelular($celular))->toBe($waId);
+})->with([
+    'local con cero' => ['099 123 456', '59899123456'],
+    'local sin cero' => ['99123456', '59899123456'],
+    'ya con 598' => ['+598 99 123 456', '59899123456'],
+    'de Brasil' => ['5553999112233', '5553999112233'],
+]);

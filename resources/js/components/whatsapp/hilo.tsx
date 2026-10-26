@@ -422,11 +422,14 @@ function EnviarPlantilla({
             <Alert>
                 <Clock />
                 <AlertTitle>
-                    Pasaron más de 24 h desde su último mensaje
+                    {conversacion.nuncaEscribio
+                        ? 'Todavía no te escribió'
+                        : 'Pasaron más de 24 h desde su último mensaje'}
                 </AlertTitle>
                 <AlertDescription>
-                    WhatsApp sólo deja escribirle con una plantilla aprobada.
-                    Cuando conteste, se vuelve a poder escribir libre.
+                    {conversacion.nuncaEscribio
+                        ? 'Para arrancar, WhatsApp sólo deja mandarle una plantilla aprobada. Cuando conteste, se puede escribir libre.'
+                        : 'WhatsApp sólo deja escribirle con una plantilla aprobada. Cuando conteste, se vuelve a poder escribir libre.'}
                 </AlertDescription>
             </Alert>
 
@@ -459,7 +462,9 @@ function EnviarPlantilla({
                                     >
                                         <SelectValue placeholder="Elegí una plantilla" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    {/* Va al pie de la bandeja: abajo no
+                                        hay lugar para la lista. */}
+                                    <SelectContent side="top">
                                         <SelectGroup>
                                             {conversacion.plantillas.map(
                                                 (plantilla) => (

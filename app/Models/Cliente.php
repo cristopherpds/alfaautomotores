@@ -199,6 +199,29 @@ class Cliente extends Model
     }
 
     /**
+     * El número de WhatsApp de un celular de ficha: el camino inverso de
+     * `celularesPosiblesDeWaId()`.
+     *
+     * Un celular uruguayo se anota local (`099 123 456`, o `99123456` sin el
+     * cero) y Meta lo quiere con el 598 adelante. Uno que ya trae el 598, o
+     * uno de otro país guardado en internacional, va tal cual.
+     */
+    public static function waIdDelCelular(string $celular): string
+    {
+        $digitos = self::normalizarCelular($celular);
+
+        if (str_starts_with($digitos, '598')) {
+            return $digitos;
+        }
+
+        if (str_starts_with($digitos, '0')) {
+            return '598'.substr($digitos, 1);
+        }
+
+        return strlen($digitos) <= 8 ? '598'.$digitos : $digitos;
+    }
+
+    /**
      * El cliente de una reserva: el que ya existe o uno nuevo.
      *
      * Busca por celular y, si no aparece, por email. Si lo encuentra, se

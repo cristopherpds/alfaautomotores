@@ -227,6 +227,26 @@ class Conversacion extends Model
     }
 
     /**
+     * La conversación para escribirle a un cliente desde el panel.
+     *
+     * La que ya está enganchada a su ficha, o la de su número; si nunca
+     * escribió, una nueva y vacía: sin mensajes no hay ventana de 24 h, así
+     * que la bandeja ofrece una plantilla para arrancar.
+     */
+    public static function paraCliente(Cliente $cliente): self
+    {
+        $conversacion = self::where('cliente_id', $cliente->id)->latest('ultimo_mensaje_at')->first()
+            ?? self::firstOrCreate(['wa_id' => Cliente::waIdDelCelular($cliente->celular)]);
+
+        if ($conversacion->cliente_id === null) {
+            $conversacion->cliente()->associate($cliente);
+            $conversacion->save();
+        }
+
+        return $conversacion;
+    }
+
+    /**
      * Las conversaciones de la bandeja, de la más reciente a la más vieja.
      *
      * @param  array{busqueda?: string|null, filtro?: string|null}  $filtros

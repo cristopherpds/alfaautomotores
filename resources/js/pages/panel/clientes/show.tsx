@@ -29,6 +29,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import EscribirPorWhatsapp from '@/components/whatsapp/escribir-por-whatsapp';
 import { index } from '@/routes/panel/clientes';
 import type {
     ClienteEditable,
@@ -131,9 +132,12 @@ export default function ShowCliente({
                         title={nombre}
                         description={`${turnos.length} ${turnos.length === 1 ? 'turno' : 'turnos'}`}
                     />
-                    {cliente.acepta_novedades && (
-                        <Badge>Acepta novedades</Badge>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                        {cliente.acepta_novedades && (
+                            <Badge>Acepta novedades</Badge>
+                        )}
+                        <EscribirPorWhatsapp clienteId={cliente.id} />
+                    </div>
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">

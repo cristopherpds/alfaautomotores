@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Panel;
 use App\Enums\DireccionMensaje;
 use App\Enums\MotivoDerivacion;
 use App\Http\Controllers\Controller;
+use App\Models\Cliente;
 use App\Models\Conversacion;
 use App\Models\MensajeWhatsapp;
 use App\Models\PlantillaWhatsapp;
@@ -43,7 +44,8 @@ class ConversacionController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('can:viewAny,'.Conversacion::class, only: ['index']),
+            new Middleware('can:viewAny,'.Conversacion::class, only: ['index', 'abrir']),
+            new Middleware('can:view,cliente', only: ['abrir']),
             new Middleware('can:view,conversacion', only: ['show', 'media']),
             new Middleware('can:update,conversacion', only: ['ia', 'archivar']),
             new Middleware('can:delete,conversacion', only: ['destroy']),
@@ -90,6 +92,17 @@ class ConversacionController extends Controller implements HasMiddleware
             ...$this->bandeja($request),
             'conversacion' => $this->detalle($request, $conversacion),
         ]);
+    }
+
+    /**
+     * Open a client's conversation, creating it if they never wrote.
+     *
+     * Así el equipo contacta desde la cotización, la ficha o el turno sin
+     * salir a un `wa.me`: lo que se manda queda en la bandeja.
+     */
+    public function abrir(Cliente $cliente): RedirectResponse
+    {
+        return to_route('panel.whatsapp.show', Conversacion::paraCliente($cliente));
     }
 
     /**
@@ -222,6 +235,7 @@ class ConversacionController extends Controller implements HasMiddleware
             'archivada' => $conversacion->archivada_at !== null,
             'ventanaAbierta' => $conversacion->ventanaAbierta(),
             'ventanaCierraAt' => $conversacion->ventanaCierraAt()?->toIso8601String(),
+            'nuncaEscribio' => $conversacion->ultimo_entrante_at === null,
             'ficha' => $conversacion->ficha ?? [],
             'cliente' => $cliente === null ? null : [
                 'id' => $cliente->id,

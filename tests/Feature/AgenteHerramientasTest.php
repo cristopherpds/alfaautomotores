@@ -9,6 +9,7 @@ use App\Ai\Tools\ReprogramarTurno;
 use App\Ai\Tools\ReservarTurno;
 use App\Enums\EstadoTurno;
 use App\Enums\MotivoDerivacion;
+use App\Enums\OrigenCotizacion;
 use App\Enums\OrigenTurno;
 use App\Enums\TipoMensaje;
 use App\Models\Cliente;
@@ -178,6 +179,8 @@ test('a quote takes the photos sent in the chat', function () {
     expect($resultado['fotos'])->toBe(2)
         ->and($cotizacion->ladosConFoto())->toBe(['derecha', 'izquierda'])
         ->and($cotizacion->celular)->toBe('099123456')
+        ->and($cotizacion->origen)->toBe(OrigenCotizacion::Whatsapp)
+        ->and($cotizacion->conversacion_id)->toBe($conversacion->id)
         ->and($conversacion->fresh()->cliente_id)->toBe($cotizacion->cliente_id);
 
     Storage::disk('local')->assertExists($cotizacion->foto_derecha);

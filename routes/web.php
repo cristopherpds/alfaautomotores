@@ -144,6 +144,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('whatsapp/agente/conocimientos', [AgenteController::class, 'guardarConocimiento'])->name('whatsapp.conocimientos.store');
         Route::put('whatsapp/agente/conocimientos/{conocimiento}', [AgenteController::class, 'actualizarConocimiento'])->name('whatsapp.conocimientos.update');
         Route::delete('whatsapp/agente/conocimientos/{conocimiento}', [AgenteController::class, 'borrarConocimiento'])->name('whatsapp.conocimientos.destroy');
+        // Escribirle a un cliente desde su ficha, una cotización o un turno.
+        Route::post('whatsapp/clientes/{cliente}', [ConversacionController::class, 'abrir'])->name('whatsapp.abrir');
         Route::get('whatsapp', [ConversacionController::class, 'index'])->name('whatsapp.index');
         Route::get('whatsapp/{conversacion}', [ConversacionController::class, 'show'])->name('whatsapp.show');
         Route::delete('whatsapp/{conversacion}', [ConversacionController::class, 'destroy'])->name('whatsapp.destroy');

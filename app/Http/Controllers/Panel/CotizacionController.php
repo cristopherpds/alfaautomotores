@@ -16,11 +16,12 @@ use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Las solicitudes de «Cotizá tu auto» que llegan del sitio público.
+ * Las solicitudes de «Cotizá tu auto» que llegan del sitio público o del
+ * agente de WhatsApp.
  *
- * No hay alta ni edición: nacen en la web. Desde acá se miran, se marca por
- * dónde van y se borran. Las fotos están en el disco privado y se sirven por
- * `foto()`, detrás del login.
+ * No hay alta ni edición: nacen en la web o en el chat. Desde acá se miran,
+ * se marca por dónde van y se borran. Las fotos están en el disco privado y
+ * se sirven por `foto()`, detrás del login.
  */
 class CotizacionController extends Controller implements HasMiddleware
 {
@@ -62,6 +63,8 @@ class CotizacionController extends Controller implements HasMiddleware
                     'nombre' => $cotizacion->nombreCompleto(),
                     'celular' => $cotizacion->celular,
                     'fotos' => count($cotizacion->ladosConFoto()),
+                    'origen' => $cotizacion->origen->value,
+                    'origenLabel' => $cotizacion->origen->label(),
                     'estado' => $cotizacion->estado->value,
                     'estadoLabel' => $cotizacion->estado->label(),
                     'creada' => $cotizacion->created_at?->toIso8601String(),
@@ -89,6 +92,9 @@ class CotizacionController extends Controller implements HasMiddleware
                 'nombre' => $cotizacion->nombreCompleto(),
                 'celular' => $cotizacion->celular,
                 'clienteId' => $cotizacion->cliente_id,
+                'conversacionId' => $cotizacion->conversacion_id,
+                'origen' => $cotizacion->origen->value,
+                'origenLabel' => $cotizacion->origen->label(),
                 'estado' => $cotizacion->estado->value,
                 'creada' => $cotizacion->created_at?->toIso8601String(),
                 'fotos' => array_map(fn (string $lado): array => [

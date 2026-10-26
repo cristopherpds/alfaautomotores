@@ -2,6 +2,7 @@ import { Form, Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import { ImageOff, MessageCircle, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import ClienteController from '@/actions/App/Http/Controllers/Panel/ClienteController';
+import ConversacionController from '@/actions/App/Http/Controllers/Panel/ConversacionController';
 import CotizacionController from '@/actions/App/Http/Controllers/Panel/CotizacionController';
 import CotizacionEstadoBadge from '@/components/cotizacion-estado-badge';
 import Heading from '@/components/heading';
@@ -36,6 +37,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import EscribirPorWhatsapp from '@/components/whatsapp/escribir-por-whatsapp';
 import { whatsapp } from '@/lib/alfa';
 import { index } from '@/routes/panel/cotizaciones';
 import type { CotizacionDetalle, OpcionSelect } from '@/types';
@@ -98,8 +100,8 @@ export default function ShowCotizacion({ cotizacion, estados, can }: Props) {
                         title={vehiculo}
                         description={
                             cotizacion.creada
-                                ? `Recibida el ${fecha.format(new Date(cotizacion.creada))}`
-                                : undefined
+                                ? `Recibida el ${fecha.format(new Date(cotizacion.creada))} · ${cotizacion.origenLabel}`
+                                : cotizacion.origenLabel
                         }
                     />
 
@@ -259,21 +261,41 @@ export default function ShowCotizacion({ cotizacion, estados, can }: Props) {
                                     </span>
                                 </div>
 
-                                <Button variant="outline" asChild>
-                                    <a
-                                        href={whatsapp(
-                                            celularParaWhatsapp(
-                                                cotizacion.celular,
-                                            ),
-                                            `Hola ${cotizacion.nombre}, te escribimos de Alfa Automotores por la cotización de tu ${vehiculo}.`,
-                                        )}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        <MessageCircle />
-                                        Escribir por WhatsApp
-                                    </a>
-                                </Button>
+                                {cotizacion.conversacionId ? (
+                                    <Button variant="outline" asChild>
+                                        <Link
+                                            href={ConversacionController.show(
+                                                cotizacion.conversacionId,
+                                            )}
+                                            data-test="ver-conversacion-link"
+                                        >
+                                            <MessageCircle />
+                                            Ver la conversación
+                                        </Link>
+                                    </Button>
+                                ) : cotizacion.clienteId ? (
+                                    <EscribirPorWhatsapp
+                                        clienteId={cotizacion.clienteId}
+                                    />
+                                ) : (
+                                    /* Sin ficha (se borró) no hay con qué
+                                       abrir la bandeja: queda el link suelto. */
+                                    <Button variant="outline" asChild>
+                                        <a
+                                            href={whatsapp(
+                                                celularParaWhatsapp(
+                                                    cotizacion.celular,
+                                                ),
+                                                `Hola ${cotizacion.nombre}, te escribimos de Alfa Automotores por la cotización de tu ${vehiculo}.`,
+                                            )}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <MessageCircle />
+                                            Escribir por WhatsApp
+                                        </a>
+                                    </Button>
+                                )}
                             </CardContent>
                         </Card>
                     </div>

@@ -223,6 +223,7 @@ class TurnoController extends Controller implements HasMiddleware
                 'servicio' => $turno->servicio->nombre,
                 'duracionLegible' => $turno->servicio->duracionLegible(),
                 'puesto' => $turno->puesto->nombre,
+                'clienteId' => $turno->cliente_id,
                 'cliente' => $turno->cliente(),
                 'email' => $turno->email,
                 'celular' => $turno->celular,

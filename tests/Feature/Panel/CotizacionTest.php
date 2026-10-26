@@ -2,6 +2,7 @@
 
 use App\Enums\EstadoCotizacion;
 use App\Enums\UserRole;
+use App\Models\Conversacion;
 use App\Models\Cotizacion;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -115,4 +116,45 @@ test('deleting a request removes its photos', function () {
 
     expect(Cotizacion::count())->toBe(0);
     Storage::disk('local')->assertMissing($ruta);
+});
+
+test('a request says where it came from and links back to its chat', function () {
+    $conversacion = Conversacion::factory()->create();
+    $porWhatsapp = Cotizacion::factory()->porWhatsapp($conversacion)->create();
+    $porLaWeb = Cotizacion::factory()->create();
+
+    $vendedor = User::factory()->role(UserRole::Vendedor)->create();
+
+    $this->actingAs($vendedor)
+        ->get(route('panel.cotizaciones.index'))
+        ->assertInertia(fn ($page) => $page
+            ->where('cotizaciones.data.0.origen', 'web')
+            ->where('cotizaciones.data.1.origen', 'whatsapp')
+            ->where('cotizaciones.data.1.origenLabel', 'WhatsApp')
+        );
+
+    $this->actingAs($vendedor)
+        ->get(route('panel.cotizaciones.show', $porWhatsapp))
+        ->assertInertia(fn ($page) => $page
+            ->where('cotizacion.origen', 'whatsapp')
+            ->where('cotizacion.conversacionId', $conversacion->id)
+        );
+
+    $this->actingAs($vendedor)
+        ->get(route('panel.cotizaciones.show', $porLaWeb))
+        ->assertInertia(fn ($page) => $page
+            ->where('cotizacion.origen', 'web')
+            ->where('cotizacion.conversacionId', null)
+        );
+});
+
+test('deleting the chat keeps the request', function () {
+    $conversacion = Conversacion::factory()->create();
+    $cotizacion = Cotizacion::factory()->porWhatsapp($conversacion)->create();
+
+    $conversacion->delete();
+
+    expect($cotizacion->fresh())
+        ->not->toBeNull()
+        ->conversacion_id->toBeNull();
 });

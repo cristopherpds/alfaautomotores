@@ -58,6 +58,7 @@ test('the calendar lists the appointments of the visible range as events', funct
             ->where('turnos.0.title', 'Service completo · Pérez')
             ->where('turnos.0.classNames', ['turno--pendiente', 'turno--taller'])
             ->where('turnos.0.extendedProps.cliente', $dentro->cliente())
+            ->where('turnos.0.extendedProps.clienteId', $dentro->cliente_id)
             ->where('puedeGestionar', true)
         );
 });

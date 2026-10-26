@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Enums\EstadoCotizacion;
+use App\Enums\OrigenCotizacion;
+use App\Models\Conversacion;
 use App\Models\Cotizacion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -28,6 +30,7 @@ class CotizacionFactory extends Factory
             'apellido' => fake()->lastName(),
             'celular' => '09'.fake()->unique()->numerify('# ### ###'),
             'estado' => EstadoCotizacion::Nueva,
+            'origen' => OrigenCotizacion::Web,
         ];
     }
 
@@ -38,6 +41,17 @@ class CotizacionFactory extends Factory
     {
         return $this->state(fn (array $attributes): array => [
             'estado' => EstadoCotizacion::Contactada,
+        ]);
+    }
+
+    /**
+     * Indicate that the AI agent registered it from a WhatsApp conversation.
+     */
+    public function porWhatsapp(?Conversacion $conversacion = null): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'origen' => OrigenCotizacion::Whatsapp,
+            'conversacion_id' => $conversacion ?? Conversacion::factory(),
         ]);
     }
 }
