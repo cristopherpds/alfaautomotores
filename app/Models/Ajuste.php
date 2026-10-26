@@ -53,6 +53,19 @@ class Ajuste extends Model
     public const AGENTE_IA = 'agente_ia';
 
     /**
+     * La URL pública del sitio, la de los links que manda el agente.
+     */
+    public const SITIO_PUBLICO = 'sitio_publico';
+
+    /**
+     * Dominios que no salen a internet: WhatsApp no los muestra como link y
+     * desde el celular del cliente no abren.
+     *
+     * @var list<string>
+     */
+    private const DOMINIOS_LOCALES = ['localhost', 'test', 'local', 'internal', 'invalid', 'example', 'lan', 'home'];
+
+    /**
      * Los campos de cada conexión que se guardan cifrados y nunca vuelven al
      * navegador: el panel sólo ve si están cargados y sus últimos caracteres.
      *
@@ -73,6 +86,7 @@ class Ajuste extends Model
         self::CONEXION_WHATSAPP => 'Conexión de WhatsApp',
         self::CONEXION_IA => 'Conexión de IA',
         self::AGENTE_IA => 'Agente de WhatsApp',
+        self::SITIO_PUBLICO => 'URL pública del sitio',
     ];
 
     /**
@@ -160,6 +174,46 @@ class Ajuste extends Model
             'modelo' => config('services.openrouter.modelo'),
             'modelo_transcripcion' => config('services.openrouter.modelo_transcripcion'),
         ], ['api_key', 'modelo', 'modelo_transcripcion']);
+    }
+
+    /**
+     * La URL pública del sitio, sin barra al final: la del panel (Ajustes →
+     * Conexiones) y si no hay, `APP_URL`. En desarrollo puede ser un túnel
+     * (ngrok); en producción, el dominio real.
+     */
+    public static function urlPublica(): string
+    {
+        $guardada = self::valor(self::SITIO_PUBLICO)['url_publica'] ?? null;
+
+        return rtrim(filled($guardada) ? (string) $guardada : (string) config('app.url'), '/');
+    }
+
+    /**
+     * El link absoluto de una ruta con nombre, armado sobre la URL pública.
+     * Es lo que usan el agente y sus herramientas: `route()` sale de
+     * `APP_URL`, que en local es `localhost`.
+     */
+    public static function enlacePublico(string $ruta, mixed $parametros = []): string
+    {
+        return self::urlPublica().route($ruta, $parametros, absolute: false);
+    }
+
+    /**
+     * Si WhatsApp va a mostrar la URL como link en el celular: hace falta un
+     * dominio con punto que salga a internet. `localhost`, una IP o un
+     * dominio local (`alfa.test`) quedan como texto.
+     */
+    public static function esUrlEnlazable(string $url): bool
+    {
+        $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+
+        if ($host === '' || ! str_contains($host, '.') || filter_var($host, FILTER_VALIDATE_IP) !== false) {
+            return false;
+        }
+
+        $dominio = substr((string) strrchr($host, '.'), 1);
+
+        return ! in_array($dominio, self::DOMINIOS_LOCALES, true) && strlen($dominio) >= 2;
     }
 
     /**

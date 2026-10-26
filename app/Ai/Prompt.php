@@ -4,6 +4,7 @@ namespace App\Ai;
 
 use App\Enums\DireccionMensaje;
 use App\Enums\EstadoTurno;
+use App\Models\Ajuste;
 use App\Models\Conocimiento;
 use App\Models\Conversacion;
 use App\Models\HorarioOfrecido;
@@ -61,10 +62,10 @@ class Prompt
 
     private static function chasis(string $nombre): string
     {
-        $catalogo = route('catalogo');
-        $movilidad = route('movilidad');
-        $bicicletas = route('bicicletas');
-        $cotizar = route('cotizacion');
+        $catalogo = Ajuste::enlacePublico('catalogo');
+        $movilidad = Ajuste::enlacePublico('movilidad');
+        $bicicletas = Ajuste::enlacePublico('bicicletas');
+        $cotizar = Ajuste::enlacePublico('cotizacion');
 
         return <<<TXT
 Sos {$nombre}, el agente de IA del WhatsApp de Alfa Automotores, en Rivera (Uruguay). Alfa vende autos usados y 0 km, motos y movilidad eléctrica y bicicletas; tiene taller mecánico y lavadero con turnos, y recibe usados como parte de pago. Tu trabajo: entender qué necesita cada persona, darle información REAL del stock y de los servicios, agendar turnos del taller y del lavadero, tomar los datos de un usado para cotizarlo, y pasar la conversación a una persona del equipo cuando corresponda.

@@ -6,6 +6,7 @@ use App\Ai\Agents\AsistenteWhatsapp;
 use App\Ai\FormatoWhatsapp;
 use App\Ai\Guardas;
 use App\Ai\Prompt;
+use App\Ai\Transcriptor;
 use App\Enums\DireccionMensaje;
 use App\Enums\MotivoDerivacion;
 use App\Enums\TipoMensaje;
@@ -31,7 +32,6 @@ use Laravel\Ai\Messages\AssistantMessage;
 use Laravel\Ai\Messages\Message;
 use Laravel\Ai\Messages\UserMessage;
 use Laravel\Ai\Responses\AgentResponse;
-use Laravel\Ai\Transcription;
 use Throwable;
 
 /**
@@ -70,11 +70,24 @@ class ResponderConversacion implements ShouldQueue
      */
     private const ESPERAS_REINTENTO = [2, 5];
 
+    /**
+     * Cuántas veces se reprograma el turno esperando que termine de bajar
+     * una nota de voz (`DescargarMediaWhatsapp`), y cada cuánto.
+     */
+    public const ESPERAS_DE_MEDIA = 3;
+
+    public const ESPERA_MEDIA_SEGUNDOS = 5;
+
+    /**
+     * Cuántas veces se intenta transcribir una nota de voz, una por turno.
+     */
+    public const INTENTOS_TRANSCRIPCION = 3;
+
     public int $tries = 1;
 
     public int $timeout = 180;
 
-    public function __construct(public int $conversacionId, public int $hastaMensajeId) {}
+    public function __construct(public int $conversacionId, public int $hastaMensajeId, public int $esperasDeMedia = 0) {}
 
     /**
      * Si el agente está en condiciones de contestar esta conversación.
@@ -128,7 +141,14 @@ class ResponderConversacion implements ShouldQueue
         }
 
         $this->configurarProveedor();
-        $this->transcribirAudios($pendientes);
+
+        // Una nota de voz que todavía baja: se espera en vez de saltearla.
+        if ($this->transcribirAudios($conversacion, $pendientes) && $this->esperasDeMedia < self::ESPERAS_DE_MEDIA) {
+            self::dispatch($this->conversacionId, $this->hastaMensajeId, $this->esperasDeMedia + 1)
+                ->delay(now()->addSeconds(self::ESPERA_MEDIA_SEGUNDOS));
+
+            return;
+        }
 
         $veImagenes = self::modeloVeImagenes(Ajuste::conexionIa()['modelo']);
         $texto = $pendientes->map(fn (MensajeWhatsapp $mensaje): string => self::comoTexto($mensaje, $veImagenes))->implode("\n");
@@ -282,26 +302,55 @@ class ResponderConversacion implements ShouldQueue
      * Las notas de voz pasan a texto una sola vez: la transcripción queda en
      * `meta` y sirve para el historial de los turnos siguientes.
      *
+     * Si falla no se guarda nada como texto: queda `transcripcion_fallida`
+     * con los intentos, y el turno siguiente lo vuelve a probar (también las
+     * de turnos anteriores) hasta `INTENTOS_TRANSCRIPCION`.
+     *
      * @param  Collection<int, MensajeWhatsapp>  $pendientes
+     * @return bool si alguna nota de la ráfaga todavía no terminó de bajar
      */
-    private function transcribirAudios(Collection $pendientes): void
+    private function transcribirAudios(Conversacion $conversacion, Collection $pendientes): bool
     {
-        foreach ($pendientes as $mensaje) {
-            if ($mensaje->tipo !== TipoMensaje::Audio || $mensaje->media_ruta === null || isset($mensaje->meta['transcripcion'])) {
+        $faltaBajar = false;
+
+        $anteriores = $conversacion->mensajes()
+            ->where('direccion', DireccionMensaje::Entrante)
+            ->where('tipo', TipoMensaje::Audio)
+            ->where('id', '<', (int) $pendientes->first()->id)
+            ->reorder()
+            ->latest('id')
+            ->limit(5)
+            ->get()
+            ->filter(fn (MensajeWhatsapp $mensaje): bool => ($mensaje->meta['transcripcion_fallida'] ?? false) === true);
+
+        foreach ($pendientes->merge($anteriores) as $mensaje) {
+            if ($mensaje->tipo !== TipoMensaje::Audio || filled($mensaje->meta['transcripcion'] ?? null)) {
                 continue;
             }
 
-            try {
-                $transcripcion = trim((string) Transcription::fromStorage($mensaje->media_ruta, 'local')
-                    ->generate('openrouter', Ajuste::conexionIa()['modelo_transcripcion']));
-            } catch (Throwable $error) {
-                Log::warning('No se pudo transcribir una nota de voz', ['mensaje' => $mensaje->id, 'error' => $error->getMessage()]);
-                $transcripcion = '';
+            if ($mensaje->media_ruta === null) {
+                $faltaBajar = $faltaBajar || ($mensaje->media_id !== null && $pendientes->contains($mensaje));
+
+                continue;
             }
 
-            $mensaje->meta = [...($mensaje->meta ?? []), 'transcripcion' => $transcripcion];
+            $intentos = (int) ($mensaje->meta['transcripcion_intentos'] ?? 0);
+
+            if ($intentos >= self::INTENTOS_TRANSCRIPCION) {
+                continue;
+            }
+
+            $transcripcion = Transcriptor::transcribir($mensaje->media_ruta, $mensaje->media_mime);
+            $meta = [...($mensaje->meta ?? []), 'transcripcion_intentos' => $intentos + 1];
+            unset($meta['transcripcion'], $meta['transcripcion_fallida']);
+
+            $mensaje->meta = $transcripcion === null
+                ? [...$meta, 'transcripcion_fallida' => true]
+                : [...$meta, 'transcripcion' => $transcripcion];
             $mensaje->save();
         }
+
+        return $faltaBajar;
     }
 
     /**
@@ -337,16 +386,7 @@ class ResponderConversacion implements ShouldQueue
      */
     public static function modeloVeImagenes(string $modelo): bool
     {
-        $lista = Cache::get('openrouter:modelos');
-
-        if (! is_array($lista)) {
-            return true;
-        }
-
-        $datos = collect($lista)->firstWhere('id', $modelo);
-
-        return ! is_array($datos)
-            || in_array('image', (array) ($datos['architecture']['input_modalities'] ?? []), true);
+        return Transcriptor::modeloAcepta($modelo, 'image');
     }
 
     /**
