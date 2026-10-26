@@ -247,6 +247,19 @@ class Conversacion extends Model
     }
 
     /**
+     * Las conversaciones que esperan a una persona: derivadas o con la IA
+     * apagada, sin archivar. Es el contador de la pestaña «Atención humana».
+     *
+     * @return Builder<self>
+     */
+    public static function queAtiendeElEquipo(): Builder
+    {
+        return self::query()
+            ->whereNull('archivada_at')
+            ->where(fn (Builder $query) => $query->whereNotNull('derivada_at')->orWhere('ia_activa', false));
+    }
+
+    /**
      * Las conversaciones de la bandeja, de la más reciente a la más vieja.
      *
      * @param  array{busqueda?: string|null, filtro?: string|null}  $filtros
@@ -280,5 +293,20 @@ class Conversacion extends Model
             })
             ->orderByDesc('ultimo_mensaje_at')
             ->orderByDesc('id');
+    }
+
+    /**
+     * Los contadores de los avisos del panel (menú lateral y título de la
+     * pestaña): mensajes sin leer y conversaciones que esperan a una persona,
+     * sin contar las archivadas.
+     *
+     * @return array{noLeidos: int, atencionHumana: int}
+     */
+    public static function contadoresDeAvisos(): array
+    {
+        return [
+            'noLeidos' => (int) self::query()->whereNull('archivada_at')->sum('no_leidos'),
+            'atencionHumana' => self::queAtiendeElEquipo()->count(),
+        ];
     }
 }

@@ -11,6 +11,7 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
+import { ActivarAvisosWhatsapp } from '@/components/whatsapp/avisos-whatsapp-ajustes';
 import { Hilo } from '@/components/whatsapp/hilo';
 import {
     filtrarBandeja,
@@ -92,6 +93,11 @@ export default function Whatsapp({
                         </AlertDescription>
                     </Alert>
                 )}
+
+                {/* Sólo mientras no se decidió el permiso del navegador. */}
+                <div className="flex justify-end empty:hidden">
+                    <ActivarAvisosWhatsapp />
+                </div>
 
                 {conversacion?.can.administrar &&
                     !conversacion.ventanaAbierta && (

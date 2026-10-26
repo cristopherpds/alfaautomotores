@@ -13,6 +13,27 @@ export type FlashToast = {
     message: string;
 };
 
+/** Los contadores de WhatsApp del menú lateral y del título de la pestaña. */
+export type ContadoresWhatsapp = {
+    noLeidos: number;
+    atencionHumana: number;
+};
+
+/** Algo que pasó en WhatsApp desde el último pedido de avisos. */
+export type EventoWhatsapp = {
+    conversacionId: number;
+    nombre: string;
+    preview: string;
+    tipo: 'mensaje' | 'derivacion';
+    at: string;
+};
+
+/** La respuesta de `panel.whatsapp.avisos`. */
+export type AvisosWhatsapp = ContadoresWhatsapp & {
+    cursor: { mensaje: number; derivacion: number };
+    eventos: EventoWhatsapp[];
+};
+
 export type AuthLayoutProps = {
     children?: ReactNode;
     name?: string;
