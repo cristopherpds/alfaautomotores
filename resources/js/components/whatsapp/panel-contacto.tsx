@@ -7,11 +7,13 @@ import {
     Trash2,
     UserRound,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import ClienteController from '@/actions/App/Http/Controllers/Panel/ClienteController';
 import ConversacionController from '@/actions/App/Http/Controllers/Panel/ConversacionController';
+import InputError from '@/components/input-error';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogClose,
@@ -37,6 +39,8 @@ export function PanelContacto({
     conversacion: ConversacionAbierta;
 }) {
     const [confirmando, setConfirmando] = useState(false);
+    const [tambienElCliente, setTambienElCliente] = useState(false);
+    const cancelarRef = useRef<HTMLButtonElement>(null);
     const atiendeLaIa = conversacion.iaActiva && !conversacion.derivada;
     const ficha = Object.entries(conversacion.ficha).filter(
         ([, valor]) => valor !== null && valor !== '',
@@ -197,34 +201,110 @@ export function PanelContacto({
                 )}
             </div>
 
-            <Dialog open={confirmando} onOpenChange={setConfirmando}>
-                <DialogContent>
+            <Dialog
+                open={confirmando}
+                onOpenChange={(abierto) => {
+                    setConfirmando(abierto);
+
+                    if (!abierto) {
+                        setTambienElCliente(false);
+                    }
+                }}
+            >
+                <DialogContent
+                    onOpenAutoFocus={(evento) => {
+                        /* El foco arranca en «Cancelar»: borrar nunca puede
+                           quedar a un Enter de distancia. */
+                        evento.preventDefault();
+                        cancelarRef.current?.focus();
+                    }}
+                >
                     <DialogTitle>¿Eliminar la conversación?</DialogTitle>
                     <DialogDescription>
-                        Se borran todos los mensajes y archivos de{' '}
-                        {conversacion.nombre} en el panel. En el celular del
-                        cliente quedan. No se puede deshacer.
+                        Se borra todo lo que el panel y el agente saben de{' '}
+                        {conversacion.nombre} por WhatsApp. En el celular del
+                        cliente los mensajes quedan.
                     </DialogDescription>
+                    <ul className="grid list-disc gap-1 pl-5 text-sm">
+                        <li>Todos los mensajes de la conversación.</li>
+                        <li>Las fotos, audios y documentos adjuntos.</li>
+                        <li>
+                            Lo que el agente sabe de la persona (la ficha de la
+                            conversación) y los horarios que le ofreció.
+                        </li>
+                        {tambienElCliente && conversacion.cliente && (
+                            <li>
+                                La ficha de cliente de{' '}
+                                {conversacion.cliente.nombre} y sus otras
+                                conversaciones. Sus turnos y cotizaciones
+                                quedan, sin el vínculo.
+                            </li>
+                        )}
+                    </ul>
                     <Form
                         {...ConversacionController.destroy.form(
                             conversacion.id,
                         )}
+                        className="grid gap-4"
+                        onKeyDown={(evento) => {
+                            if (evento.key === 'Enter') {
+                                evento.preventDefault();
+                            }
+                        }}
                     >
-                        {({ processing }) => (
-                            <DialogFooter className="gap-2">
-                                <DialogClose asChild>
-                                    <Button variant="secondary">
-                                        Cancelar
+                        {({ processing, errors }) => (
+                            <>
+                                <input
+                                    type="hidden"
+                                    name="alcance"
+                                    value={
+                                        tambienElCliente ? 'contacto' : 'hilo'
+                                    }
+                                />
+                                {conversacion.cliente && (
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox
+                                            id="borrar-cliente"
+                                            checked={tambienElCliente}
+                                            onCheckedChange={(tildado) =>
+                                                setTambienElCliente(
+                                                    tildado === true,
+                                                )
+                                            }
+                                            data-test="borrar-cliente"
+                                        />
+                                        <Label htmlFor="borrar-cliente">
+                                            Borrar también el cliente y su ficha
+                                        </Label>
+                                    </div>
+                                )}
+                                <p className="text-sm font-medium text-destructive">
+                                    No se puede deshacer.
+                                </p>
+                                <InputError message={errors.alcance} />
+                                <DialogFooter className="gap-2">
+                                    <DialogClose asChild>
+                                        <Button
+                                            ref={cancelarRef}
+                                            variant="secondary"
+                                        >
+                                            Cancelar
+                                        </Button>
+                                    </DialogClose>
+                                    <Button
+                                        variant="destructive"
+                                        disabled={processing}
+                                        asChild
+                                    >
+                                        <button
+                                            type="submit"
+                                            data-test="confirmar-eliminar"
+                                        >
+                                            Eliminar
+                                        </button>
                                     </Button>
-                                </DialogClose>
-                                <Button
-                                    variant="destructive"
-                                    disabled={processing}
-                                    asChild
-                                >
-                                    <button type="submit">Eliminar</button>
-                                </Button>
-                            </DialogFooter>
+                                </DialogFooter>
+                            </>
                         )}
                     </Form>
                 </DialogContent>

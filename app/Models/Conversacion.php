@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use App\Concerns\Auditable;
+use App\Enums\EstadoTurno;
 use App\Enums\MotivoDerivacion;
+use App\Jobs\DescargarMediaWhatsapp;
+use App\Jobs\ResponderConversacion;
 use Carbon\CarbonInterface;
 use Database\Factories\ConversacionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -15,7 +18,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Una conversación de WhatsApp: una por número.
@@ -69,10 +74,17 @@ class Conversacion extends Model
      */
     public const CARPETA = 'whatsapp';
 
+    /**
+     * La carpeta de adjuntos se borra recién cuando la baja queda firme: si
+     * la transacción se deshace, los archivos tienen que seguir ahí. Fuera de
+     * una transacción, `afterCommit` corre enseguida.
+     */
     protected static function booted(): void
     {
         static::deleting(function (self $conversacion): void {
-            Storage::disk('local')->deleteDirectory(self::CARPETA.'/'.$conversacion->id);
+            $carpeta = self::CARPETA.'/'.$conversacion->id;
+
+            DB::afterCommit(fn () => Storage::disk('local')->deleteDirectory($carpeta));
         });
     }
 
@@ -247,7 +259,141 @@ class Conversacion extends Model
     }
 
     /**
+     * Borrar la conversación y olvidar a la persona («borrar y olvidar»).
+     *
+     * El agente no tiene memoria aparte: el historial, la ficha y los
+     * horarios ofrecidos viven en la base y se van con la fila (los dos
+     * últimos en cascada). Con `$tambienElCliente` se borra además la ficha
+     * de `Cliente` con todas sus otras conversaciones; sus turnos y
+     * cotizaciones quedan, con `cliente_id` en null, porque son el registro
+     * del taller y guardan su propia copia de los datos.
+     *
+     * No se borra si el cliente tiene un turno por venir: primero hay que
+     * cancelarlo. La auditoría registra cada baja como siempre.
+     *
+     * @throws ValidationException
+     */
+    public function olvidar(bool $tambienElCliente): void
+    {
+        DB::transaction(function () use ($tambienElCliente): void {
+            $conversacion = self::query()->lockForUpdate()->findOrFail($this->id);
+            $cliente = $conversacion->cliente_id === null
+                ? null
+                : Cliente::query()->lockForUpdate()->find($conversacion->cliente_id);
+
+            if ($cliente !== null) {
+                self::exigirSinTurnosPorVenir($cliente);
+            }
+
+            $conversaciones = $tambienElCliente && $cliente !== null
+                ? self::query()->where('cliente_id', $cliente->id)->lockForUpdate()->get()
+                : new Collection([$conversacion]);
+
+            self::descartarTrabajosPendientes($conversaciones->modelKeys());
+
+            $conversaciones->each(fn (self $borrable) => $borrable->delete());
+
+            if ($tambienElCliente) {
+                $cliente?->delete();
+            }
+        });
+    }
+
+    /**
+     * Las conversaciones que esperan a una persona: derivadas o con la IA
+     * apagada, sin archivar. Es el contador de la pestaña «Atención humana».
+     *
+     * @return Builder<self>
+     */
+    public static function queAtiendeElEquipo(): Builder
+    {
+        return self::query()
+            ->whereNull('archivada_at')
+            ->where(fn (Builder $query) => $query->whereNotNull('derivada_at')->orWhere('ia_activa', false));
+    }
+
+    /**
+     * Cortar el borrado si el cliente tiene un turno pendiente o confirmado
+     * que todavía no pasó.
+     *
+     * @throws ValidationException
+     */
+    private static function exigirSinTurnosPorVenir(Cliente $cliente): void
+    {
+        $turno = Turno::query()
+            ->where('cliente_id', $cliente->id)
+            ->whereIn('estado', [EstadoTurno::Pendiente, EstadoTurno::Confirmado])
+            ->where('inicia_at', '>', now())
+            ->orderBy('inicia_at')
+            ->lockForUpdate()
+            ->first();
+
+        if ($turno !== null) {
+            throw ValidationException::withMessages([
+                'alcance' => __('Tiene un turno el :fecha. Cancelalo antes de eliminar.', [
+                    'fecha' => $turno->inicia_at->format('d/m/Y \a \l\a\s H:i'),
+                ]),
+            ]);
+        }
+    }
+
+    /**
+     * Sacar de la cola los trabajos que todavía no arrancaron y son de estas
+     * conversaciones: el turno del agente y la descarga de adjuntos.
+     *
+     * Sólo con la cola `database`, la del proyecto: se leen los payloads sin
+     * deserializarlos. Lo que no se reconozca (otra cola, un payload cifrado,
+     * un trabajo que el worker ya tomó) no hace daño: `ResponderConversacion`
+     * no hace nada si la conversación no existe y `DescargarMediaWhatsapp` se
+     * descarta solo si el mensaje ya no está.
+     *
+     * @param  list<int>  $conversacionIds
+     */
+    private static function descartarTrabajosPendientes(array $conversacionIds): void
+    {
+        $conexion = (string) config('queue.default');
+
+        if ($conversacionIds === [] || config("queue.connections.{$conexion}.driver") !== 'database') {
+            return;
+        }
+
+        $cola = DB::connection(config("queue.connections.{$conexion}.connection"))
+            ->table((string) config("queue.connections.{$conexion}.table", 'jobs'));
+        $mensajeIds = MensajeWhatsapp::query()->whereIn('conversacion_id', $conversacionIds)->pluck('id')->all();
+
+        $descartables = (clone $cola)
+            ->whereNull('reserved_at')
+            ->where(fn ($query) => $query
+                ->where('payload', 'like', '%ResponderConversacion%')
+                ->orWhere('payload', 'like', '%DescargarMediaWhatsapp%'))
+            ->get(['id', 'payload'])
+            ->filter(function (object $trabajo) use ($conversacionIds, $mensajeIds): bool {
+                $payload = json_decode((string) $trabajo->payload, true);
+                $comando = is_array($payload) ? ($payload['data']['command'] ?? null) : null;
+
+                if (! is_string($comando)) {
+                    return false;
+                }
+
+                return match ($payload['displayName'] ?? null) {
+                    ResponderConversacion::class => preg_match('/s:14:"conversacionId";i:(\d+);/', $comando, $id) === 1
+                        && in_array((int) $id[1], $conversacionIds, true),
+                    DescargarMediaWhatsapp::class => preg_match('/MensajeWhatsapp";s:2:"id";i:(\d+);/', $comando, $id) === 1
+                        && in_array((int) $id[1], $mensajeIds, true),
+                    default => false,
+                };
+            });
+
+        if ($descartables->isNotEmpty()) {
+            (clone $cola)->whereIn('id', $descartables->pluck('id'))->delete();
+        }
+    }
+
+    /**
      * Las conversaciones de la bandeja, de la más reciente a la más vieja.
+     *
+     * «Todas» es lo que atiende la IA: lo derivado o con la IA apagada pasa a
+     * «Atención humana» (`humano`) y vuelve al devolvérsela a la IA.
      *
      * @param  array{busqueda?: string|null, filtro?: string|null}  $filtros
      * @return Builder<self>
@@ -264,6 +410,9 @@ class Conversacion extends Model
                 fn (Builder $query) => $query->whereNull('archivada_at'),
             )
             ->when(($filtros['filtro'] ?? null) === 'sin_leer', fn (Builder $query) => $query->where('no_leidos', '>', 0))
+            ->when(($filtros['filtro'] ?? '') === '', fn (Builder $query) => $query
+                ->whereNull('derivada_at')
+                ->where('ia_activa', true))
             ->when(($filtros['filtro'] ?? null) === 'humano', fn (Builder $query) => $query->where(
                 fn (Builder $query) => $query->whereNotNull('derivada_at')->orWhere('ia_activa', false),
             ))

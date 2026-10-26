@@ -1,15 +1,25 @@
 <?php
 
+use App\Enums\AccionAuditoria;
 use App\Enums\EstadoMensaje;
+use App\Enums\EstadoTurno;
 use App\Enums\MotivoDerivacion;
 use App\Enums\TipoMensaje;
 use App\Enums\UserRole;
+use App\Jobs\DescargarMediaWhatsapp;
+use App\Jobs\ResponderConversacion;
+use App\Models\Auditoria;
 use App\Models\Cliente;
 use App\Models\Conversacion;
+use App\Models\Cotizacion;
 use App\Models\MensajeWhatsapp;
 use App\Models\PlantillaWhatsapp;
+use App\Models\Turno;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Queue\Attributes\DeleteWhenMissingModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
@@ -239,15 +249,192 @@ test('only managers delete a conversation, and its files go with it', function (
     Storage::disk('local')->put($ruta, 'jpg');
 
     $this->actingAs(User::factory()->role(UserRole::Equipo)->create())
-        ->delete(route('panel.whatsapp.destroy', $conversacion))
+        ->delete(route('panel.whatsapp.destroy', $conversacion), ['alcance' => 'hilo'])
         ->assertForbidden();
 
     $this->actingAs(User::factory()->admin()->create())
-        ->delete(route('panel.whatsapp.destroy', $conversacion))
+        ->delete(route('panel.whatsapp.destroy', $conversacion), ['alcance' => 'hilo'])
         ->assertRedirect(route('panel.whatsapp.index'));
 
     expect(Conversacion::count())->toBe(0);
     Storage::disk('local')->assertMissing($ruta);
+});
+
+test('deleting needs to say whether the client goes too', function (?string $alcance) {
+    $conversacion = Conversacion::factory()->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->delete(route('panel.whatsapp.destroy', $conversacion), array_filter(['alcance' => $alcance]))
+        ->assertSessionHasErrors('alcance');
+
+    expect(Conversacion::count())->toBe(1);
+})->with([null, 'todo']);
+
+test('deleting only the thread forgets the chat but keeps the client', function () {
+    $cliente = Cliente::factory()->create();
+    $conversacion = Conversacion::factory()->create(['ficha' => ['vehiculo' => 'Hilux']]);
+    $conversacion->cliente()->associate($cliente)->saveQuietly();
+    $otra = Conversacion::factory()->create();
+    $otra->cliente()->associate($cliente)->saveQuietly();
+    MensajeWhatsapp::factory()->for($conversacion)->count(2)->create();
+    $cotizacion = Cotizacion::factory()->porWhatsapp($conversacion)->create(['cliente_id' => $cliente->id]);
+    Storage::disk('local')->put('whatsapp/'.$conversacion->id.'/audio.ogg', 'ogg');
+
+    $this->actingAs(User::factory()->role(UserRole::Vendedor)->create())
+        ->delete(route('panel.whatsapp.destroy', $conversacion), ['alcance' => 'hilo'])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('panel.whatsapp.index'));
+
+    expect(Conversacion::find($conversacion->id))->toBeNull()
+        ->and(MensajeWhatsapp::where('conversacion_id', $conversacion->id)->count())->toBe(0)
+        ->and($otra->fresh())->not->toBeNull()
+        ->and($cliente->fresh())->not->toBeNull()
+        ->and($cotizacion->fresh()->conversacion_id)->toBeNull();
+    Storage::disk('local')->assertMissing('whatsapp/'.$conversacion->id.'/audio.ogg');
+});
+
+test('deleting the contact also deletes the client and all of their chats', function () {
+    $cliente = Cliente::factory()->create();
+    $conversacion = Conversacion::factory()->create();
+    $conversacion->cliente()->associate($cliente)->saveQuietly();
+    $otra = Conversacion::factory()->create();
+    $otra->cliente()->associate($cliente)->saveQuietly();
+    $ajena = Conversacion::factory()->create();
+    $pasado = Turno::factory()->for($cliente, 'ficha')->estado(EstadoTurno::Completado)->inicia(now()->subWeek())->create();
+    $cotizacion = Cotizacion::factory()->create(['cliente_id' => $cliente->id]);
+    Storage::disk('local')->put('whatsapp/'.$conversacion->id.'/foto.jpg', 'jpg');
+    Storage::disk('local')->put('whatsapp/'.$otra->id.'/doc.pdf', 'pdf');
+    Storage::disk('local')->put('whatsapp/'.$ajena->id.'/foto.jpg', 'jpg');
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->delete(route('panel.whatsapp.destroy', $conversacion), ['alcance' => 'contacto'])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('panel.whatsapp.index'));
+
+    expect(Cliente::find($cliente->id))->toBeNull()
+        ->and(Conversacion::pluck('id')->all())->toBe([$ajena->id])
+        ->and($pasado->fresh()->cliente_id)->toBeNull()
+        ->and($cotizacion->fresh()->cliente_id)->toBeNull();
+    Storage::disk('local')->assertMissing('whatsapp/'.$conversacion->id.'/foto.jpg');
+    Storage::disk('local')->assertMissing('whatsapp/'.$otra->id.'/doc.pdf');
+    Storage::disk('local')->assertExists('whatsapp/'.$ajena->id.'/foto.jpg');
+});
+
+test('deleting is blocked while the client has an upcoming appointment', function (EstadoTurno $estado, string $alcance) {
+    $cliente = Cliente::factory()->create();
+    $conversacion = Conversacion::factory()->create();
+    $conversacion->cliente()->associate($cliente)->saveQuietly();
+    Turno::factory()->for($cliente, 'ficha')->estado($estado)->inicia(now()->addDays(2)->setTime(10, 30))->create();
+    Storage::disk('local')->put('whatsapp/'.$conversacion->id.'/foto.jpg', 'jpg');
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->delete(route('panel.whatsapp.destroy', $conversacion), ['alcance' => $alcance])
+        ->assertSessionHasErrors(['alcance' => 'Tiene un turno el '.now()->addDays(2)->format('d/m/Y').' a las 10:30. Cancelalo antes de eliminar.']);
+
+    expect($conversacion->fresh())->not->toBeNull()
+        ->and($cliente->fresh())->not->toBeNull();
+    Storage::disk('local')->assertExists('whatsapp/'.$conversacion->id.'/foto.jpg');
+})->with([EstadoTurno::Pendiente, EstadoTurno::Confirmado])->with(['hilo', 'contacto']);
+
+test('a cancelled or past appointment does not block deleting', function () {
+    $cliente = Cliente::factory()->create();
+    $conversacion = Conversacion::factory()->create();
+    $conversacion->cliente()->associate($cliente)->saveQuietly();
+    Turno::factory()->for($cliente, 'ficha')->estado(EstadoTurno::Cancelado)->inicia(now()->addDays(2))->create();
+    Turno::factory()->for($cliente, 'ficha')->estado(EstadoTurno::Confirmado)->inicia(now()->subDays(2))->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->delete(route('panel.whatsapp.destroy', $conversacion), ['alcance' => 'contacto'])
+        ->assertSessionHasNoErrors();
+
+    expect(Cliente::count())->toBe(0)->and(Conversacion::count())->toBe(0);
+});
+
+test('the audit log still records what was deleted', function () {
+    $cliente = Cliente::factory()->create();
+    $conversacion = Conversacion::factory()->create();
+    $conversacion->cliente()->associate($cliente)->saveQuietly();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->delete(route('panel.whatsapp.destroy', $conversacion), ['alcance' => 'contacto']);
+
+    expect(Auditoria::where('accion', AccionAuditoria::Eliminado)->pluck('tipo')->sort()->values()->all())
+        ->toBe(['cliente', 'conversacion']);
+});
+
+test('pending queued jobs of the deleted chat are dropped', function () {
+    config()->set('queue.default', 'database');
+
+    $conversacion = Conversacion::factory()->create();
+    $mensaje = MensajeWhatsapp::factory()->for($conversacion)->create(['media_id' => 'media-1']);
+    $ajena = Conversacion::factory()->create();
+    $mensajeAjeno = MensajeWhatsapp::factory()->for($ajena)->create(['media_id' => 'media-2']);
+
+    ResponderConversacion::dispatch($conversacion->id, $mensaje->id);
+    DescargarMediaWhatsapp::dispatch($mensaje);
+    ResponderConversacion::dispatch($ajena->id, $mensajeAjeno->id);
+    DescargarMediaWhatsapp::dispatch($mensajeAjeno);
+
+    expect(DB::table('jobs')->count())->toBe(4);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->delete(route('panel.whatsapp.destroy', $conversacion), ['alcance' => 'hilo'])
+        ->assertSessionHasNoErrors();
+
+    $comandos = DB::table('jobs')->pluck('payload')->map(fn (string $payload) => json_decode($payload, true)['data']['command']);
+
+    expect($comandos)->toHaveCount(2)
+        ->and($comandos->contains(fn (string $comando) => str_contains($comando, '"conversacionId";i:'.$ajena->id.';')))->toBeTrue()
+        ->and($comandos->contains(fn (string $comando) => str_contains($comando, 'MensajeWhatsapp";s:2:"id";i:'.$mensajeAjeno->id.';')))->toBeTrue();
+});
+
+test('the jobs of a deleted chat do nothing if they still run', function () {
+    $conversacion = Conversacion::factory()->create();
+    $mensaje = MensajeWhatsapp::factory()->for($conversacion)->create(['media_id' => 'media-1']);
+    $trabajo = new DescargarMediaWhatsapp($mensaje);
+    $serializado = serialize($trabajo);
+
+    $conversacion->olvidar(false);
+
+    Http::fake();
+    ResponderConversacion::dispatchSync($conversacion->id, $mensaje->id);
+
+    expect(fn () => unserialize($serializado))->toThrow(ModelNotFoundException::class)
+        ->and((new ReflectionClass(DescargarMediaWhatsapp::class))->getAttributes(DeleteWhenMissingModels::class))->toHaveCount(1);
+    Http::assertNothingSent();
+});
+
+test('all shows what the ai handles and human attention what waits for a person', function () {
+    $ia = Conversacion::factory()->create(['nombre_perfil' => 'La IA']);
+    $derivada = Conversacion::factory()->derivada()->create(['nombre_perfil' => 'Derivada']);
+    $tomada = Conversacion::factory()->create(['nombre_perfil' => 'Tomada', 'ia_activa' => false]);
+    Conversacion::factory()->derivada()->create(['archivada_at' => now()]);
+    $usuario = User::factory()->create();
+
+    $this->actingAs($usuario)
+        ->get(route('panel.whatsapp.index'))
+        ->assertInertia(fn ($page) => $page
+            ->has('conversaciones', 1)
+            ->where('conversaciones.0.id', $ia->id)
+            ->where('atencionHumana', 2)
+        );
+
+    $this->actingAs($usuario)
+        ->get(route('panel.whatsapp.index', ['filtro' => 'humano']))
+        ->assertInertia(fn ($page) => $page
+            ->has('conversaciones', 2)
+            ->where('conversaciones', fn ($filas) => collect($filas)->pluck('id')->sort()->values()->all() === collect([$derivada->id, $tomada->id])->sort()->values()->all())
+            ->where('atencionHumana', 2)
+        );
+
+    $this->actingAs($usuario)->patch(route('panel.whatsapp.ia', $derivada), ['activa' => true]);
+
+    $this->actingAs($usuario)
+        ->get(route('panel.whatsapp.index'))
+        ->assertInertia(fn ($page) => $page
+            ->has('conversaciones', 2)
+            ->where('atencionHumana', 1)
+        );
 });
 
 test('the polling reload only sends the inbox and the open conversation', function () {
@@ -258,8 +445,9 @@ test('the polling reload only sends the inbox and the open conversation', functi
         ->get(route('panel.whatsapp.show', $conversacion))
         ->assertInertia(fn ($page) => $page
             ->has('filtros')
-            ->reloadOnly(['conversaciones', 'conversacion'], fn ($recarga) => $recarga
+            ->reloadOnly(['conversaciones', 'atencionHumana', 'conversacion'], fn ($recarga) => $recarga
                 ->has('conversaciones', 1)
+                ->where('atencionHumana', 0)
                 ->where('conversacion.id', $conversacion->id)
                 ->missing('filtros')
                 ->missing('whatsappConfigurado')

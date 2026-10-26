@@ -24,6 +24,7 @@ import type { ConversacionAbierta, ConversacionDeLista } from '@/types';
 
 type Props = {
     conversaciones: ConversacionDeLista[];
+    atencionHumana: number;
     filtros: FiltrosBandeja;
     whatsappConfigurado: boolean;
     conversacion: ConversacionAbierta | null;
@@ -38,13 +39,14 @@ const REFRESCO_MS = 4000;
  */
 export default function Whatsapp({
     conversaciones,
+    atencionHumana,
     filtros,
     whatsappConfigurado,
     conversacion,
 }: Props) {
     usePoll(
         REFRESCO_MS,
-        { only: ['conversaciones', 'conversacion'] },
+        { only: ['conversaciones', 'atencionHumana', 'conversacion'] },
         { mode: 'rest' },
     );
 
@@ -131,6 +133,7 @@ export default function Whatsapp({
                     >
                         <ListaConversaciones
                             conversaciones={conversaciones}
+                            atencionHumana={atencionHumana}
                             filtros={filtros}
                             abiertaId={conversacion?.id ?? null}
                             onFiltrar={filtrar}

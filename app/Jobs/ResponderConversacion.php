@@ -181,7 +181,12 @@ class ResponderConversacion implements ShouldQueue
             return;
         }
 
-        if ($alertaHostil && $conversacion->refresh()->derivada_at === null) {
+        // Prometió una persona sin llamar a `derivar_a_humano`: se deriva igual.
+        if ($conversacion->refresh()->derivada_at === null && Guardas::prometeHumano($final)) {
+            $conversacion->derivar(MotivoDerivacion::Modelo);
+        }
+
+        if ($alertaHostil && $conversacion->derivada_at === null) {
             $conversacion->derivar(MotivoDerivacion::Hostilidad);
         }
     }

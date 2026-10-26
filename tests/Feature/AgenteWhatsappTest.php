@@ -334,3 +334,52 @@ test('photos are not sent to a model that cannot see them', function () {
         && $prompt->contains('vos no podés ver'));
     expect(respuestasDeLaIa())->toHaveCount(1);
 });
+
+test('a reply that promises a person without handing over is handed over anyway', function (string $promesa) {
+    AsistenteWhatsapp::fake([$promesa]);
+
+    $conversacion = Conversacion::factory()->create();
+    $mensaje = entranteDelCliente($conversacion, 'quiero negociar el precio de la hilux');
+
+    ResponderConversacion::dispatchSync($conversacion->id, $mensaje->id);
+
+    expect(respuestasDeLaIa())->toBe([$promesa])
+        ->and($conversacion->fresh())
+        ->motivo_derivacion->toBe(MotivoDerivacion::Modelo)
+        ->atiendeLaIa()->toBeFalse();
+})->with([
+    'Dale, te paso con un asesor para ver el precio.',
+    'Te derivo con ventas así lo ven.',
+    'Perfecto, un asesor te va a escribir en un rato.',
+    'Listo, alguien del equipo te va a contactar hoy.',
+    'Anotado. El equipo te escribe por acá enseguida.',
+]);
+
+test('an ordinary reply does not hand over', function (string $respuesta) {
+    AsistenteWhatsapp::fake([$respuesta]);
+
+    $conversacion = Conversacion::factory()->create();
+    $mensaje = entranteDelCliente($conversacion, 'hola');
+
+    ResponderConversacion::dispatchSync($conversacion->id, $mensaje->id);
+
+    expect($conversacion->fresh()->atiendeLaIa())->toBeTrue();
+})->with([
+    'Te paso el link de la Hilux: https://alfa.test/vehiculos/hilux',
+    'Te paso con gusto las fotos que tenemos.',
+    '¿Querés que te reserve un turno para el service?',
+]);
+
+test('the safety net keeps the reason when the tool already handed over', function () {
+    $conversacion = Conversacion::factory()->create();
+    $mensaje = entranteDelCliente($conversacion, 'quiero cancelar mi turno');
+    AsistenteWhatsapp::fake(function () use ($conversacion) {
+        $conversacion->derivar(MotivoDerivacion::Cliente);
+
+        return 'Te paso con alguien del equipo.';
+    });
+
+    ResponderConversacion::dispatchSync($conversacion->id, $mensaje->id);
+
+    expect($conversacion->fresh()->motivo_derivacion)->toBe(MotivoDerivacion::Cliente);
+});
