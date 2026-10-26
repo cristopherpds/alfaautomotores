@@ -238,7 +238,22 @@ function Adjunto({ mensaje }: { mensaje: MensajeWhatsapp }) {
                 </a>
             );
         case 'audio':
-            return <audio controls src={url} className="mb-1 max-w-64" />;
+            return (
+                <div className="mb-1 grid max-w-64 gap-1">
+                    <audio controls src={url} className="max-w-64" />
+                    {mensaje.transcripcion ? (
+                        <p className="text-xs [overflow-wrap:anywhere] italic opacity-80">
+                            «{mensaje.transcripcion}»
+                        </p>
+                    ) : (
+                        mensaje.transcripcionFallida && (
+                            <p className="text-xs opacity-70">
+                                No se pudo transcribir.
+                            </p>
+                        )
+                    )}
+                </div>
+            );
         case 'video':
             return (
                 <video

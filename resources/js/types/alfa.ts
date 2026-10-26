@@ -558,6 +558,9 @@ export type MensajeWhatsapp = {
     plantilla: string | null;
     media: { url: string; mime: string | null; nombre: string | null } | null;
     mediaPendiente: boolean;
+    /** El texto de una nota de voz, cuando el agente la pudo escuchar. */
+    transcripcion: string | null;
+    transcripcionFallida: boolean;
     enviadoAt: string | null;
 };
 

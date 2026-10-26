@@ -6,6 +6,7 @@ use App\Exceptions\WhatsappException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ajustes\ConexionIaRequest;
 use App\Http\Requests\Ajustes\ConexionWhatsappRequest;
+use App\Http\Requests\Ajustes\SitioPublicoRequest;
 use App\Models\Ajuste;
 use App\Services\WhatsappCloud;
 use Illuminate\Http\Client\ConnectionException;
@@ -47,6 +48,7 @@ class ConexionController extends Controller implements HasMiddleware
     {
         $whatsapp = Ajuste::conexionWhatsapp();
         $ia = Ajuste::conexionIa();
+        $urlPublica = Ajuste::urlPublica();
 
         return Inertia::render('panel/ajustes/conexiones', [
             'whatsapp' => [
@@ -64,6 +66,13 @@ class ConexionController extends Controller implements HasMiddleware
                 'apiKey' => Ajuste::resumenDeSecreto(Ajuste::CONEXION_IA, 'api_key', $ia['api_key']),
                 'modelo' => $ia['modelo'],
                 'modeloTranscripcion' => $ia['modelo_transcripcion'],
+            ],
+            'sitio' => [
+                'urlPublica' => Ajuste::valor(Ajuste::SITIO_PUBLICO)['url_publica'] ?? null,
+                'urlEfectiva' => $urlPublica,
+                'appUrl' => rtrim((string) config('app.url'), '/'),
+                'enlazable' => Ajuste::esUrlEnlazable($urlPublica),
+                'ejemplo' => Ajuste::enlacePublico('catalogo'),
             ],
             // «Traer modelos», como en Vocero: sólo se pide al tocar el botón.
             'modelos' => Inertia::optional(fn (): array => self::modelosDeOpenRouter()),
@@ -125,6 +134,20 @@ class ConexionController extends Controller implements HasMiddleware
         Ajuste::guardarConexion(Ajuste::CONEXION_IA, $request->validated());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Conexión de IA guardada.')]);
+
+        return back();
+    }
+
+    /**
+     * Save the public URL the agent builds its links on.
+     */
+    public function sitio(SitioPublicoRequest $request): RedirectResponse
+    {
+        $url = rtrim(trim((string) $request->validated('url_publica')), '/');
+
+        Ajuste::guardar(Ajuste::SITIO_PUBLICO, ['url_publica' => $url === '' ? null : $url]);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('URL pública guardada.')]);
 
         return back();
     }

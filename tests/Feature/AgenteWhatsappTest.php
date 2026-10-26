@@ -1,6 +1,7 @@
 <?php
 
 use App\Ai\Agents\AsistenteWhatsapp;
+use App\Ai\Transcriptor;
 use App\Enums\DireccionMensaje;
 use App\Enums\MotivoDerivacion;
 use App\Enums\TipoMensaje;
@@ -12,11 +13,13 @@ use App\Services\Mensajero;
 use App\Services\WhatsappCloud;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Sleep;
 use Laravel\Ai\Exceptions\InsufficientCreditsException;
 use Laravel\Ai\Exceptions\ProviderOverloadedException;
 use Laravel\Ai\Prompts\AgentPrompt;
+use Laravel\Ai\Prompts\TranscriptionPrompt;
 use Laravel\Ai\Transcription;
 
 /*
@@ -38,7 +41,7 @@ beforeEach(function () {
     Ajuste::guardarConexion(Ajuste::CONEXION_IA, [
         'api_key' => 'sk-or-prueba',
         'modelo' => 'google/gemini-2.5-flash',
-        'modelo_transcripcion' => 'google/gemini-2.5-flash',
+        'modelo_transcripcion' => 'openai/whisper-1',
     ]);
 
     Storage::fake('local');
@@ -382,4 +385,138 @@ test('the safety net keeps the reason when the tool already handed over', functi
     ResponderConversacion::dispatchSync($conversacion->id, $mensaje->id);
 
     expect($conversacion->fresh()->motivo_derivacion)->toBe(MotivoDerivacion::Cliente);
+});
+
+/**
+ * Una nota de voz ya bajada al disco.
+ */
+function notaDeVoz(Conversacion $conversacion, array $extra = []): MensajeWhatsapp
+{
+    Storage::disk('local')->put('whatsapp/'.$conversacion->id.'/nota.ogg', 'ogg');
+
+    return entranteDelCliente($conversacion, '', [
+        'tipo' => TipoMensaje::Audio,
+        'cuerpo' => null,
+        'media_id' => 'media-1',
+        'media_ruta' => 'whatsapp/'.$conversacion->id.'/nota.ogg',
+        'media_mime' => 'audio/ogg; codecs=opus',
+        ...$extra,
+    ]);
+}
+
+test('the voice note goes to whisper with a mime openrouter accepts', function () {
+    AsistenteWhatsapp::fake(['Dale.']);
+    Transcription::fake(['hola']);
+
+    $conversacion = Conversacion::factory()->create();
+    $audio = notaDeVoz($conversacion, ['media_mime' => 'application/ogg']);
+
+    ResponderConversacion::dispatchSync($conversacion->id, $audio->id);
+
+    Transcription::assertGenerated(fn (TranscriptionPrompt $prompt) => $prompt->model === 'openai/whisper-1'
+        && $prompt->audio->mimeType() === 'audio/ogg');
+    expect($audio->fresh()->meta)->toMatchArray(['transcripcion' => 'hola', 'transcripcion_intentos' => 1])
+        ->not->toHaveKey('transcripcion_fallida');
+});
+
+test('audio mimes are normalized for openrouter', function (?string $mime, string $ruta, string $esperado) {
+    expect(Transcriptor::mimeDeAudio($mime, $ruta))->toBe($esperado);
+})->with([
+    ['application/ogg', 'nota.ogg', 'audio/ogg'],
+    ['audio/ogg; codecs=opus', 'nota.ogg', 'audio/ogg'],
+    ['audio/x-m4a', 'nota.m4a', 'audio/mp4'],
+    [null, 'nota.mp3', 'audio/mpeg'],
+    ['application/octet-stream', 'nota.ogg', 'audio/ogg'],
+]);
+
+test('a failed transcription is not stored as text and is retried on the next turn', function () {
+    AsistenteWhatsapp::fake(['Â¿Me lo escribÃ­s?', 'Dale, te paso turno.']);
+    Transcription::fake(function () {
+        throw new RuntimeException('Model google/gemini-2.5-flash does not exist');
+    });
+    // Sin respaldo: el modelo del agente no oye audio.
+    Cache::put('openrouter:modelos', [['id' => 'google/gemini-2.5-flash', 'architecture' => ['input_modalities' => ['text', 'image']]]]);
+
+    $conversacion = Conversacion::factory()->create();
+    $audio = notaDeVoz($conversacion);
+
+    ResponderConversacion::dispatchSync($conversacion->id, $audio->id);
+
+    expect($audio->fresh()->meta)->toMatchArray(['transcripcion_fallida' => true, 'transcripcion_intentos' => 1])
+        ->not->toHaveKey('transcripcion');
+    AsistenteWhatsapp::assertPrompted(fn (AgentPrompt $prompt) => $prompt->contains('[Nota de voz que no se pudo escuchar]'));
+
+    Transcription::fake(['quiero turno para el service']);
+    $texto = entranteDelCliente($conversacion, 'Â¿me escuchaste?');
+
+    ResponderConversacion::dispatchSync($conversacion->id, $texto->id);
+
+    expect($audio->fresh()->meta)->toMatchArray(['transcripcion' => 'quiero turno para el service', 'transcripcion_intentos' => 2])
+        ->not->toHaveKey('transcripcion_fallida');
+});
+
+test('a voice note stops being retried after the attempt limit', function () {
+    AsistenteWhatsapp::fake(['Â¿Me lo escribÃ­s?']);
+    Transcription::fake(['no deberÃ­a llamarse']);
+
+    $conversacion = Conversacion::factory()->create();
+    $audio = notaDeVoz($conversacion, ['meta' => ['transcripcion_fallida' => true, 'transcripcion_intentos' => ResponderConversacion::INTENTOS_TRANSCRIPCION]]);
+
+    ResponderConversacion::dispatchSync($conversacion->id, $audio->id);
+
+    Transcription::assertNothingGenerated();
+});
+
+test('when whisper fails the audio goes to the agent model if it hears audio', function () {
+    AsistenteWhatsapp::fake(['Dale.']);
+    Transcription::fake(function () {
+        throw new RuntimeException('caÃ­do');
+    });
+    Http::fake([
+        'graph.facebook.com/*' => Http::response(['messages' => [['id' => 'wamid.respuesta']]]),
+        'openrouter.ai/api/v1/chat/completions' => Http::response(['choices' => [['message' => ['content' => ' quiero ver la hilux ']]]]),
+    ]);
+
+    $conversacion = Conversacion::factory()->create();
+    $audio = notaDeVoz($conversacion, ['media_mime' => 'application/ogg']);
+
+    ResponderConversacion::dispatchSync($conversacion->id, $audio->id);
+
+    expect($audio->fresh()->meta['transcripcion'])->toBe('quiero ver la hilux');
+    Http::assertSent(fn ($request) => str_ends_with($request->url(), '/chat/completions')
+        && $request['model'] === 'google/gemini-2.5-flash'
+        && $request['messages'][0]['content'][1]['input_audio']['format'] === 'ogg'
+        && $request->hasHeader('Authorization', 'Bearer sk-or-prueba'));
+    AsistenteWhatsapp::assertPrompted(fn (AgentPrompt $prompt) => $prompt->contains('[Nota de voz, transcripta]: quiero ver la hilux'));
+});
+
+test('a voice note still downloading delays the turn instead of skipping it', function () {
+    Queue::fake();
+    AsistenteWhatsapp::fake(['no deberÃ­a contestar']);
+    Transcription::fake(['hola']);
+
+    $conversacion = Conversacion::factory()->create();
+    $audio = notaDeVoz($conversacion, ['media_ruta' => null]);
+
+    (new ResponderConversacion($conversacion->id, $audio->id))->handle(app(Mensajero::class), app(WhatsappCloud::class));
+
+    Queue::assertPushed(ResponderConversacion::class, fn (ResponderConversacion $job) => $job->esperasDeMedia === 1
+        && $job->hastaMensajeId === $audio->id
+        && $job->delay !== null);
+    AsistenteWhatsapp::assertNeverPrompted();
+    Transcription::assertNothingGenerated();
+});
+
+test('after waiting enough for the download the turn goes on without the audio', function () {
+    Queue::fake();
+    AsistenteWhatsapp::fake(['Â¿Me lo escribÃ­s?']);
+
+    $conversacion = Conversacion::factory()->create();
+    $audio = notaDeVoz($conversacion, ['media_ruta' => null]);
+
+    (new ResponderConversacion($conversacion->id, $audio->id, ResponderConversacion::ESPERAS_DE_MEDIA))
+        ->handle(app(Mensajero::class), app(WhatsappCloud::class));
+
+    Queue::assertNotPushed(ResponderConversacion::class);
+    AsistenteWhatsapp::assertPrompted(fn (AgentPrompt $prompt) => $prompt->contains('[Nota de voz que no se pudo escuchar]'));
 });

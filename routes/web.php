@@ -167,6 +167,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('ajustes/conexiones', [ConexionController::class, 'show'])->name('ajustes.conexiones');
         Route::put('ajustes/conexiones/whatsapp', [ConexionController::class, 'whatsapp'])->name('ajustes.conexiones.whatsapp');
         Route::put('ajustes/conexiones/ia', [ConexionController::class, 'ia'])->name('ajustes.conexiones.ia');
+        Route::put('ajustes/conexiones/sitio', [ConexionController::class, 'sitio'])->name('ajustes.conexiones.sitio');
         Route::post('ajustes/conexiones/whatsapp/probar', [ConexionController::class, 'probarWhatsapp'])->name('ajustes.conexiones.whatsapp.probar');
         Route::post('ajustes/conexiones/ia/probar', [ConexionController::class, 'probarIa'])->name('ajustes.conexiones.ia.probar');
         Route::delete('ajustes/conexiones/{conexion}/{campo}', [ConexionController::class, 'olvidar'])

@@ -1,8 +1,18 @@
 import { Fragment } from 'react';
 import type { ReactNode } from 'react';
 
-/** Las URL sueltas, con el mismo criterio que `FormatoWhatsapp` del lado PHP. */
-const URL = /(https?:\/\/[^\s<>"']+[^\s<>"'.,;:!?)\]])/g;
+/**
+ * Las URL sueltas, con el mismo criterio que `FormatoWhatsapp` del lado PHP.
+ * También las que empiezan con `www.` sin protocolo, como las linkea
+ * WhatsApp en el celular (y `linkify.ts` de Vocero).
+ */
+const URL =
+    /((?:https?:\/\/|(?<![\w./@-])www\.)[^\s<>"']+[^\s<>"'.,;:!?)\]])/gi;
+
+/** El destino del link: a un `www.` suelto se le antepone `https://`. */
+function hrefDe(url: string): string {
+    return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
 
 /** `*negrita*`, `_cursiva_` y `~tachado~`, como los pinta WhatsApp. */
 const MARCAS = /(\*[^*\n]+\*|_[^_\n]+_|~[^~\n]+~)/g;
@@ -42,9 +52,9 @@ export function TextoWhatsapp({ texto }: { texto: string }) {
                 indice % 2 === 1 ? (
                     <a
                         key={indice}
-                        href={parte}
+                        href={hrefDe(parte)}
                         target="_blank"
-                        rel="noopener noreferrer"
+                        rel="noopener noreferrer nofollow"
                         className="underline underline-offset-2"
                     >
                         {parte}
