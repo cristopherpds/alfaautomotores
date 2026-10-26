@@ -77,6 +77,24 @@ test('opening a conversation marks it read, also for the client', function () {
     Http::assertSent(fn ($request) => ($request['status'] ?? null) === 'read' && ($request['message_id'] ?? null) === 'wamid.ultimo');
 });
 
+test('a voice note left with an empty transcription by the old code shows as failed', function () {
+    Http::fake(['graph.facebook.com/*' => Http::response(['success' => true])]);
+
+    $conversacion = Conversacion::factory()->create();
+    MensajeWhatsapp::factory()->for($conversacion)->create([
+        'tipo' => TipoMensaje::Audio,
+        'cuerpo' => null,
+        'meta' => ['transcripcion' => ''],
+    ]);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('panel.whatsapp.show', $conversacion))
+        ->assertInertia(fn ($page) => $page
+            ->where('conversacion.mensajes.0.transcripcion', null)
+            ->where('conversacion.mensajes.0.transcripcionFallida', true)
+        );
+});
+
 test('a reply goes out through meta and is stored as sent', function () {
     Http::fake(['graph.facebook.com/v23.0/111222333/messages' => Http::response(['messages' => [['id' => 'wamid.respuesta']]])]);
 

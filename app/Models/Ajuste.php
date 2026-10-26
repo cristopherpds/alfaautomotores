@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\Auditable;
+use App\Http\Requests\Ajustes\ConexionIaRequest;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -164,16 +165,25 @@ class Ajuste extends Model
     /**
      * La conexión con la IA, con el mismo respaldo en `.env`.
      *
+     * Un modelo de transcripción guardado antes de validarlo (uno de chat,
+     * como gemini) no existe en `audio/transcriptions`: se usa el del `.env`.
+     *
      * @return array{api_key: string|null, modelo: string, modelo_transcripcion: string}
      */
     public static function conexionIa(): array
     {
-        /** @var array{api_key: string|null, modelo: string, modelo_transcripcion: string} */
-        return self::conexion(self::CONEXION_IA, [
+        /** @var array{api_key: string|null, modelo: string, modelo_transcripcion: string} $conexion */
+        $conexion = self::conexion(self::CONEXION_IA, [
             'api_key' => config('ai.providers.openrouter.key'),
             'modelo' => config('services.openrouter.modelo'),
             'modelo_transcripcion' => config('services.openrouter.modelo_transcripcion'),
         ], ['api_key', 'modelo', 'modelo_transcripcion']);
+
+        if (preg_match(ConexionIaRequest::MODELOS_DE_VOZ, (string) $conexion['modelo_transcripcion']) !== 1) {
+            $conexion['modelo_transcripcion'] = (string) config('services.openrouter.modelo_transcripcion');
+        }
+
+        return $conexion;
     }
 
     /**

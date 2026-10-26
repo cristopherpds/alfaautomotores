@@ -232,6 +232,14 @@ test('the transcription model has to be a speech to text model', function () {
     expect(Ajuste::conexionIa()['modelo_transcripcion'])->toBe('openai/whisper-1');
 });
 
+test('a chat model saved as transcription model falls back to whisper', function () {
+    Ajuste::guardarConexion(Ajuste::CONEXION_IA, ['api_key' => 'sk-or-prueba', 'modelo' => 'google/gemini-2.5-flash', 'modelo_transcripcion' => 'google/gemini-2.5-flash']);
+
+    expect(Ajuste::conexionIa())
+        ->modelo->toBe('google/gemini-2.5-flash')
+        ->modelo_transcripcion->toBe('openai/whisper-1');
+});
+
 test('whisper is the default transcription model', function () {
     expect(config('services.openrouter.modelo_transcripcion'))->toBe('openai/whisper-1');
 });

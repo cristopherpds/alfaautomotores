@@ -123,10 +123,12 @@ export function ListaConversaciones({
                     </ToggleGroupItem>
                     <ToggleGroupItem
                         value="humano"
-                        className="flex-1 gap-1.5"
+                        className="flex-1 gap-1.5 whitespace-nowrap"
                         data-test="filtro-atencion-humana"
+                        title="Necesitan atención humana"
+                        aria-label="Atención humana"
                     >
-                        Atención humana
+                        Humano
                         {atencionHumana > 0 && (
                             <Badge
                                 variant="destructive"

@@ -279,7 +279,8 @@ class ConversacionController extends Controller implements HasMiddleware
                 ],
                 'mediaPendiente' => $mensaje->media_id !== null && $mensaje->media_ruta === null,
                 'transcripcion' => filled($mensaje->meta['transcripcion'] ?? null) ? (string) $mensaje->meta['transcripcion'] : null,
-                'transcripcionFallida' => ($mensaje->meta['transcripcion_fallida'] ?? false) === true,
+                'transcripcionFallida' => ($mensaje->meta['transcripcion_fallida'] ?? false) === true
+                    || ($mensaje->meta['transcripcion'] ?? null) === '',
                 'enviadoAt' => ($mensaje->wa_timestamp ?? $mensaje->created_at)?->toIso8601String(),
             ])->all(),
             'plantillas' => $conversacion->ventanaAbierta() ? [] : PlantillaWhatsapp::aprobadas()
