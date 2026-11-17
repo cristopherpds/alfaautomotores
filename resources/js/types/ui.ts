@@ -34,6 +34,23 @@ export type AvisosWhatsapp = ContadoresWhatsapp & {
     eventos: EventoWhatsapp[];
 };
 
+/** Un aviso de la campana: una cotización o un turno que entró. */
+export type Notificacion = {
+    id: string;
+    tipo: 'cotizacion' | 'turno' | string;
+    titulo: string;
+    detalle: string;
+    url: string | null;
+    leida: boolean;
+    at: string;
+};
+
+/** La respuesta de `panel.notificaciones.*`. */
+export type ResumenNotificaciones = {
+    noLeidas: number;
+    avisos: Notificacion[];
+};
+
 export type AuthLayoutProps = {
     children?: ReactNode;
     name?: string;

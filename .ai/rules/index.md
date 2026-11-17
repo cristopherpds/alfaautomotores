@@ -17,6 +17,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/layouts/** | .ai/rules/layouts.md |
 | resources/js/lib/productos.ts | .ai/rules/lib.md |
 | app/Models/Vehiculo.php, app/Models/Entrega.php, app/Models/Turno.php, app/Models/{Puesto,Servicio,Turno}.php, app/Models/Producto.php, app/Models/**, app/Models/Cliente.php, app/Models/Ajuste.php, app/Models/HeroSlide.php, app/Models/Cotizacion.php, app/Models/Conversacion.php | .ai/rules/models.md |
+| app/Notifications/** | .ai/rules/notifications.md |
 | app/Http/Controllers/Panel/** | .ai/rules/panel.md |
 | app/Policies/** | .ai/rules/policies.md |
 | routes/** | .ai/rules/routes.md |

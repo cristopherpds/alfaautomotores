@@ -54,6 +54,11 @@ class Ajuste extends Model
     public const AGENTE_IA = 'agente_ia';
 
     /**
+     * Los avisos por email que salen hacia los clientes.
+     */
+    public const AVISOS = 'avisos';
+
+    /**
      * Dominios que no salen a internet: WhatsApp no los muestra como link y
      * desde el celular del cliente no abren.
      *
@@ -80,6 +85,7 @@ class Ajuste extends Model
         self::CONEXION_WHATSAPP => 'Conexión de WhatsApp',
         self::CONEXION_IA => 'Conexión de IA',
         self::AGENTE_IA => 'Agente de WhatsApp',
+        self::AVISOS => 'Avisos por email',
     ];
 
     /**
@@ -228,6 +234,23 @@ class Ajuste extends Model
             'saludo' => null,
             'numeros_prueba' => null,
         ]);
+    }
+
+    /**
+     * Los avisos por email a los clientes. Apagados hasta que alguien los
+     * prenda desde el panel, como el agente: escribirle a un cliente es una
+     * decisión.
+     *
+     * `confirmacion_turno`: el email que recibe el cliente cuando el equipo
+     * confirma su turno (`Turno::avisarConfirmacion()`).
+     *
+     * @return array{confirmacion_turno: bool}
+     */
+    public static function avisos(): array
+    {
+        $valor = self::valor(self::AVISOS, ['confirmacion_turno' => false]);
+
+        return ['confirmacion_turno' => (bool) $valor['confirmacion_turno']];
     }
 
     /**

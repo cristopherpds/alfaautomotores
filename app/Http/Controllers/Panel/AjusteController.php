@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Ajustes\AjusteAvisosRequest;
 use App\Http\Requests\Ajustes\AjusteWhatsappRequest;
 use App\Models\Ajuste;
 use Illuminate\Http\RedirectResponse;
@@ -12,7 +13,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Los ajustes del sitio público que se cambian desde el panel.
+ * Los ajustes del sitio público que se cambian desde el panel, y los avisos
+ * por email que salen hacia los clientes.
  */
 class AjusteController extends Controller implements HasMiddleware
 {
@@ -67,6 +69,30 @@ class AjusteController extends Controller implements HasMiddleware
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Botón de WhatsApp actualizado.')]);
+
+        return back();
+    }
+
+    /**
+     * Show the email notices sent to customers.
+     */
+    public function avisos(): Response
+    {
+        return Inertia::render('panel/ajustes/avisos', [
+            'avisos' => Ajuste::avisos(),
+        ]);
+    }
+
+    /**
+     * Save the email notices sent to customers.
+     */
+    public function guardarAvisos(AjusteAvisosRequest $request): RedirectResponse
+    {
+        Ajuste::guardar(Ajuste::AVISOS, [
+            'confirmacion_turno' => $request->boolean('confirmacion_turno'),
+        ]);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Avisos actualizados.')]);
 
         return back();
     }

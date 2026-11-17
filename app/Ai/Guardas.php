@@ -55,9 +55,28 @@ class Guardas
     private const PROMETE_HUMANO = [
         '/\bte\s+(paso|derivo|comunico|transfiero|contacto|pongo\s+en\s+contacto)\s+con\s+(alguien|una\s+persona|un\s+humano|ventas\b|(el|la|un|una|nuestr[oa]s?|los|las)\s+(asesor|vendedor|encargad|compañer|operador|equipo|persona|taller))/iu',
         '/\bte\s+derivo\b/iu',
-        '/\b(una?|el|la|nuestr[oa])\s+(asesor[a]?|vendedor[a]?|encargad[oa]|persona|compañer[oa])\s+(del\s+(equipo|local|taller)\s+)?('.self::VERBO_DE_CONTACTO.')/iu',
+        '/\b(una?|el|la|nuestr[oa])\s+(asesor[a]?|vendedor[a]?|encargad[oa]|persona|compañer[oa]|miembro|integrante)\s+(del\s+(equipo|local|taller)\s+)?('.self::VERBO_DE_CONTACTO.')/iu',
         '/\balguien\s+(del\s+(equipo|local|taller)\s+)?('.self::VERBO_DE_CONTACTO.')/iu',
         '/\b(el|nuestro)\s+equipo\s+('.self::VERBO_DE_CONTACTO.')/iu',
+        // El verbo antes del sujeto: «en un rato te escribe alguien del equipo».
+        '/\b('.self::VERBO_DE_CONTACTO.')\s+(alguien|una\s+persona|(el|nuestro)\s+equipo|una?\s+(asesor[a]?|vendedor[a]?|encargad[oa]|compañer[oa]|miembro|integrante))\b/iu',
+        // «Te voy a pasar la información a un miembro del equipo», «le paso tus datos al equipo».
+        '/\b(te|le)\s+(paso|pasamos|voy\s+a\s+pasar|vamos\s+a\s+pasar)\b[^.!?\n]{0,40}?\b(a\s+(alguien|una\s+persona|una?\s+(asesor[a]?|vendedor[a]?|encargad[oa]|compañer[oa]|miembro|integrante)|(el|nuestro)\s+equipo)|al\s+equipo)\b/iu',
+    ];
+
+    /**
+     * Respuestas que dan un turno por reservado. Pasó en vivo con un modelo
+     * flash: escribió «Reservado. Tenés un turno…» sin llamar a
+     * `reservar_turno`. «¿Te reservo…?» (pregunta, presente) no cuenta.
+     *
+     * @var list<string>
+     */
+    private const AFIRMA_RESERVA = [
+        '/^\W*(listo\W+)?(reservado|agendado)\b/iu',
+        '/\b(qued[oó]|queda|est[aá])\s+(reservado|agendado|anotado)\b/iu',
+        // Con tilde: «te reserve» (sin tilde) es el subjuntivo de una pregunta.
+        '/\bte\s+(lo\s+)?(reservé|agendé|anoté)/iu',
+        '/\bturno\s+(reservado|agendado)\b/iu',
     ];
 
     /**
@@ -118,6 +137,21 @@ class Guardas
     public static function prometeHumano(string $texto): bool
     {
         foreach (self::PROMETE_HUMANO as $patron) {
+            if (preg_match($patron, $texto) === 1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Si la respuesta le dice a la persona que su turno quedó reservado. El
+     * job la deja salir sólo si el turno existe de verdad.
+     */
+    public static function afirmaReserva(string $texto): bool
+    {
+        foreach (self::AFIRMA_RESERVA as $patron) {
             if (preg_match($patron, $texto) === 1) {
                 return true;
             }

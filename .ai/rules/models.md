@@ -119,3 +119,6 @@ NUNCA `where`/`whereIn`/`like`/`orderBy` sobre una columna cifrada (GCM da otro 
 ## Borrar conversación: Conversacion::olvidar() y atención humana
 Borrar desde el panel va por `Conversacion::olvidar(bool $tambienElCliente)` (alcance hilo|contacto): transacción con lockForUpdate, bloquea si el cliente tiene turno futuro pendiente/confirmado, purga jobs `ResponderConversacion`/`DescargarMediaWhatsapp` del queue database leyendo el payload (por eso esos jobs NO son ShouldBeEncrypted) y borra `whatsapp/{id}/` en afterCommit. La auditoría sigue normal (decisión del usuario).
 "Todas" excluye las que atiende el equipo; `Conversacion::queAtiendeElEquipo()` (derivada o IA apagada, no archivada) es la única definición, usada por la pestaña «Atención humana» y por `contadoresDeAvisos()`.
+
+## Botones del hero a WhatsApp usan el número del botón flotante
+`HeroSlide::boton()` reescribe cualquier destino `wa.me` / `api|web.whatsapp.com` al primer contacto de `Ajuste::whatsappDisponible(now())` (el mismo que `siteInfo()['whatsapp']` y la burbuja), conservando sólo `?text=`. El número guardado en el slide se ignora a propósito: si no, al cambiar el número en el panel el botón quedaba en el viejo (pasó con el de ejemplo 59899000000). La fila no se modifica: se resuelve al armar `datos()`.

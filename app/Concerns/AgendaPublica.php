@@ -65,6 +65,8 @@ trait AgendaPublica
             ]);
         }
 
+        $turno->avisarAlEquipo();
+
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Turno reservado. Te confirmamos por WhatsApp.')]);
 
         return back();

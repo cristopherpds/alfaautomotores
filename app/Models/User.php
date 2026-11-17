@@ -8,6 +8,7 @@ use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -88,5 +89,19 @@ class User extends Authenticatable
     public function isOwner(): bool
     {
         return $this->is_owner;
+    }
+
+    /**
+     * Quiénes reciben los avisos de lo que entra desde la web o WhatsApp
+     * (cotizaciones y turnos), en la campana del panel y por email: los que
+     * gestionan esos registros, admin y vendedor.
+     *
+     * @return Collection<int, self>
+     */
+    public static function equipoDeAvisos(): Collection
+    {
+        return self::query()
+            ->whereIn('role', [UserRole::Admin, UserRole::Vendedor])
+            ->get();
     }
 }

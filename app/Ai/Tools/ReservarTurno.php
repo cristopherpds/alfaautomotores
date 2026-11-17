@@ -53,11 +53,12 @@ class ReservarTurno extends Herramienta
 
     public function handle(Request $request): Stringable|string
     {
-        $servicio = Servicio::where('slug', (string) ($request['servicio'] ?? ''))->where('activo', true)->first();
         $inicio = self::inicio((string) ($request['inicio'] ?? ''));
+        $servicio = Servicio::where('slug', (string) ($request['servicio'] ?? ''))->where('activo', true)->first()
+            ?? ($inicio === null ? null : self::servicioOfrecidoEn($this->conversacion, $inicio));
 
         if ($servicio === null || $inicio === null) {
-            return $this->json(['error' => 'Servicio u horario inválido. El inicio va como AAAA-MM-DD HH:MM.']);
+            return $this->json(['error' => 'Servicio u horario inválido. "servicio" es el código (por ejemplo lavado-camioneta), no el nombre; el inicio va como AAAA-MM-DD HH:MM. Los dos salen de proponer_horarios.']);
         }
 
         if (! HorarioOfrecido::fueOfrecido($this->conversacion, $servicio, $inicio)) {
@@ -131,6 +132,8 @@ class ReservarTurno extends Herramienta
         $this->conversacion->cliente()->associate($turno->cliente_id);
         $this->conversacion->saveQuietly();
 
+        $turno->avisarAlEquipo();
+
         return $this->json([
             'reservado' => true,
             'turno' => $turno->id,
@@ -145,6 +148,21 @@ class ReservarTurno extends Herramienta
         $inicio = Date::createFromFormat('Y-m-d H:i', trim($texto));
 
         return $inicio === null || $inicio->format('Y-m-d H:i') !== trim($texto) ? null : $inicio->startOfMinute();
+    }
+
+    /**
+     * El servicio del horario que se le ofreció a esta conversación en ese
+     * inicio, si hay uno solo. Cubre al modelo que manda el nombre
+     * («Camioneta») en vez del código: el horario ofrecido ya dice cuál es.
+     */
+    private static function servicioOfrecidoEn(Conversacion $conversacion, CarbonInterface $inicio): ?Servicio
+    {
+        $servicios = HorarioOfrecido::vigentes($conversacion)
+            ->filter(fn (HorarioOfrecido $horario): bool => $horario->inicia_at->equalTo($inicio))
+            ->pluck('servicio')
+            ->unique('id');
+
+        return $servicios->count() === 1 ? $servicios->first() : null;
     }
 
     /**

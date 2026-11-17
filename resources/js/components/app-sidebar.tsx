@@ -12,6 +12,7 @@ import {
     History,
     Images,
     LayoutGrid,
+    Mail,
     MessageCircle,
     MessagesSquare,
     PlugZap,
@@ -35,6 +36,7 @@ import {
 import { indiceDeSeccion } from '@/lib/productos-panel';
 import { dashboard } from '@/routes';
 import {
+    avisos as ajusteAvisos,
     conexiones as ajusteConexiones,
     whatsapp as ajusteWhatsapp,
 } from '@/routes/panel/ajustes';
@@ -61,7 +63,7 @@ const whatsappNavItem: NavItem = {
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Inicio',
         href: dashboard(),
         icon: LayoutGrid,
     },
@@ -145,6 +147,11 @@ const adminNavItems: NavItem[] = [
         icon: Bot,
     },
     {
+        title: 'Avisos por email',
+        href: ajusteAvisos(),
+        icon: Mail,
+    },
+    {
         title: 'Conexiones',
         href: ajusteConexiones(),
         icon: PlugZap,
@@ -157,12 +164,12 @@ const mostrarEnlacesDelKit = false;
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
+        title: 'Repositorio',
         href: 'https://github.com/laravel/react-starter-kit',
         icon: FolderGit2,
     },
     {
-        title: 'Documentation',
+        title: 'Documentación',
         href: 'https://laravel.com/docs/starter-kits#react',
         icon: BookOpen,
     },

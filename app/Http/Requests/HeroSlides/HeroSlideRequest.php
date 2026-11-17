@@ -47,6 +47,7 @@ class HeroSlideRequest extends FormRequest
                     default => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
                 },
             ],
+            'con_logo' => ['required', 'boolean'],
             'eyebrow' => ['nullable', 'string', 'max:60'],
             'titulo' => ['required', 'string', 'max:120'],
             'bajada' => ['nullable', 'string', 'max:240'],
@@ -86,6 +87,7 @@ class HeroSlideRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
+            'con_logo' => $this->boolean('con_logo'),
             'activo' => $this->boolean('activo'),
         ]);
     }

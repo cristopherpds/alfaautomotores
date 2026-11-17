@@ -60,8 +60,12 @@ class ProponerHorarios extends Herramienta
 
         $horarios = self::buscar($this->conversacion, $servicio, filled($request['fecha'] ?? null) ? (string) $request['fecha'] : null);
 
+        /* El código va en `servicio`, que es lo que pide reservar_turno: con
+           el nombre («Camioneta») el modelo reservaba con un código que no
+           existe. */
         return $this->json([
-            'servicio' => $servicio->nombre,
+            'servicio' => $servicio->slug,
+            'nombre' => $servicio->nombre,
             'duracion' => $servicio->duracionLegible(),
             'horarios' => $horarios['horarios'],
             'nota' => $horarios['nota'],

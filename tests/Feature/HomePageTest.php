@@ -186,6 +186,24 @@ test('the hero shows only the slides in force, in the panel order', function () 
         );
 });
 
+test('a WhatsApp button in the hero goes to the number of the floating button', function () {
+    config()->set('alfa.whatsapp', '59894628713');
+
+    HeroSlide::factory()->create([
+        'boton1_texto' => 'Consultar financiación',
+        'boton1_url' => 'https://wa.me/59899000000?text=Hola%2C%20quiero%20consultar%20por%20financiaci%C3%B3n.',
+        'boton2_texto' => 'Escribinos',
+        'boton2_url' => 'https://api.whatsapp.com/send?phone=59899000000',
+    ]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('slides.0.botones.0.url', 'https://wa.me/59894628713?text=Hola%2C%20quiero%20consultar%20por%20financiaci%C3%B3n.')
+            ->where('slides.0.botones.1.url', 'https://wa.me/59894628713')
+        );
+});
+
 test('without slides in force the hero falls back to the route video', function () {
     HeroSlide::factory()->inactivo()->create();
 

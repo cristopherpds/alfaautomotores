@@ -299,7 +299,7 @@ export default function Dashboard({
 
     return (
         <>
-            <Head title="Dashboard" />
+            <Head title="Inicio" />
 
             <div className="flex h-full flex-1 flex-col gap-8 p-4">
                 {/* 1. Para hoy */}
@@ -557,7 +557,7 @@ export default function Dashboard({
 Dashboard.layout = {
     breadcrumbs: [
         {
-            title: 'Dashboard',
+            title: 'Inicio',
             href: dashboard(),
         },
     ],

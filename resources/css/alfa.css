@@ -516,6 +516,27 @@
             color: var(--alfa-white);
         }
 
+        /* El isotipo tiene el aro oscuro: sobre el disco blanco se lee en
+           cualquier fondo. `inline-block` lo deja seguir la alineación del
+           texto (`text-align` según la posición del slide). */
+        & .hero__logo {
+            display: inline-block;
+            vertical-align: top;
+            width: clamp(64px, min(8vw, 12vh), 104px);
+            height: auto;
+            aspect-ratio: 1;
+            padding: 4px;
+            border-radius: 50%;
+            background: var(--alfa-white);
+            box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+        }
+
+        /* Con antetítulo, el mismo aire que separa el título: pegado al
+           disco parecía un pie de foto. */
+        & .hero__logo + .eyebrow {
+            margin-top: clamp(14px, 2.4vh, 22px);
+        }
+
         /* `h1` en el slide visible y `p` en los demás: una sola clase para
            que se vean igual. `pre-line` respeta los saltos que se cargan en
            el panel. */
@@ -809,6 +830,14 @@
         & .hero__titulo {
             font-size: var(--vista-titulo);
             margin-block: var(--vista-margen);
+        }
+
+        & .hero__logo {
+            width: var(--vista-logo);
+        }
+
+        & .hero__logo + .eyebrow {
+            margin-top: var(--vista-margen);
         }
 
         & .lede {

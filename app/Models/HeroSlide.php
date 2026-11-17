@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Storage;
  * @property int $id
  * @property TipoFondo $tipo_fondo
  * @property string $fondo
+ * @property bool $con_logo
  * @property string|null $eyebrow
  * @property string $titulo
  * @property string|null $bajada
@@ -42,7 +43,7 @@ use Illuminate\Support\Facades\Storage;
  * @property Carbon|null $updated_at
  */
 #[Fillable([
-    'tipo_fondo', 'fondo', 'eyebrow', 'titulo', 'bajada', 'posicion',
+    'tipo_fondo', 'fondo', 'con_logo', 'eyebrow', 'titulo', 'bajada', 'posicion',
     'boton1_texto', 'boton1_url', 'boton2_texto', 'boton2_url',
     'activo', 'desde', 'hasta', 'orden',
 ])]
@@ -82,6 +83,7 @@ class HeroSlide extends Model
         return [
             'tipo_fondo' => TipoFondo::class,
             'posicion' => PosicionTexto::class,
+            'con_logo' => 'boolean',
             'activo' => 'boolean',
             'desde' => 'date',
             'hasta' => 'date',
@@ -144,7 +146,7 @@ class HeroSlide extends Model
      * Lo que dibuja el hero: el mismo payload para la portada y para la vista
      * previa del panel.
      *
-     * @return array{id: int|null, tipoFondo: string, fondo: string, eyebrow: string|null, titulo: string, bajada: string|null, posicion: string, botones: array<int, array{texto: string, url: string}>}
+     * @return array{id: int|null, tipoFondo: string, fondo: string, conLogo: bool, eyebrow: string|null, titulo: string, bajada: string|null, posicion: string, botones: array<int, array{texto: string, url: string}>}
      */
     public function datos(): array
     {
@@ -152,6 +154,7 @@ class HeroSlide extends Model
             'id' => $this->id,
             'tipoFondo' => $this->tipo_fondo->value,
             'fondo' => $this->url(),
+            'conLogo' => $this->con_logo,
             'eyebrow' => $this->eyebrow,
             'titulo' => $this->titulo,
             'bajada' => $this->bajada,
@@ -168,7 +171,7 @@ class HeroSlide extends Model
      * la portada antes de que fuera administrable. Así una base vacía nunca
      * deja la primera vista en negro.
      *
-     * @return array{id: int|null, tipoFondo: string, fondo: string, eyebrow: string|null, titulo: string, bajada: string|null, posicion: string, botones: array<int, array{texto: string, url: string}>}
+     * @return array{id: int|null, tipoFondo: string, fondo: string, conLogo: bool, eyebrow: string|null, titulo: string, bajada: string|null, posicion: string, botones: array<int, array{texto: string, url: string}>}
      */
     public static function porDefecto(): array
     {
@@ -176,6 +179,7 @@ class HeroSlide extends Model
             'id' => null,
             'tipoFondo' => TipoFondo::Video->value,
             'fondo' => '/assets/hero-ruta.mp4',
+            'conLogo' => false,
             'eyebrow' => config('alfa.ciudad').' · '.config('alfa.pais'),
             'titulo' => "Tu elegís el destino,\nnosotros ponemos\nel vehículo.",
             'bajada' => 'Vehículos seleccionados, revisados y listos para entregar. Financiación disponible y recibimos tu usado como parte de pago.',
@@ -207,6 +211,29 @@ class HeroSlide extends Model
         $texto = $this->getAttribute("boton{$numero}_texto");
         $url = $this->getAttribute("boton{$numero}_url");
 
-        return filled($texto) && filled($url) ? ['texto' => $texto, 'url' => $url] : null;
+        if (blank($texto) || blank($url)) {
+            return null;
+        }
+
+        return ['texto' => $texto, 'url' => self::alNumeroDelSitio($url)];
+    }
+
+    /**
+     * Un link de WhatsApp va siempre al número del botón flotante, el mismo
+     * que usan cabecera, pie y fichas: el número cargado en el slide se
+     * ignora (si no, al cambiar el número en el panel el botón quedaría
+     * apuntando al viejo). El mensaje ya redactado se conserva.
+     */
+    private static function alNumeroDelSitio(string $url): string
+    {
+        if (! preg_match('#^https?://(?:wa\.me|(?:api|web)\.whatsapp\.com)(?:/[^?\#]*)?(\?[^\#]*)?#i', $url, $partes)) {
+            return $url;
+        }
+
+        $numero = Ajuste::whatsappDisponible(now())['contactos'][0]['numero'];
+        parse_str(ltrim($partes[1] ?? '', '?'), $consulta);
+        $mensaje = $consulta['text'] ?? null;
+
+        return 'https://wa.me/'.$numero.(filled($mensaje) ? '?text='.rawurlencode((string) $mensaje) : '');
     }
 }

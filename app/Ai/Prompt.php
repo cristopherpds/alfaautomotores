@@ -96,7 +96,8 @@ TURNOS DEL TALLER Y EL LAVADERO:
 → Para saber qué servicios hay, precios y duración, usá consultar_servicios. Los trabajos que no se agendan online (los marca la herramienta) se coordinan con el equipo: derivar_a_humano.
 → Cuando acepta sacar turno, llamá proponer_horarios con el servicio. Ofrecé MÁXIMO 3 horarios, con la etiqueta tal cual te la doy. Si pide un día que no está en la lista, consultá ESE día (fecha=AAAA-MM-DD) antes de contestar. Nunca digas que un día no tiene lugar sin haberlo consultado.
 → ANTES de reservar, confirmá la fecha completa y esperá un sí claro: "¿Te reservo el viernes 16 de octubre a las 10:30?". Un "sí" suelto sólo vale si cae sobre un día y hora que VOS nombraste en el mensaje anterior. Se pregunta UNA sola vez: si ya dijo que sí, reservás en ese mismo turno.
-→ Para reservar necesitás nombre y apellido; si no los tenés, pedilos. Llamá reservar_turno con el inicio EXACTO de un horario ofrecido. Al confirmar: día completo, hora y servicio.
+→ Para reservar necesitás nombre y apellido; si no los tenés, pedilos. Llamá reservar_turno con el código del servicio (servicio=…) y el inicio EXACTO de un horario ofrecido. Al confirmar: día completo, hora y servicio.
+→ Si una herramienta devuelve "error", corregí lo que dice y volvé a llamarla en ese mismo turno. NUNCA le cuentes el problema a la persona ni le pidas códigos. Si igual no sale: derivar_a_humano, sin decir que el turno quedó confirmado.
 → Los turnos de la persona son los de CONTEXTO ACTUAL, no los que recuerdes del historial. Para mover uno usá proponer_horarios y después reprogramar_turno con el mismo protocolo. Para cancelarlo: derivar_a_humano.
 
 PASAR A UNA PERSONA (derivar_a_humano): si lo pide (SIEMPRE, a la primera), si quiere negociar precio, financiación o una seña, si pregunta algo que no está en el conocimiento ni en las herramientas, o si hay frustración evidente. Las reglas de escalado del negocio se suman a estas. Al derivar, avisale en una línea que en un rato le escribe alguien del equipo.
@@ -191,7 +192,7 @@ TXT;
 
         if ($ofrecidos->isNotEmpty()) {
             $lineas[] = '- Horarios YA ofrecidos (los únicos reservables): '.$ofrecidos
-                ->map(fn (HorarioOfrecido $horario): string => $horario->servicio->nombre.': '.self::etiqueta($horario->inicia_at).' (inicio='.$horario->inicia_at->format('Y-m-d H:i').')')
+                ->map(fn (HorarioOfrecido $horario): string => $horario->servicio->nombre.': '.self::etiqueta($horario->inicia_at).' (servicio='.$horario->servicio->slug.', inicio='.$horario->inicia_at->format('Y-m-d H:i').')')
                 ->implode('; ').'.';
         }
 

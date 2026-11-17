@@ -111,14 +111,18 @@ export function AvisosWhatsappAjustes() {
             </div>
 
             <div className="flex items-center justify-between gap-4">
-                <Label htmlFor="avisos-sonido" className="flex-col items-start">
-                    <span>Sonido</span>
-                    <span className="font-normal text-muted-foreground">
+                <div className="space-y-0.5">
+                    <Label htmlFor="avisos-sonido">Sonido</Label>
+                    <p
+                        id="avisos-sonido-ayuda"
+                        className="text-sm text-muted-foreground"
+                    >
                         Dos notas cortas con cada novedad.
-                    </span>
-                </Label>
+                    </p>
+                </div>
                 <Switch
                     id="avisos-sonido"
+                    aria-describedby="avisos-sonido-ayuda"
                     checked={sonido}
                     onCheckedChange={(activado) => {
                         guardarSonido(activado);

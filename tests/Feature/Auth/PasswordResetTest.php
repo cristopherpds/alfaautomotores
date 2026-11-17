@@ -31,6 +31,25 @@ test('reset password link can be requested', function () {
     Notification::assertSentTo($user, ResetPassword::class);
 });
 
+test('the reset password email and status come in spanish', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+
+    $this->post(route('password.email'), ['email' => $user->email])
+        ->assertSessionHas('status', 'Te mandamos un link a tu email para cambiar la contraseña.');
+
+    Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) use ($user) {
+        $mail = $notification->toMail($user);
+
+        expect($mail->subject)->toBe('Cambiá tu contraseña')
+            ->and($mail->actionText)->toBe('Cambiar contraseña')
+            ->and($mail->render()->toHtml())->toContain('¡Hola!')->toContain('Saludos,');
+
+        return true;
+    });
+});
+
 test('reset password screen can be rendered', function () {
     Notification::fake();
 

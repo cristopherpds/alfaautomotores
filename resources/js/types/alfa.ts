@@ -82,6 +82,8 @@ export type HeroSlide = {
     id: number | null;
     tipoFondo: 'imagen' | 'video';
     fondo: string;
+    /** El isotipo de Alfa sobre el título, en el lugar del antetítulo. */
+    conLogo: boolean;
     eyebrow: string | null;
     titulo: string;
     bajada: string | null;

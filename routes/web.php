@@ -16,6 +16,7 @@ use App\Http\Controllers\Panel\CotizacionController as PanelCotizacionController
 use App\Http\Controllers\Panel\EntregaController;
 use App\Http\Controllers\Panel\HeroSlideController;
 use App\Http\Controllers\Panel\MensajeWhatsappController;
+use App\Http\Controllers\Panel\NotificacionController;
 use App\Http\Controllers\Panel\PlantillaWhatsappController;
 use App\Http\Controllers\Panel\ProductoController as PanelProductoController;
 use App\Http\Controllers\Panel\ProductoImagenController;
@@ -69,6 +70,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     /* El panel va bajo `panel/` porque `vehiculos.show` y `/vehiculos/{slug}`
        ya son del sitio público. */
     Route::prefix('panel')->name('panel.')->group(function () {
+        /* La campana: los avisos de cotizaciones y turnos de cada usuario. */
+        Route::get('notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
+        Route::patch('notificaciones/{notificacion}/leida', [NotificacionController::class, 'leida'])
+            ->whereUuid('notificacion')
+            ->name('notificaciones.leida');
+        Route::post('notificaciones/leer-todas', [NotificacionController::class, 'leerTodas'])->name('notificaciones.leer-todas');
+
         /* Antes del resource a propósito: `vehiculos/{vehiculo}` matchea
            `vehiculos/lote`, y como el binding es por id daría 404. */
         Route::patch('vehiculos/lote/estado', [VehiculoLoteController::class, 'estado'])
@@ -164,6 +172,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         /* Ajustes del sitio público, sólo para admins. */
         Route::get('ajustes/whatsapp', [AjusteController::class, 'whatsapp'])->name('ajustes.whatsapp');
         Route::put('ajustes/whatsapp', [AjusteController::class, 'guardarWhatsapp'])->name('ajustes.whatsapp.update');
+        Route::get('ajustes/avisos', [AjusteController::class, 'avisos'])->name('ajustes.avisos');
+        Route::put('ajustes/avisos', [AjusteController::class, 'guardarAvisos'])->name('ajustes.avisos.update');
 
         /* Las credenciales de Meta y de la IA, como en la Configuración de
            Vocero: cifradas en `ajustes`, con el `.env` de respaldo. */

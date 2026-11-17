@@ -13,3 +13,6 @@ Las claves tienen que coincidir con las de `lang/en/validation.php`, que es lo q
 `custom` y `attributes` quedan vacíos a propósito: los mensajes propios se escriben literales en el `after()` de cada Form Request, al lado de la regla que los motiva, y en los formularios el error se muestra debajo de su campo ya etiquetado.
 
 Ojo con `validation.uploaded`: no es un error de la app sino de PHP descartando el archivo antes de validar, casi siempre por `upload_max_filesize`. Las reglas del repo piden `max:4096` (4 MB), así que el php.ini del entorno tiene que acompañar o el mensaje aparece sin que el usuario haya hecho nada mal.
+
+## Los textos del framework en los mails van en lang/es.json
+Los strings de `ResetPassword` y del layout de mail de Laravel ("Hello!", "Regards,", "All rights reserved.", el subcopy del botón) se traducen en `lang/es.json` por su texto en inglés; los del broker y el login en `lang/es/passwords.php` y `lang/es/auth.php` (mismas claves que `lang/en`). Si se usa otra notificación del framework, sumar sus strings ahí o el mail sale en inglés. Fortify sólo tiene `resetPasswords()`: la verificación de email se sacó a propósito (los usuarios los crea un admin).

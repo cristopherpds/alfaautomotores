@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { HeroBoton, HeroSlide } from '@/types';
 
 /** Cuánto se queda cada slide antes de pasar al siguiente. */
-const INTERVALO_MS = 7000;
+const INTERVALO_MS = 4000;
 
 /** Una ruta del sitio (`/catalogo`), que navega con Inertia sin recargar. */
 function esInterna(url: string): boolean {
@@ -110,6 +110,15 @@ export function HeroSlideView({ slide, activo, esTitular }: SlideProps) {
             <div className="hero__velo" aria-hidden="true" />
 
             <div className="shell hero__inner">
+                {/* Decorativo: el título ya nombra la marca. */}
+                {slide.conLogo && (
+                    <img
+                        className="hero__logo"
+                        src="/assets/isotipo-alfa.png"
+                        alt=""
+                    />
+                )}
+
                 {slide.eyebrow && <p className="eyebrow">{slide.eyebrow}</p>}
 
                 <Titulo className="hero__titulo">{slide.titulo}</Titulo>
@@ -146,7 +155,7 @@ function prefiereMenosMovimiento(): boolean {
 /**
  * El hero de la portada: uno o varios slides que se alternan con un fundido.
  *
- * Pasa solo cada siete segundos y se detiene mientras el mouse o el foco
+ * Pasa solo cada cuatro segundos y se detiene mientras el mouse o el foco
  * están adentro, con la pestaña oculta, o si quien visita pidió menos
  * movimiento. Como se mueve solo por más de cinco segundos, lleva su propio
  * botón de pausa (WCAG 2.2.2): no sacarlo, frenar con el mouse encima no

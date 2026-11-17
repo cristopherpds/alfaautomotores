@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Concerns\Auditable;
 use App\Enums\EstadoCotizacion;
 use App\Enums\OrigenCotizacion;
+use App\Notifications\NuevaCotizacion;
 use Database\Factories\CotizacionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -159,7 +161,8 @@ class Cotizacion extends Model
     /**
      * Guardar una solicitud con sus fotos y su lead.
      *
-     * Todo o nada: si falla una foto no queda la fila a medias.
+     * Todo o nada: si falla una foto no queda la fila a medias. Al final se
+     * avisa al equipo (campana y email), sea de la web o de WhatsApp.
      *
      * @param  array{marca: string, modelo: string, anio: int, kilometros: int, detalles: string|null, nombre: string, apellido: string, celular: string}  $datos
      *                                                                                                                                                             Las fotos llegan como archivo subido (el formulario del sitio) o como
@@ -170,7 +173,7 @@ class Cotizacion extends Model
      */
     public static function recibir(array $datos, array $fotos, ?Conversacion $conversacion = null): self
     {
-        return DB::transaction(function () use ($datos, $fotos, $conversacion): self {
+        $cotizacion = DB::transaction(function () use ($datos, $fotos, $conversacion): self {
             $cliente = Cliente::desdeReserva([
                 'nombre' => $datos['nombre'],
                 'apellido' => $datos['apellido'],
@@ -200,6 +203,10 @@ class Cotizacion extends Model
 
             return $cotizacion;
         });
+
+        Notification::send(User::equipoDeAvisos(), new NuevaCotizacion($cotizacion));
+
+        return $cotizacion;
     }
 
     /**

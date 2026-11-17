@@ -117,6 +117,58 @@ test('an offered slot is booked as a whatsapp turn and links the client', functi
         ->and($conversacion->fresh()->cliente_id)->toBe($turno->cliente_id);
 });
 
+test('the offered slots carry the service code that booking asks for', function () {
+    $lunes = abrirElLavadero();
+    Servicio::factory()->lavadero()->duracion(60)->create(['slug' => 'lavado-camioneta', 'nombre' => 'Camioneta']);
+    $conversacion = Conversacion::factory()->create();
+
+    $resultado = llamar(new ProponerHorarios($conversacion), ['servicio' => 'lavado-camioneta', 'fecha' => $lunes->format('Y-m-d')]);
+
+    expect($resultado['servicio'])->toBe('lavado-camioneta')
+        ->and($resultado['nombre'])->toBe('Camioneta')
+        ->and(Prompt::construir($conversacion->fresh(), Ajuste::agenteIa()))->toContain('servicio=lavado-camioneta, inicio='.$resultado['horarios'][0]['inicio']);
+});
+
+/*
+ * Pasó en vivo: el modelo mandó el nombre («Camioneta») en vez del código, la
+ * reserva falló y le dijo al cliente que el turno estaba confirmado.
+ */
+test('booking with the service name still books the offered slot', function () {
+    $lunes = abrirElLavadero();
+    Servicio::factory()->lavadero()->duracion(60)->create(['slug' => 'lavado-camioneta', 'nombre' => 'Camioneta']);
+    $conversacion = Conversacion::factory()->create(['wa_id' => '59899123456']);
+
+    $horario = llamar(new ProponerHorarios($conversacion), ['servicio' => 'lavado-camioneta', 'fecha' => $lunes->format('Y-m-d')])['horarios'][0];
+
+    $resultado = llamar(new ReservarTurno($conversacion), [
+        'servicio' => 'Camioneta',
+        'inicio' => $horario['inicio'],
+        'confirmacion' => 'Si confirma',
+        'nombre' => 'Cristopher',
+        'apellido' => 'Paiva',
+    ]);
+
+    expect($resultado['reservado'] ?? null)->toBeTrue()
+        ->and(Turno::sole()->servicio->slug)->toBe('lavado-camioneta');
+});
+
+test('a wrong service name outside the offered slots still fails with a hint', function () {
+    abrirElLavadero();
+    Servicio::factory()->lavadero()->duracion(60)->create(['slug' => 'lavado-camioneta', 'nombre' => 'Camioneta']);
+    $conversacion = Conversacion::factory()->create();
+
+    $resultado = llamar(new ReservarTurno($conversacion), [
+        'servicio' => 'Camioneta',
+        'inicio' => '2026-09-21 10:00',
+        'confirmacion' => 'sí',
+        'nombre' => 'Ana',
+        'apellido' => 'Pérez',
+    ]);
+
+    expect($resultado['error'])->toContain('el código')
+        ->and(Turno::count())->toBe(0);
+});
+
 test('booking needs a name', function () {
     $lunes = abrirElTaller();
     Servicio::factory()->duracion(30)->create(['slug' => 'service']);

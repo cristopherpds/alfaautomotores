@@ -27,7 +27,7 @@ createInertiaApp({
             case name.startsWith('productos/'):
                 return AlfaLayout;
             // Acceso al panel: mismo sistema de diseño que el sitio público,
-            // pero sin chrome. `auth/verify-email` sigue con AuthLayout.
+            // pero sin chrome.
             case name === 'auth/login':
             case name === 'auth/forgot-password':
             case name === 'auth/reset-password':

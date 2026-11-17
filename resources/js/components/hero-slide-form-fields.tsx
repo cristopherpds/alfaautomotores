@@ -109,6 +109,7 @@ export default function HeroSlideFormFields({
         slide?.tipoFondo ?? 'imagen',
     );
     const [archivoLocal, setArchivoLocal] = useState<string | null>(null);
+    const [conLogo, setConLogo] = useState(slide?.conLogo ?? false);
     const [eyebrow, setEyebrow] = useState(slide?.eyebrow ?? '');
     const [titulo, setTitulo] = useState(slide?.titulo ?? '');
     const [bajada, setBajada] = useState(slide?.bajada ?? '');
@@ -144,6 +145,7 @@ export default function HeroSlideFormFields({
         id: slide?.id ?? null,
         tipoFondo,
         fondo: archivoLocal ?? fondoGuardado,
+        conLogo,
         eyebrow: eyebrow.trim() || null,
         titulo: titulo.trim() || 'El título del slide',
         bajada: bajada.trim() || null,
@@ -208,6 +210,26 @@ export default function HeroSlideFormFields({
                         }}
                     />
                 </Campo>
+
+                <div className="grid gap-2">
+                    <div className="flex items-center gap-3 rounded-lg border p-3">
+                        <Switch
+                            id="con_logo"
+                            name="con_logo"
+                            checked={conLogo}
+                            onCheckedChange={setConLogo}
+                            value="1"
+                        />
+                        <Label htmlFor="con_logo">
+                            Mostrar el logo de Alfa
+                        </Label>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        El isotipo va grande sobre el título, en el lugar del
+                        antetítulo.
+                    </p>
+                    <InputError message={errors.con_logo} />
+                </div>
 
                 <Campo
                     name="eyebrow"
@@ -330,7 +352,7 @@ export default function HeroSlideFormFields({
                             name={`boton${numero}_url`}
                             label="Destino"
                             error={errors[`boton${numero}_url`]}
-                            ayuda="Una ruta del sitio (/catalogo) o una dirección completa (https://wa.me/…)."
+                            ayuda="Una ruta del sitio (/catalogo) o una dirección completa (https://wa.me/…). Un link de WhatsApp va siempre al número del botón flotante; sólo se usa el mensaje (?text=…)."
                         >
                             <Input
                                 id={`boton${numero}_url`}

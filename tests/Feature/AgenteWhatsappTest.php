@@ -1,14 +1,18 @@
 <?php
 
 use App\Ai\Agents\AsistenteWhatsapp;
+use App\Ai\Guardas;
 use App\Ai\Transcriptor;
 use App\Enums\DireccionMensaje;
+use App\Enums\EstadoTurno;
 use App\Enums\MotivoDerivacion;
 use App\Enums\TipoMensaje;
 use App\Jobs\ResponderConversacion;
 use App\Models\Ajuste;
+use App\Models\Cliente;
 use App\Models\Conversacion;
 use App\Models\MensajeWhatsapp;
+use App\Models\Turno;
 use App\Services\Mensajero;
 use App\Services\WhatsappCloud;
 use Illuminate\Support\Facades\Cache;
@@ -358,7 +362,59 @@ test('a reply that promises a person without handing over is handed over anyway'
     'Anotado. El equipo te escribe por acá enseguida.',
     'Te comunico con una persona del local.',
     'Un vendedor se va a comunicar con vos mañana.',
+    // Pasó en vivo: falló la reserva y prometió a alguien sin derivar.
+    'No te preocupes, te voy a pasar la información a un miembro del equipo para que te lo confirmen.',
+    'En un rato te escribe alguien del equipo para finalizar la reserva.',
+    'Un miembro del equipo te va a escribir.',
 ]);
+
+/*
+ * Pasó en vivo con un modelo flash: escribió «Reservado» sin llamar a
+ * reservar_turno y el turno nunca existió.
+ */
+test('a reply that claims a booking without a turn is not sent and hands over', function (string $afirmacion) {
+    AsistenteWhatsapp::fake([$afirmacion]);
+
+    $conversacion = Conversacion::factory()->create();
+    $mensaje = entranteDelCliente($conversacion, 'Cristopher Paiva');
+
+    ResponderConversacion::dispatchSync($conversacion->id, $mensaje->id);
+
+    expect(respuestasDeLaIa())->toBe(['Perdón, no pude dejar el turno registrado 🙏 Te paso con alguien del equipo que te lo confirma por acá en un ratito.'])
+        ->and($conversacion->fresh())
+        ->motivo_derivacion->toBe(MotivoDerivacion::Modelo)
+        ->atiendeLaIa()->toBeFalse();
+})->with([
+    'Reservado. Tenés un turno para el lavado de camioneta el miércoles 28 de octubre a las 10:30. ¡Te esperamos!',
+    'Listo, te reservé el lavado para mañana a las 10:30.',
+    'Tu turno quedó agendado para el miércoles.',
+]);
+
+test('a booking claim backed by a real turn goes out', function () {
+    $afirmacion = 'Listo, te reservé el lavado para mañana a las 10:30.';
+    AsistenteWhatsapp::fake([$afirmacion]);
+
+    $cliente = Cliente::factory()->create();
+    Turno::factory()->create([
+        'cliente_id' => $cliente->id,
+        'estado' => EstadoTurno::Pendiente,
+        'inicia_at' => now()->addDay(),
+        'termina_at' => now()->addDay()->addHour(),
+    ]);
+    $conversacion = Conversacion::factory()->create(['cliente_id' => $cliente->id]);
+    $mensaje = entranteDelCliente($conversacion, 'sí, confirmo');
+
+    ResponderConversacion::dispatchSync($conversacion->id, $mensaje->id);
+
+    expect(respuestasDeLaIa())->toBe([$afirmacion])
+        ->and($conversacion->fresh()->atiendeLaIa())->toBeTrue();
+});
+
+test('asking to book is not a booking claim', function () {
+    expect(Guardas::afirmaReserva('¿Te reservo el miércoles 28 a las 10:30?'))->toBeFalse()
+        ->and(Guardas::afirmaReserva('El turno queda pendiente hasta que el equipo lo confirme.'))->toBeFalse()
+        ->and(Guardas::afirmaReserva('Para reservar necesito tu nombre y apellido.'))->toBeFalse();
+});
 
 test('an ordinary reply does not hand over', function (string $respuesta) {
     AsistenteWhatsapp::fake([$respuesta]);
@@ -377,6 +433,8 @@ test('an ordinary reply does not hand over', function (string $respuesta) {
     'El vendedor te va a mostrar el auto cuando vengas.',
     'Alguien del taller te va a recibir el auto.',
     'Te paso con una foto del auto',
+    'Te paso los horarios que hay para mañana.',
+    'En el taller te atiende el mecánico de turno.',
 ]);
 
 test('the safety net keeps the reason when the tool already handed over', function () {

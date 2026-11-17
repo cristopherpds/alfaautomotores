@@ -8,12 +8,15 @@ use App\Ai\Guardas;
 use App\Ai\Prompt;
 use App\Ai\Transcriptor;
 use App\Enums\DireccionMensaje;
+use App\Enums\EstadoTurno;
 use App\Enums\MotivoDerivacion;
 use App\Enums\TipoMensaje;
 use App\Models\Ajuste;
 use App\Models\Auditoria;
+use App\Models\Cliente;
 use App\Models\Conversacion;
 use App\Models\MensajeWhatsapp;
+use App\Models\Turno;
 use App\Services\Mensajero;
 use App\Services\WhatsappCloud;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -186,6 +189,17 @@ class ResponderConversacion implements ShouldQueue
 
         $conversacion->refresh();
         $final = FormatoWhatsapp::convertir((string) $respuesta->text);
+
+        /* Dijo «reservado» sin un turno que lo respalde (no llamó a
+           reservar_turno, o falló y lo disimuló): eso no sale. La persona
+           vendría el día del turno a un horario que nadie tiene anotado. */
+        if (Guardas::afirmaReserva($final) && ! $this->tieneTurnoActivo($conversacion)) {
+            Log::warning('El agente dio un turno por reservado sin reservarlo', ['conversacion' => $conversacion->id, 'respuesta' => $final]);
+
+            $this->derivarConAviso($conversacion, $mensajero, MotivoDerivacion::Modelo, 'Perdón, no pude dejar el turno registrado 🙏 Te paso con alguien del equipo que te lo confirma por acá en un ratito.');
+
+            return;
+        }
 
         if (Guardas::respuestaInvalida($final, $this->salientesPrevios($conversacion)) !== null) {
             /* Si la herramienta ya derivó, igual se avisa; si no, mejor callar
@@ -497,6 +511,21 @@ class ResponderConversacion implements ShouldQueue
             ->limit(20)
             ->pluck('cuerpo')
             ->all();
+    }
+
+    /**
+     * Si la persona tiene un turno por venir, pendiente o confirmado: el
+     * recién reservado o uno que ya tenía y del que se le está hablando.
+     */
+    private function tieneTurnoActivo(Conversacion $conversacion): bool
+    {
+        $clienteId = $conversacion->cliente_id ?? Cliente::delWaId($conversacion->wa_id)?->id;
+
+        return $clienteId !== null && Turno::query()
+            ->where('cliente_id', $clienteId)
+            ->whereIn('estado', [EstadoTurno::Pendiente, EstadoTurno::Confirmado])
+            ->where('inicia_at', '>', now())
+            ->exists();
     }
 
     private function derivarConAviso(Conversacion $conversacion, Mensajero $mensajero, MotivoDerivacion $motivo, string $aviso): void
