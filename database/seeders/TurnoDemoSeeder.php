@@ -140,11 +140,12 @@ class TurnoDemoSeeder extends Seeder
                 'comentario' => $fila['comentario'] ?? null,
             ];
 
-            /* Idempotente por cliente y horario: correrlo de nuevo no duplica. */
+            /* Idempotente por cliente y horario: correrlo de nuevo no duplica.
+               El apellido va cifrado, así que se compara ya descifrado. */
             $existe = Turno::query()
                 ->where('inicia_at', $inicio)
-                ->where('apellido', $fila['apellido'])
-                ->exists();
+                ->get()
+                ->contains(fn (Turno $turno): bool => $turno->apellido === $fila['apellido']);
 
             if ($existe) {
                 continue;

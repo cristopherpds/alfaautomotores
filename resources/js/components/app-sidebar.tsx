@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     Bike,
+    Bot,
     BookOpen,
     CalendarDays,
     Car,
@@ -11,7 +12,10 @@ import {
     History,
     Images,
     LayoutGrid,
+    Mail,
     MessageCircle,
+    MessagesSquare,
+    PlugZap,
     Users,
     Wrench,
     Zap,
@@ -31,7 +35,11 @@ import {
 } from '@/components/ui/sidebar';
 import { indiceDeSeccion } from '@/lib/productos-panel';
 import { dashboard } from '@/routes';
-import { whatsapp as ajusteWhatsapp } from '@/routes/panel/ajustes';
+import {
+    avisos as ajusteAvisos,
+    conexiones as ajusteConexiones,
+    whatsapp as ajusteWhatsapp,
+} from '@/routes/panel/ajustes';
 import { index as auditoriaIndex } from '@/routes/panel/auditoria';
 import { index as clientesIndex } from '@/routes/panel/clientes';
 import { index as cotizacionesIndex } from '@/routes/panel/cotizaciones';
@@ -40,15 +48,26 @@ import { index as heroIndex } from '@/routes/panel/hero';
 import { index as serviciosIndex } from '@/routes/panel/servicios';
 import { index as turnosIndex } from '@/routes/panel/turnos';
 import { index as vehiculosIndex } from '@/routes/panel/vehiculos';
+import {
+    agente as whatsappAgente,
+    index as whatsappIndex,
+} from '@/routes/panel/whatsapp';
 import { index as usersIndex } from '@/routes/users';
-import type { NavItem } from '@/types';
+import type { ContadoresWhatsapp, NavItem } from '@/types';
+
+const whatsappNavItem: NavItem = {
+    title: 'WhatsApp',
+    href: whatsappIndex(),
+    icon: MessagesSquare,
+};
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Inicio',
         href: dashboard(),
         icon: LayoutGrid,
     },
+    whatsappNavItem,
 ];
 
 const catalogoNavItems: NavItem[] = [
@@ -122,6 +141,21 @@ const adminNavItems: NavItem[] = [
         href: ajusteWhatsapp(),
         icon: MessageCircle,
     },
+    {
+        title: 'Agente de WhatsApp',
+        href: whatsappAgente(),
+        icon: Bot,
+    },
+    {
+        title: 'Avisos por email',
+        href: ajusteAvisos(),
+        icon: Mail,
+    },
+    {
+        title: 'Conexiones',
+        href: ajusteConexiones(),
+        icon: PlugZap,
+    },
 ];
 
 /* Los links del starter kit de Laravel. Ocultos, no borrados: con `true`
@@ -130,20 +164,44 @@ const mostrarEnlacesDelKit = false;
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
+        title: 'Repositorio',
         href: 'https://github.com/laravel/react-starter-kit',
         icon: FolderGit2,
     },
     {
-        title: 'Documentation',
+        title: 'Documentación',
         href: 'https://laravel.com/docs/starter-kits#react',
         icon: BookOpen,
     },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({
+    whatsapp = null,
+}: {
+    whatsapp?: ContadoresWhatsapp | null;
+}) {
     const { auth } = usePage().props;
     const isAdmin = auth.user?.role === 'admin';
+
+    /* Los badges de WhatsApp: sin leer y esperando a una persona. */
+    const itemsPrincipales: NavItem[] = mainNavItems.map((item) =>
+        item === whatsappNavItem && whatsapp
+            ? {
+                  ...item,
+                  badges: [
+                      {
+                          valor: whatsapp.noLeidos,
+                          etiqueta: 'sin leer',
+                      },
+                      {
+                          valor: whatsapp.atencionHumana,
+                          etiqueta: 'esperan atención humana',
+                          variant: 'destructive',
+                      },
+                  ],
+              }
+            : item,
+    );
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -160,7 +218,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={itemsPrincipales} />
 
                 <NavMain items={catalogoNavItems} label="Catálogo" />
                 <NavMain items={agendaNavItems} label="Taller y lavadero" />

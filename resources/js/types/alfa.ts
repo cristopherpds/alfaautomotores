@@ -82,6 +82,8 @@ export type HeroSlide = {
     id: number | null;
     tipoFondo: 'imagen' | 'video';
     fondo: string;
+    /** El isotipo de Alfa sobre el título, en el lugar del antetítulo. */
+    conLogo: boolean;
     eyebrow: string | null;
     titulo: string;
     bajada: string | null;
@@ -436,7 +438,7 @@ export type DatosDelDashboard = {
     semana: {
         dias: { fecha: string; taller: number; lavadero: number }[];
         cancelados: number;
-        origen: { web: number; panel: number };
+        origen: { web: number; panel: number; whatsapp: number };
     };
     /** Null para quien no puede leer la auditoría. */
     actividad: Omit<EntradaAuditoria, 'cambios' | 'ip'>[] | null;
@@ -489,6 +491,9 @@ export type TurnoDeCliente = {
     comentario: string | null;
 };
 
+/** Por dónde llegó una solicitud de «Cotizá tu auto» (`OrigenCotizacion`). */
+export type OrigenCotizacion = 'web' | 'whatsapp';
+
 /** Por dónde va una solicitud de «Cotizá tu auto» (`EstadoCotizacion`). */
 export type EstadoCotizacion = 'nueva' | 'contactada' | 'descartada';
 
@@ -500,6 +505,8 @@ export type CotizacionDeLista = {
     nombre: string;
     celular: string;
     fotos: number;
+    origen: OrigenCotizacion;
+    origenLabel: string;
     estado: EstadoCotizacion;
     estadoLabel: string;
     creada: string | null;
@@ -516,7 +523,85 @@ export type CotizacionDetalle = {
     nombre: string;
     celular: string;
     clienteId: number | null;
+    conversacionId: number | null;
+    origen: OrigenCotizacion;
+    origenLabel: string;
     estado: EstadoCotizacion;
     creada: string | null;
     fotos: { lado: string; label: string; url: string }[];
+};
+
+/** Una fila de la bandeja de WhatsApp (`Panel\ConversacionController`). */
+export type ConversacionDeLista = {
+    id: number;
+    nombre: string;
+    telefono: string;
+    vistaPrevia: string | null;
+    ultimoSaliente: boolean;
+    ultimoMensajeAt: string | null;
+    noLeidos: number;
+    atiendeLaIa: boolean;
+    derivada: boolean;
+};
+
+export type EstadoMensajeWhatsapp =
+    'recibido' | 'pendiente' | 'enviado' | 'entregado' | 'leido' | 'fallido';
+
+export type MensajeWhatsapp = {
+    id: number;
+    entrante: boolean;
+    tipo: string;
+    tipoLabel: string;
+    cuerpo: string | null;
+    estado: EstadoMensajeWhatsapp;
+    error: string | null;
+    generadoPorIa: boolean;
+    autor: string | null;
+    plantilla: string | null;
+    media: { url: string; mime: string | null; nombre: string | null } | null;
+    mediaPendiente: boolean;
+    /** El texto de una nota de voz, cuando el agente la pudo escuchar. */
+    transcripcion: string | null;
+    transcripcionFallida: boolean;
+    enviadoAt: string | null;
+};
+
+export type PlantillaWhatsapp = {
+    id: number;
+    nombre: string;
+    idioma: string;
+    cuerpo: string | null;
+    variables: number;
+};
+
+/** La conversación abierta, con su hilo y el panel del contacto. */
+export type ConversacionAbierta = {
+    id: number;
+    nombre: string;
+    nombrePerfil: string | null;
+    telefono: string;
+    iaActiva: boolean;
+    derivada: boolean;
+    motivoDerivacion: string | null;
+    archivada: boolean;
+    ventanaAbierta: boolean;
+    ventanaCierraAt: string | null;
+    /** Todavía no mandó ningún mensaje (la conversación la abrió el equipo). */
+    nuncaEscribio: boolean;
+    ficha: Record<string, unknown>;
+    cliente: {
+        id: number;
+        nombre: string;
+        email: string | null;
+        turnos: {
+            id: number;
+            servicio: string;
+            iniciaAt: string;
+            estado: string;
+        }[];
+    } | null;
+    mensajes: MensajeWhatsapp[];
+    plantillas: PlantillaWhatsapp[];
+    can: { delete: boolean; administrar: boolean };
+    puedeBorrarCliente: boolean;
 };

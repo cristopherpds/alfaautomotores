@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Support\Cifrado;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -15,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(Cifrado::class);
     }
 
     /**
@@ -24,6 +26,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        /* Los casts `encrypted` usan AES-256-GCM con su propia clave
+           (`CIFRADO_KEY`), no la APP_KEY. */
+        Model::encryptUsing($this->app->make(Cifrado::class));
     }
 
     /**

@@ -15,3 +15,6 @@ Artisan::command('inspire', function () {
  */
 Schedule::command('taller:agenda')->yearlyOn(12, 1, '03:00');
 Schedule::command('lavadero:agenda')->yearlyOn(12, 1, '03:05');
+
+/* Los avisos leídos de la campana no se guardan para siempre. */
+Schedule::command('avisos:limpiar')->dailyAt('04:00');

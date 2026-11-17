@@ -4,9 +4,10 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
-import { Form, Head, router } from '@inertiajs/react';
-import { CalendarPlus } from 'lucide-react';
+import { Form, Head, Link, router } from '@inertiajs/react';
+import { CalendarPlus, UserRound } from 'lucide-react';
 import { useRef, useState } from 'react';
+import ClienteController from '@/actions/App/Http/Controllers/Panel/ClienteController';
 import TurnoController from '@/actions/App/Http/Controllers/Panel/TurnoController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -26,6 +27,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import EscribirPorWhatsapp from '@/components/whatsapp/escribir-por-whatsapp';
 import { index } from '@/routes/panel/turnos';
 import type { OpcionSelect } from '@/types';
 
@@ -42,8 +44,9 @@ type EventoTurno = EventInput & {
         servicio: string;
         duracionLegible: string;
         puesto: string;
+        clienteId: number | null;
         cliente: string;
-        email: string;
+        email: string | null;
         celular: string;
         vehiculo: string | null;
         matricula: string | null;
@@ -72,6 +75,13 @@ type Props = {
 
 /** El valor del filtro que no filtra nada. */
 const TODOS = 'todos';
+
+/** Las etiquetas de `OrigenTurno`. */
+const ORIGENES: Record<string, string> = {
+    web: 'Reserva web',
+    whatsapp: 'Reserva por WhatsApp',
+    panel: 'Carga interna',
+};
 
 /** El color de cada estado sale de estas clases; el CSS vive en `app.css`. */
 const TONO: Record<
@@ -317,9 +327,9 @@ export default function TurnosIndex({
                                     </Badge>
 
                                     <span className="text-muted-foreground">
-                                        {abierto.extendedProps.origen === 'web'
-                                            ? 'Reserva web'
-                                            : 'Carga interna'}
+                                        {ORIGENES[
+                                            abierto.extendedProps.origen
+                                        ] ?? 'Carga interna'}
                                     </span>
                                 </div>
 
@@ -332,12 +342,14 @@ export default function TurnosIndex({
                                     {abierto.extendedProps.celular}
                                 </p>
 
-                                <p>
-                                    <span className="text-muted-foreground">
-                                        Correo:{' '}
-                                    </span>
-                                    {abierto.extendedProps.email}
-                                </p>
+                                {abierto.extendedProps.email && (
+                                    <p>
+                                        <span className="text-muted-foreground">
+                                            Correo:{' '}
+                                        </span>
+                                        {abierto.extendedProps.email}
+                                    </p>
+                                )}
 
                                 {abierto.extendedProps.vehiculo && (
                                     <p>
@@ -361,6 +373,28 @@ export default function TurnosIndex({
                                     <p className="rounded-md bg-muted p-2">
                                         {abierto.extendedProps.comentario}
                                     </p>
+                                )}
+
+                                {abierto.extendedProps.clienteId !== null && (
+                                    <div className="flex flex-wrap gap-2 pt-2">
+                                        <Button variant="outline" asChild>
+                                            <Link
+                                                href={ClienteController.show(
+                                                    abierto.extendedProps
+                                                        .clienteId,
+                                                )}
+                                                data-test="ver-ficha-link"
+                                            >
+                                                <UserRound />
+                                                Ver ficha
+                                            </Link>
+                                        </Button>
+                                        <EscribirPorWhatsapp
+                                            clienteId={
+                                                abierto.extendedProps.clienteId
+                                            }
+                                        />
+                                    </div>
                                 )}
                             </div>
 

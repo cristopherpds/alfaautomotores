@@ -25,6 +25,7 @@ const PANTALLAS: Record<
         alto: 695,
         variables: {
             '--vista-titulo': '69px',
+            '--vista-logo': '92px',
             '--vista-margen': '18px',
             '--vista-lede': '16px',
             '--vista-margen-lede': '28px',
@@ -38,6 +39,7 @@ const PANTALLAS: Record<
         alto: 771,
         variables: {
             '--vista-titulo': '34px',
+            '--vista-logo': '64px',
             '--vista-margen': '20px',
             '--vista-lede': '15px',
             '--vista-margen-lede': '30px',

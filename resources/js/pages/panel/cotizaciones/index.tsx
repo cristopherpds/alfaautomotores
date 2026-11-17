@@ -72,7 +72,7 @@ export default function CotizacionesIndex({
             <div className="flex h-full flex-1 flex-col gap-6 p-4">
                 <Heading
                     title="Cotizaciones"
-                    description="Los usados que ofrecen desde «Cotizá tu auto» en el sitio"
+                    description="Los usados que ofrecen desde «Cotizá tu auto» en el sitio o por WhatsApp"
                 />
 
                 <div className="flex flex-wrap items-center gap-4">
@@ -112,6 +112,7 @@ export default function CotizacionesIndex({
                                 <TableHead>Kilómetros</TableHead>
                                 <TableHead>Contacto</TableHead>
                                 <TableHead>Fotos</TableHead>
+                                <TableHead>Origen</TableHead>
                                 <TableHead>Recibida</TableHead>
                                 <TableHead>Estado</TableHead>
                             </TableRow>
@@ -120,7 +121,7 @@ export default function CotizacionesIndex({
                         <TableBody>
                             {cotizaciones.data.length === 0 && (
                                 <TableRow className="hover:bg-transparent">
-                                    <TableCell colSpan={6}>
+                                    <TableCell colSpan={7}>
                                         <Empty>
                                             <EmptyHeader>
                                                 <EmptyMedia variant="icon">
@@ -138,7 +139,7 @@ export default function CotizacionesIndex({
                                                 <EmptyDescription>
                                                     {filtrando
                                                         ? 'Probá con otro estado.'
-                                                        : 'Aparecen acá cuando alguien completa «Cotizá tu auto» en el sitio.'}
+                                                        : 'Aparecen acá cuando alguien completa «Cotizá tu auto» en el sitio o se la deja al agente de WhatsApp.'}
                                                 </EmptyDescription>
                                             </EmptyHeader>
                                         </Empty>
@@ -171,6 +172,9 @@ export default function CotizacionesIndex({
                                     </TableCell>
                                     <TableCell className="tabular-nums">
                                         {cotizacion.fotos}
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground">
+                                        {cotizacion.origenLabel}
                                     </TableCell>
                                     <TableCell>
                                         {cotizacion.creada &&

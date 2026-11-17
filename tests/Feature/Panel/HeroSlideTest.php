@@ -144,6 +144,26 @@ test('editing moves the text to another position', function () {
     expect($slide->fresh()->posicion)->toBe(PosicionTexto::ArribaCentro);
 });
 
+test('a slide shows the Alfa logo only when asked', function () {
+    $this->actingAs(vendedorDelHero())
+        ->post(route('panel.hero.store'), datosDelSlide())
+        ->assertSessionHasNoErrors();
+
+    $sinLogo = HeroSlide::sole();
+
+    expect($sinLogo->con_logo)->toBeFalse()
+        ->and($sinLogo->datos()['conLogo'])->toBeFalse();
+
+    $this->actingAs(vendedorDelHero())
+        ->put(route('panel.hero.update', $sinLogo), datosDelSlide([
+            'fondo' => null,
+            'con_logo' => '1',
+        ]))
+        ->assertSessionHasNoErrors();
+
+    expect($sinLogo->fresh()->datos()['conLogo'])->toBeTrue();
+});
+
 test('the end date cannot come before the start date', function () {
     $this->actingAs(vendedorDelHero())
         ->post(route('panel.hero.store'), datosDelSlide([

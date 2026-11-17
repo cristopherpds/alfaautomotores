@@ -6,6 +6,7 @@ use App\Models\Cliente;
 use App\Models\Servicio;
 use App\Models\Turno;
 use App\Models\User;
+use App\Support\IndiceCiego;
 
 /**
  * Una reserva pública del taller, con los datos que se le pasen encima.
@@ -138,6 +139,17 @@ test('the list searches by name, phone, email and plate', function (string $busq
     'matrícula' => 'sbc12',
 ]);
 
+test('a one character search is ignored instead of decrypting everyone', function () {
+    Cliente::factory()->create(['nombre' => 'Ana', 'apellido' => 'Pérez']);
+    Cliente::factory()->create(['nombre' => 'Juan', 'apellido' => 'Díaz']);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('panel.clientes.index', ['busqueda' => 'x']))
+        ->assertInertia(fn ($page) => $page->has('clientes.data', 2));
+
+    expect(Cliente::idsQueCoinciden('x'))->toBeNull();
+});
+
 test('the list filters by business and by consent', function () {
     $taller = Servicio::factory()->create();
     $lavadero = Servicio::factory()->lavadero()->create();
@@ -197,7 +209,9 @@ test('a lead can be added by hand, and the phone cannot repeat', function () {
         ])
         ->assertSessionHasNoErrors();
 
-    expect(Cliente::firstWhere('nombre', 'Lucía'))->acepta_novedades->toBeTrue();
+    expect(Cliente::firstWhere('celular_hash', IndiceCiego::deCelular('098 777 888')))
+        ->nombre->toBe('Lucía')
+        ->acepta_novedades->toBeTrue();
 
     $this->actingAs($vendedor)
         ->from(route('panel.clientes.create'))

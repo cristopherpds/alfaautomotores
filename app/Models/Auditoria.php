@@ -54,6 +54,39 @@ class Auditoria extends Model
     public const SISTEMA = 'Sistema';
 
     /**
+     * Cómo figuran lo que entra por el webhook de WhatsApp y lo que hace el
+     * agente de IA: corren en la cola, y sin esto saldrían como «Sistema».
+     */
+    public const CLIENTE_WHATSAPP = 'Cliente (WhatsApp)';
+
+    public const AGENTE_IA = 'Agente de IA (WhatsApp)';
+
+    /**
+     * Quién figura cuando no hay sesión, mientras dura `como()`.
+     */
+    private static ?string $actorSinSesion = null;
+
+    /**
+     * Correr algo a nombre de un actor sin sesión (un job de la cola).
+     *
+     * @template T
+     *
+     * @param  callable(): T  $tarea
+     * @return T
+     */
+    public static function como(string $actor, callable $tarea): mixed
+    {
+        $anterior = self::$actorSinSesion;
+        self::$actorSinSesion = $actor;
+
+        try {
+            return $tarea();
+        } finally {
+            self::$actorSinSesion = $anterior;
+        }
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -62,7 +95,8 @@ class Auditoria extends Model
     {
         return [
             'accion' => AccionAuditoria::class,
-            'cambios' => 'array',
+            'etiqueta' => 'encrypted',
+            'cambios' => 'encrypted:array',
             'created_at' => 'datetime',
         ];
     }
@@ -98,7 +132,7 @@ class Auditoria extends Model
             'user_id' => $actor?->getKey(),
             'usuario' => $actor instanceof User
                 ? $actor->name
-                : ($esRequest ? self::CLIENTE_WEB : self::SISTEMA),
+                : (self::$actorSinSesion ?? ($esRequest ? self::CLIENTE_WEB : self::SISTEMA)),
             'accion' => $accion,
             'tipo' => $registro->tipoDeAuditoria(),
             'registro_id' => $registro->getKey(),

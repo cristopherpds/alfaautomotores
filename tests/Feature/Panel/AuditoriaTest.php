@@ -155,7 +155,8 @@ test('creating a user never stores the password', function () {
             'role' => 'equipo',
         ])->assertSessionHasNoErrors();
 
-    $alta = Auditoria::where('tipo', 'usuario')->where('etiqueta', 'Nuevo')->where('accion', 'creado')->sole();
+    $alta = Auditoria::where('tipo', 'usuario')->where('accion', 'creado')->get()
+        ->sole(fn (Auditoria $entrada): bool => $entrada->etiqueta === 'Nuevo');
 
     expect($alta->cambios)->not->toHaveKey('password')
         ->and($alta->cambios)->toHaveKey('email', [null, 'nuevo@example.com']);

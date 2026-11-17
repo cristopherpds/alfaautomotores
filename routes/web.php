@@ -4,13 +4,20 @@ use App\Http\Controllers\CotizacionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LavaderoController;
+use App\Http\Controllers\Panel\AgenteController;
 use App\Http\Controllers\Panel\AjusteController;
 use App\Http\Controllers\Panel\AuditoriaController;
+use App\Http\Controllers\Panel\AvisoWhatsappController;
 use App\Http\Controllers\Panel\ClienteController;
 use App\Http\Controllers\Panel\ClienteExportController;
+use App\Http\Controllers\Panel\ConexionController;
+use App\Http\Controllers\Panel\ConversacionController;
 use App\Http\Controllers\Panel\CotizacionController as PanelCotizacionController;
 use App\Http\Controllers\Panel\EntregaController;
 use App\Http\Controllers\Panel\HeroSlideController;
+use App\Http\Controllers\Panel\MensajeWhatsappController;
+use App\Http\Controllers\Panel\NotificacionController;
+use App\Http\Controllers\Panel\PlantillaWhatsappController;
 use App\Http\Controllers\Panel\ProductoController as PanelProductoController;
 use App\Http\Controllers\Panel\ProductoImagenController;
 use App\Http\Controllers\Panel\ServicioController;
@@ -63,6 +70,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     /* El panel va bajo `panel/` porque `vehiculos.show` y `/vehiculos/{slug}`
        ya son del sitio público. */
     Route::prefix('panel')->name('panel.')->group(function () {
+        /* La campana: los avisos de cotizaciones y turnos de cada usuario. */
+        Route::get('notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
+        Route::patch('notificaciones/{notificacion}/leida', [NotificacionController::class, 'leida'])
+            ->whereUuid('notificacion')
+            ->name('notificaciones.leida');
+        Route::post('notificaciones/leer-todas', [NotificacionController::class, 'leerTodas'])->name('notificaciones.leer-todas');
+
         /* Antes del resource a propósito: `vehiculos/{vehiculo}` matchea
            `vehiculos/lote`, y como el binding es por id daría 404. */
         Route::patch('vehiculos/lote/estado', [VehiculoLoteController::class, 'estado'])
@@ -130,12 +144,47 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('cotizaciones/{cotizacion}/estado', [PanelCotizacionController::class, 'estado'])->name('cotizaciones.estado');
         Route::delete('cotizaciones/{cotizacion}', [PanelCotizacionController::class, 'destroy'])->name('cotizaciones.destroy');
 
+        /* La bandeja de WhatsApp. Las conversaciones nacen del webhook: no
+           hay alta. `plantillas/sincronizar` va antes de `{conversacion}`. */
+        Route::post('whatsapp/plantillas/sincronizar', [PlantillaWhatsappController::class, 'sincronizar'])->name('whatsapp.plantillas.sincronizar');
+        // El agente de IA: perfil y conocimiento. Antes de `{conversacion}`.
+        Route::get('whatsapp/agente', [AgenteController::class, 'show'])->name('whatsapp.agente');
+        Route::put('whatsapp/agente', [AgenteController::class, 'update'])->name('whatsapp.agente.update');
+        Route::post('whatsapp/agente/conocimientos', [AgenteController::class, 'guardarConocimiento'])->name('whatsapp.conocimientos.store');
+        Route::put('whatsapp/agente/conocimientos/{conocimiento}', [AgenteController::class, 'actualizarConocimiento'])->name('whatsapp.conocimientos.update');
+        Route::delete('whatsapp/agente/conocimientos/{conocimiento}', [AgenteController::class, 'borrarConocimiento'])->name('whatsapp.conocimientos.destroy');
+        // Contadores y novedades para los avisos de todo el panel. Antes de `{conversacion}`.
+        Route::get('whatsapp/avisos', AvisoWhatsappController::class)->name('whatsapp.avisos');
+        // Escribirle a un cliente desde su ficha, una cotización o un turno.
+        Route::post('whatsapp/clientes/{cliente}', [ConversacionController::class, 'abrir'])->name('whatsapp.abrir');
+        Route::get('whatsapp', [ConversacionController::class, 'index'])->name('whatsapp.index');
+        Route::get('whatsapp/{conversacion}', [ConversacionController::class, 'show'])->name('whatsapp.show');
+        Route::delete('whatsapp/{conversacion}', [ConversacionController::class, 'destroy'])->name('whatsapp.destroy');
+        Route::patch('whatsapp/{conversacion}/ia', [ConversacionController::class, 'ia'])->name('whatsapp.ia');
+        Route::patch('whatsapp/{conversacion}/archivar', [ConversacionController::class, 'archivar'])->name('whatsapp.archivar');
+        Route::get('whatsapp/{conversacion}/media/{mensaje}', [ConversacionController::class, 'media'])->name('whatsapp.media');
+        Route::post('whatsapp/{conversacion}/mensajes', [MensajeWhatsappController::class, 'store'])->name('whatsapp.mensajes.store');
+        Route::post('whatsapp/{conversacion}/plantillas', [PlantillaWhatsappController::class, 'enviar'])->name('whatsapp.plantillas.enviar');
+
         /* Sólo lectura: las entradas las escribe el trait `Auditable`. */
         Route::get('auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
 
         /* Ajustes del sitio público, sólo para admins. */
         Route::get('ajustes/whatsapp', [AjusteController::class, 'whatsapp'])->name('ajustes.whatsapp');
         Route::put('ajustes/whatsapp', [AjusteController::class, 'guardarWhatsapp'])->name('ajustes.whatsapp.update');
+        Route::get('ajustes/avisos', [AjusteController::class, 'avisos'])->name('ajustes.avisos');
+        Route::put('ajustes/avisos', [AjusteController::class, 'guardarAvisos'])->name('ajustes.avisos.update');
+
+        /* Las credenciales de Meta y de la IA, como en la Configuración de
+           Vocero: cifradas en `ajustes`, con el `.env` de respaldo. */
+        Route::get('ajustes/conexiones', [ConexionController::class, 'show'])->name('ajustes.conexiones');
+        Route::put('ajustes/conexiones/whatsapp', [ConexionController::class, 'whatsapp'])->name('ajustes.conexiones.whatsapp');
+        Route::put('ajustes/conexiones/ia', [ConexionController::class, 'ia'])->name('ajustes.conexiones.ia');
+        Route::post('ajustes/conexiones/whatsapp/probar', [ConexionController::class, 'probarWhatsapp'])->name('ajustes.conexiones.whatsapp.probar');
+        Route::post('ajustes/conexiones/ia/probar', [ConexionController::class, 'probarIa'])->name('ajustes.conexiones.ia.probar');
+        Route::delete('ajustes/conexiones/{conexion}/{campo}', [ConexionController::class, 'olvidar'])
+            ->whereIn('conexion', ['whatsapp', 'ia'])
+            ->name('ajustes.conexiones.olvidar');
     });
 });
 

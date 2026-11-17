@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use App\Enums\EstadoCotizacion;
+use App\Enums\OrigenCotizacion;
+use App\Notifications\NuevaCotizacion;
 use Database\Factories\CotizacionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,10 +14,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Una solicitud de «Cotizá tu auto» del sitio público.
+ * Una solicitud de «Cotizá tu auto»: del formulario del sitio o de una
+ * conversación de WhatsApp con el agente (`origen`, y `conversacion_id` para
+ * volver al hilo).
  *
  * Las fotos son opcionales y van en el disco `local` (privado), bajo
  * `cotizaciones/{id}/`: son del auto de un particular y sólo se ven desde el
@@ -24,6 +29,7 @@ use Illuminate\Support\Facades\Storage;
  *
  * @property int $id
  * @property int|null $cliente_id
+ * @property int|null $conversacion_id
  * @property string $marca
  * @property string $modelo
  * @property int $anio
@@ -37,9 +43,11 @@ use Illuminate\Support\Facades\Storage;
  * @property string $apellido
  * @property string $celular
  * @property EstadoCotizacion $estado
+ * @property OrigenCotizacion $origen
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Cliente|null $cliente
+ * @property-read Conversacion|null $conversacion
  */
 #[Fillable([
     'marca', 'modelo', 'anio', 'kilometros', 'detalles',
@@ -92,7 +100,12 @@ class Cotizacion extends Model
         return [
             'anio' => 'integer',
             'kilometros' => 'integer',
+            'detalles' => 'encrypted',
+            'nombre' => 'encrypted',
+            'apellido' => 'encrypted',
+            'celular' => 'encrypted',
             'estado' => EstadoCotizacion::class,
+            'origen' => OrigenCotizacion::class,
         ];
     }
 
@@ -122,6 +135,16 @@ class Cotizacion extends Model
         return $this->belongsTo(Cliente::class);
     }
 
+    /**
+     * La conversación de WhatsApp de la que salió, si vino por ahí.
+     *
+     * @return BelongsTo<Conversacion, $this>
+     */
+    public function conversacion(): BelongsTo
+    {
+        return $this->belongsTo(Conversacion::class);
+    }
+
     public function nombreCompleto(): string
     {
         return $this->nombre.' '.$this->apellido;
@@ -136,16 +159,21 @@ class Cotizacion extends Model
     }
 
     /**
-     * Guardar una solicitud del sitio con sus fotos y su lead.
+     * Guardar una solicitud con sus fotos y su lead.
      *
-     * Todo o nada: si falla una foto no queda la fila a medias.
+     * Todo o nada: si falla una foto no queda la fila a medias. Al final se
+     * avisa al equipo (campana y email), sea de la web o de WhatsApp.
      *
      * @param  array{marca: string, modelo: string, anio: int, kilometros: int, detalles: string|null, nombre: string, apellido: string, celular: string}  $datos
-     * @param  array<string, UploadedFile|null>  $fotos  Por lado, con las claves de `FOTOS`.
+     *                                                                                                                                                             Las fotos llegan como archivo subido (el formulario del sitio) o como
+     *                                                                                                                                                             ruta ya guardada en el disco `local` (las que mandaron por WhatsApp):
+     *                                                                                                                                                             en los dos casos quedan copiadas en la carpeta de la cotización.
+     * @param  array<string, UploadedFile|string|null>  $fotos  Por lado, con las claves de `FOTOS`.
+     * @param  Conversacion|null  $conversacion  La de WhatsApp si la registró el agente; sin ella, vino del sitio.
      */
-    public static function recibir(array $datos, array $fotos): self
+    public static function recibir(array $datos, array $fotos, ?Conversacion $conversacion = null): self
     {
-        return DB::transaction(function () use ($datos, $fotos): self {
+        $cotizacion = DB::transaction(function () use ($datos, $fotos, $conversacion): self {
             $cliente = Cliente::desdeReserva([
                 'nombre' => $datos['nombre'],
                 'apellido' => $datos['apellido'],
@@ -154,7 +182,9 @@ class Cotizacion extends Model
             ]);
 
             $cotizacion = new self([...$datos, 'estado' => EstadoCotizacion::Nueva]);
+            $cotizacion->origen = $conversacion === null ? OrigenCotizacion::Web : OrigenCotizacion::Whatsapp;
             $cotizacion->cliente()->associate($cliente);
+            $cotizacion->conversacion()->associate($conversacion);
             $cotizacion->save();
 
             foreach (array_keys(self::FOTOS) as $lado) {
@@ -162,6 +192,10 @@ class Cotizacion extends Model
 
                 if ($archivo instanceof UploadedFile) {
                     $cotizacion->{'foto_'.$lado} = $archivo->store(self::CARPETA.'/'.$cotizacion->id, 'local');
+                } elseif (is_string($archivo) && Storage::disk('local')->exists($archivo)) {
+                    $destino = self::CARPETA.'/'.$cotizacion->id.'/'.$lado.'.'.(pathinfo($archivo, PATHINFO_EXTENSION) ?: 'jpg');
+                    Storage::disk('local')->copy($archivo, $destino);
+                    $cotizacion->{'foto_'.$lado} = $destino;
                 }
             }
 
@@ -169,6 +203,10 @@ class Cotizacion extends Model
 
             return $cotizacion;
         });
+
+        Notification::send(User::equipoDeAvisos(), new NuevaCotizacion($cotizacion));
+
+        return $cotizacion;
     }
 
     /**

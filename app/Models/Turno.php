@@ -5,6 +5,9 @@ namespace App\Models;
 use App\Concerns\Auditable;
 use App\Enums\EstadoTurno;
 use App\Enums\OrigenTurno;
+use App\Notifications\NuevoTurno;
+use App\Notifications\TurnoConfirmado;
+use App\Support\IndiceCiego;
 use Carbon\CarbonInterface;
 use Database\Factories\TurnoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -14,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Zap\Facades\Zap;
 
 /**
@@ -39,12 +43,13 @@ use Zap\Facades\Zap;
  * @property Carbon $termina_at
  * @property string $nombre
  * @property string $apellido
- * @property string $email
+ * @property string|null $email
  * @property string $celular
  * @property string|null $vehiculo_marca
  * @property string|null $vehiculo_modelo
  * @property int|null $vehiculo_anio
  * @property string|null $matricula
+ * @property string|null $matricula_hash
  * @property string|null $comentario
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -86,6 +91,11 @@ class Turno extends Model
      */
     protected static function booted(): void
     {
+        /* La matrícula va cifrada: se la busca por su índice ciego. */
+        static::saving(function (self $turno): void {
+            $turno->matricula_hash = IndiceCiego::deMatricula($turno->matricula);
+        });
+
         static::deleting(function (self $turno): void {
             $turno->borrarLaCita();
         });
@@ -103,6 +113,12 @@ class Turno extends Model
             'origen' => OrigenTurno::class,
             'inicia_at' => 'datetime',
             'termina_at' => 'datetime',
+            'nombre' => 'encrypted',
+            'apellido' => 'encrypted',
+            'email' => 'encrypted',
+            'celular' => 'encrypted',
+            'matricula' => 'encrypted',
+            'comentario' => 'encrypted',
         ];
     }
 
@@ -228,6 +244,30 @@ class Turno extends Model
         $this->estado = EstadoTurno::Cancelado;
         $this->schedule_id = null;
         $this->save();
+    }
+
+    /**
+     * Avisarle al equipo (campana y email) de un turno que reservó un
+     * cliente. Lo llaman la web y el agente de WhatsApp, no `reservar()`:
+     * las altas del panel y las reprogramaciones no son novedad para nadie.
+     */
+    public function avisarAlEquipo(): void
+    {
+        Notification::send(User::equipoDeAvisos(), new NuevoTurno($this));
+    }
+
+    /**
+     * Mandarle al cliente el email de turno confirmado, si el aviso está
+     * prendido en el panel y el turno tiene email.
+     */
+    public function avisarConfirmacion(): void
+    {
+        if (! Ajuste::avisos()['confirmacion_turno'] || blank($this->email)) {
+            return;
+        }
+
+        Notification::route('mail', [$this->email => $this->cliente()])
+            ->notify(new TurnoConfirmado($this));
     }
 
     /**

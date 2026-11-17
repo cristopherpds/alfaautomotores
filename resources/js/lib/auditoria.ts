@@ -17,6 +17,8 @@ export const TIPOS_AUDITORIA: Record<string, string> = {
     turno: 'Turno',
     cliente: 'Cliente',
     cotizacion: 'Cotización',
+    conversacion: 'Conversación de WhatsApp',
+    conocimiento: 'Conocimiento del agente',
     usuario: 'Usuario',
     ajuste: 'Ajuste del sitio',
 };

@@ -124,6 +124,9 @@ class TurnoController extends Controller implements HasMiddleware
             return back()->withErrors(['hora' => __('Ese horario se acaba de ocupar.')]);
         }
 
+        // Entra ya confirmado: si el aviso está prendido, el cliente recibe el email.
+        $turno->avisarConfirmacion();
+
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Turno agendado.')]);
 
         return back();
@@ -135,6 +138,7 @@ class TurnoController extends Controller implements HasMiddleware
     public function estado(TurnoEstadoRequest $request, Turno $turno): RedirectResponse
     {
         $estado = EstadoTurno::from($request->validated('estado'));
+        $seConfirma = $estado === EstadoTurno::Confirmado && $turno->estado !== EstadoTurno::Confirmado;
 
         /* Cancelar es lo único que toca la agenda: borra la cita y el horario
            vuelve a ofrecerse en la web. */
@@ -143,6 +147,10 @@ class TurnoController extends Controller implements HasMiddleware
         } else {
             $turno->estado = $estado;
             $turno->save();
+        }
+
+        if ($seConfirma) {
+            $turno->avisarConfirmacion();
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Turno :estado.', ['estado' => mb_strtolower($estado->label())])]);
@@ -223,6 +231,7 @@ class TurnoController extends Controller implements HasMiddleware
                 'servicio' => $turno->servicio->nombre,
                 'duracionLegible' => $turno->servicio->duracionLegible(),
                 'puesto' => $turno->puesto->nombre,
+                'clienteId' => $turno->cliente_id,
                 'cliente' => $turno->cliente(),
                 'email' => $turno->email,
                 'celular' => $turno->celular,

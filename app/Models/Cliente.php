@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use App\Enums\Rubro;
+use App\Support\IndiceCiego;
 use Database\Factories\ClienteFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,12 +23,18 @@ use Illuminate\Support\Collection;
  * persona. Cada turno guarda igual su propia copia de los datos, que es el
  * registro de esa reserva.
  *
+ * Los datos personales van cifrados (casts `encrypted`): no se buscan con
+ * `where`, sino por su índice ciego (`celular_hash`, `email_hash`, ver
+ * `App\Support\IndiceCiego`), que el hook `saving` mantiene al día.
+ *
  * @property int $id
  * @property string $nombre
  * @property string $apellido
  * @property string|null $email
  * @property string $celular
  * @property string $celular_normalizado
+ * @property string $celular_hash
+ * @property string|null $email_hash
  * @property bool $acepta_novedades
  * @property Carbon|null $acepta_novedades_at
  * @property string|null $notas
@@ -38,6 +45,12 @@ use Illuminate\Support\Collection;
 #[Fillable(['nombre', 'apellido', 'email', 'celular', 'acepta_novedades', 'notas'])]
 class Cliente extends Model
 {
+    /**
+     * Caracteres mínimos para la búsqueda parcial, que descifra todas las
+     * filas en PHP. Una sola letra traería a casi todos.
+     */
+    public const MINIMO_BUSQUEDA_PARCIAL = 2;
+
     /** @use HasFactory<ClienteFactory> */
     use Auditable, HasFactory;
 
@@ -55,6 +68,8 @@ class Cliente extends Model
             $cliente->email = $cliente->email === null || trim($cliente->email) === ''
                 ? null
                 : mb_strtolower(trim($cliente->email));
+            $cliente->celular_hash = IndiceCiego::de($cliente->celular_normalizado);
+            $cliente->email_hash = IndiceCiego::deEmail($cliente->email);
 
             if ($cliente->isDirty('acepta_novedades')) {
                 $cliente->acepta_novedades_at = $cliente->acepta_novedades ? now() : null;
@@ -70,6 +85,12 @@ class Cliente extends Model
     protected function casts(): array
     {
         return [
+            'nombre' => 'encrypted',
+            'apellido' => 'encrypted',
+            'email' => 'encrypted',
+            'celular' => 'encrypted',
+            'celular_normalizado' => 'encrypted',
+            'notas' => 'encrypted',
             'acepta_novedades' => 'boolean',
             'acepta_novedades_at' => 'datetime',
         ];
@@ -135,28 +156,20 @@ class Cliente extends Model
      * menos. La usan el listado y el CSV, así lo que se baja es exactamente
      * lo que se ve.
      *
+     * Con los datos cifrados la búsqueda no puede ser un `like`: ver
+     * `idsQueCoinciden()`.
+     *
      * @param  array{busqueda?: string|null, rubro?: string|null, novedades?: bool|null}  $filtros
      * @return Builder<self>
      */
     public static function filtrados(array $filtros): Builder
     {
         $busqueda = trim((string) ($filtros['busqueda'] ?? ''));
-        $digitos = self::normalizarCelular($busqueda);
+        // null: no hay búsqueda o es muy corta y se ignora.
+        $ids = $busqueda !== '' ? self::idsQueCoinciden($busqueda) : null;
 
         return self::query()
-            ->when($busqueda !== '', function (Builder $query) use ($busqueda, $digitos): void {
-                $query->where(function (Builder $query) use ($busqueda, $digitos): void {
-                    $query->whereRaw("lower(nombre || ' ' || apellido) like ?", ['%'.mb_strtolower($busqueda).'%'])
-                        ->orWhere('email', 'like', '%'.mb_strtolower($busqueda).'%')
-                        ->orWhereHas('turnos', fn (Builder $turnos) => $turnos->whereRaw('upper(matricula) like ?', ['%'.mb_strtoupper($busqueda).'%']));
-
-                    // Sólo si hay dígitos suficientes: «a» no tiene que
-                    // traer a todos los celulares.
-                    if (strlen($digitos) >= 3) {
-                        $query->orWhere('celular_normalizado', 'like', '%'.$digitos.'%');
-                    }
-                });
-            })
+            ->when($ids !== null, fn (Builder $query) => $query->whereIn('id', $ids))
             ->when(
                 Rubro::tryFrom((string) ($filtros['rubro'] ?? '')),
                 fn (Builder $query, Rubro $rubro) => $query->whereHas('turnos.servicio', fn (Builder $servicios) => $servicios->where('rubro', $rubro)),
@@ -169,11 +182,130 @@ class Cliente extends Model
     }
 
     /**
+     * Los ids de los clientes que coinciden con lo que se buscó.
+     *
+     * Un celular, un email o una matrícula exactos se buscan por el índice
+     * ciego, sin descifrar nada. Si no aparece así (un nombre, un pedazo de
+     * número), se descifra y se compara en PHP: son pocos clientes, y es la
+     * única forma de buscar parcial sobre datos cifrados. Con menos de
+     * `MINIMO_BUSQUEDA_PARCIAL` caracteres no se descifra a todos: devuelve
+     * null y la búsqueda se ignora.
+     *
+     * @return list<int>|null
+     */
+    public static function idsQueCoinciden(string $busqueda): ?array
+    {
+        $digitos = self::normalizarCelular($busqueda);
+        $matricula = IndiceCiego::deMatricula($busqueda);
+
+        $exactos = self::query()
+            ->where(function (Builder $query) use ($busqueda, $digitos, $matricula): void {
+                $query->where('email_hash', IndiceCiego::deEmail($busqueda))
+                    ->when($matricula !== null, fn (Builder $query) => $query
+                        ->orWhereHas('turnos', fn (Builder $turnos) => $turnos->where('matricula_hash', $matricula)));
+
+                if (strlen($digitos) >= 6) {
+                    $query->orWhereIn('celular_hash', array_map(
+                        IndiceCiego::de(...),
+                        array_unique([$digitos, ...self::celularesPosiblesDeWaId($digitos)]),
+                    ));
+                }
+            })
+            ->pluck('id')
+            ->all();
+
+        if ($exactos !== []) {
+            return $exactos;
+        }
+
+        if (mb_strlen($busqueda) < self::MINIMO_BUSQUEDA_PARCIAL) {
+            return null;
+        }
+
+        $texto = mb_strtolower($busqueda);
+        $placa = IndiceCiego::normalizarMatricula($busqueda);
+        $ids = [];
+
+        foreach (self::query()->with('turnos:id,cliente_id,matricula')->lazyById(200) as $cliente) {
+            $coincide = str_contains(mb_strtolower($cliente->nombreCompleto()), $texto)
+                || str_contains((string) $cliente->email, $texto)
+                // Sólo si hay dígitos suficientes: «a» no tiene que traer a
+                // todos los celulares.
+                || (strlen($digitos) >= 3 && str_contains($cliente->celular_normalizado, $digitos))
+                || ($placa !== '' && $cliente->turnos->contains(
+                    fn (Turno $turno): bool => str_contains(IndiceCiego::normalizarMatricula($turno->matricula), $placa),
+                ));
+
+            if ($coincide) {
+                $ids[] = $cliente->id;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
      * Un celular sin nada que no sea dígito.
      */
     public static function normalizarCelular(string $celular): string
     {
         return (string) preg_replace('/\D+/', '', $celular);
+    }
+
+    /**
+     * Cómo puede haber quedado guardado el celular de un número de WhatsApp.
+     *
+     * Meta manda el número internacional sin «+» (`59899123456`) y en las
+     * fichas se anota a la uruguaya (`099 123 456` → `099123456`): sin esta
+     * traducción no coincidirían nunca. Un número de otro país (Brasil, en
+     * Rivera, es lo común) se compara tal cual.
+     *
+     * @return list<string>
+     */
+    public static function celularesPosiblesDeWaId(string $waId): array
+    {
+        $digitos = self::normalizarCelular($waId);
+        $posibles = [$digitos];
+
+        if (str_starts_with($digitos, '598') && strlen($digitos) > 3) {
+            $posibles[] = '0'.substr($digitos, 3);
+        }
+
+        return $posibles;
+    }
+
+    /**
+     * El cliente de un número de WhatsApp, buscado por el índice ciego de
+     * cada forma en que pudo quedar anotado su celular.
+     */
+    public static function delWaId(string $waId): ?self
+    {
+        return self::query()
+            ->whereIn('celular_hash', array_map(IndiceCiego::de(...), self::celularesPosiblesDeWaId($waId)))
+            ->first();
+    }
+
+    /**
+     * El número de WhatsApp de un celular de ficha: el camino inverso de
+     * `celularesPosiblesDeWaId()`.
+     *
+     * Un celular uruguayo se anota local (`099 123 456`, o `99123456` sin el
+     * cero) y Meta lo quiere con el 598 adelante. Uno que ya trae el 598, o
+     * uno de otro país guardado en internacional, va tal cual.
+     */
+    public static function waIdDelCelular(string $celular): string
+    {
+        $digitos = self::normalizarCelular($celular);
+
+        if (str_starts_with($digitos, '598')) {
+            return $digitos;
+        }
+
+        if (str_starts_with($digitos, '0')) {
+            return '598'.substr($digitos, 1);
+        }
+
+        return strlen($digitos) <= 8 ? '598'.$digitos : $digitos;
     }
 
     /**
@@ -188,10 +320,10 @@ class Cliente extends Model
      */
     public static function desdeReserva(array $datos, bool $aceptaNovedades = false): self
     {
-        $email = $datos['email'] === null ? null : mb_strtolower(trim($datos['email']));
+        $emailHash = IndiceCiego::deEmail($datos['email']);
 
-        $cliente = self::where('celular_normalizado', self::normalizarCelular($datos['celular']))->first()
-            ?? ($email === null ? null : self::where('email', $email)->first())
+        $cliente = self::where('celular_hash', IndiceCiego::deCelular($datos['celular']))->first()
+            ?? ($emailHash === null ? null : self::where('email_hash', $emailHash)->first())
             ?? new self;
 
         $cliente->fill([

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\EstadoCotizacion;
+use App\Enums\OrigenCotizacion;
 use App\Models\Cliente;
 use App\Models\Cotizacion;
 use Illuminate\Http\UploadedFile;
@@ -73,6 +74,8 @@ test('a visitor sends a quote request with photos', function () {
         ->and($cotizacion->kilometros)->toBe(85000)
         ->and($cotizacion->detalles)->toBe('Único dueño.')
         ->and($cotizacion->estado)->toBe(EstadoCotizacion::Nueva)
+        ->and($cotizacion->origen)->toBe(OrigenCotizacion::Web)
+        ->and($cotizacion->conversacion_id)->toBeNull()
         ->and($cotizacion->ladosConFoto())->toBe(['derecha', 'tablero'])
         ->and($cotizacion->foto_izquierda)->toBeNull();
 

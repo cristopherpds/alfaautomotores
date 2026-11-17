@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Concerns\Auditable;
+use App\Http\Requests\Ajustes\ConexionIaRequest;
 use Carbon\CarbonInterface;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 
 /**
  * Un grupo de ajustes del sitio que se cambia desde el panel.
@@ -36,12 +39,53 @@ class Ajuste extends Model
     public const BOTON_WHATSAPP = 'boton_whatsapp';
 
     /**
+     * La conexión con la WhatsApp Cloud API de Meta.
+     */
+    public const CONEXION_WHATSAPP = 'conexion_whatsapp';
+
+    /**
+     * La conexión con el proveedor de IA (OpenRouter).
+     */
+    public const CONEXION_IA = 'conexion_ia';
+
+    /**
+     * El perfil del agente de IA de WhatsApp: quién es y cómo habla.
+     */
+    public const AGENTE_IA = 'agente_ia';
+
+    /**
+     * Los avisos por email que salen hacia los clientes.
+     */
+    public const AVISOS = 'avisos';
+
+    /**
+     * Dominios que no salen a internet: WhatsApp no los muestra como link y
+     * desde el celular del cliente no abren.
+     *
+     * @var list<string>
+     */
+    /**
+     * Los campos de cada conexión que se guardan cifrados y nunca vuelven al
+     * navegador: el panel sólo ve si están cargados y sus últimos caracteres.
+     *
+     * @var array<string, list<string>>
+     */
+    public const SECRETOS = [
+        self::CONEXION_WHATSAPP => ['token', 'app_secret'],
+        self::CONEXION_IA => ['api_key'],
+    ];
+
+    /**
      * Cómo se llama cada grupo en la auditoría.
      *
      * @var array<string, string>
      */
     private const NOMBRES = [
         self::BOTON_WHATSAPP => 'Botón de WhatsApp',
+        self::CONEXION_WHATSAPP => 'Conexión de WhatsApp',
+        self::CONEXION_IA => 'Conexión de IA',
+        self::AGENTE_IA => 'Agente de WhatsApp',
+        self::AVISOS => 'Avisos por email',
     ];
 
     /**
@@ -100,6 +144,217 @@ class Ajuste extends Model
         Cache::forget(self::claveDeCache($clave));
 
         return $ajuste;
+    }
+
+    /**
+     * La conexión con Meta: lo cargado en el panel y, campo por campo, el
+     * `.env` (`config('services.whatsapp')`) para lo que no se cargó.
+     *
+     * @return array{token: string|null, phone_number_id: string|null, waba_id: string|null, app_secret: string|null, verify_token: string|null, graph_version: string}
+     */
+    public static function conexionWhatsapp(): array
+    {
+        /** @var array{token: string|null, phone_number_id: string|null, waba_id: string|null, app_secret: string|null, verify_token: string|null, graph_version: string} */
+        return self::conexion(self::CONEXION_WHATSAPP, (array) config('services.whatsapp'), [
+            'token', 'phone_number_id', 'waba_id', 'app_secret', 'verify_token', 'graph_version',
+        ]);
+    }
+
+    /**
+     * La conexión con la IA, con el mismo respaldo en `.env`.
+     *
+     * Un modelo de transcripción guardado antes de validarlo (uno de chat,
+     * como gemini) no existe en `audio/transcriptions`: se usa el del `.env`.
+     *
+     * @return array{api_key: string|null, modelo: string, modelo_transcripcion: string}
+     */
+    public static function conexionIa(): array
+    {
+        /** @var array{api_key: string|null, modelo: string, modelo_transcripcion: string} $conexion */
+        $conexion = self::conexion(self::CONEXION_IA, [
+            'api_key' => config('ai.providers.openrouter.key'),
+            'modelo' => config('services.openrouter.modelo'),
+            'modelo_transcripcion' => config('services.openrouter.modelo_transcripcion'),
+        ], ['api_key', 'modelo', 'modelo_transcripcion']);
+
+        if (preg_match(ConexionIaRequest::MODELOS_DE_VOZ, (string) $conexion['modelo_transcripcion']) !== 1) {
+            $conexion['modelo_transcripcion'] = (string) config('services.openrouter.modelo_transcripcion');
+        }
+
+        return $conexion;
+    }
+
+    /**
+     * La URL pública del sitio (`APP_URL`), sólo el origen y sin barra al
+     * final. En desarrollo, para probar los links desde el celular, va un
+     * túnel (ngrok) en `APP_URL`; en producción, el dominio real.
+     */
+    public static function urlPublica(): string
+    {
+        $url = rtrim((string) config('app.url'), '/');
+        $partes = parse_url($url);
+
+        if (! is_array($partes) || ! isset($partes['scheme'], $partes['host'])) {
+            return $url;
+        }
+
+        return $partes['scheme'].'://'.$partes['host'].(isset($partes['port']) ? ':'.$partes['port'] : '');
+    }
+
+    /**
+     * El link absoluto de una ruta con nombre, armado sobre la URL pública.
+     * Es lo que usan el agente y sus herramientas: `route()` sale de
+     * `APP_URL`, que en local es `localhost`.
+     */
+    public static function enlacePublico(string $ruta, mixed $parametros = []): string
+    {
+        return self::urlPublica().route($ruta, $parametros, absolute: false);
+    }
+
+    /**
+     * El perfil del agente de WhatsApp. Apagado hasta que alguien lo prenda
+     * desde el panel: contestarle a un cliente de verdad es una decisión.
+     *
+     * `numeros_prueba` es la lista de nea-agent (`ALLOWED_WA_IDS`): con algo
+     * cargado, el agente sólo le contesta a esos números y el resto entra a
+     * la bandeja sin respuesta automática. Sirve para probar con el número
+     * real sin que la IA le hable a un cliente.
+     *
+     * @return array{activo: bool, nombre: string, tono: string|null, instrucciones: string|null, reglas_escalado: string|null, saludo: string|null, numeros_prueba: string|null}
+     */
+    public static function agenteIa(): array
+    {
+        /** @var array{activo: bool, nombre: string, tono: string|null, instrucciones: string|null, reglas_escalado: string|null, saludo: string|null, numeros_prueba: string|null} */
+        return self::valor(self::AGENTE_IA, [
+            'activo' => false,
+            'nombre' => 'Alfi',
+            'tono' => null,
+            'instrucciones' => null,
+            'reglas_escalado' => null,
+            'saludo' => null,
+            'numeros_prueba' => null,
+        ]);
+    }
+
+    /**
+     * Los avisos por email a los clientes. Apagados hasta que alguien los
+     * prenda desde el panel, como el agente: escribirle a un cliente es una
+     * decisión.
+     *
+     * `confirmacion_turno`: el email que recibe el cliente cuando el equipo
+     * confirma su turno (`Turno::avisarConfirmacion()`).
+     *
+     * @return array{confirmacion_turno: bool}
+     */
+    public static function avisos(): array
+    {
+        $valor = self::valor(self::AVISOS, ['confirmacion_turno' => false]);
+
+        return ['confirmacion_turno' => (bool) $valor['confirmacion_turno']];
+    }
+
+    /**
+     * Los números de prueba como `wa_id` (internacional, sin «+»). Se pueden
+     * escribir a la uruguaya (`099 123 456`) o con el código de país.
+     *
+     * @return list<string>
+     */
+    public static function numerosDePrueba(): array
+    {
+        $texto = (string) (self::agenteIa()['numeros_prueba'] ?? '');
+
+        return collect(preg_split('/[\n,;]+/', $texto) ?: [])
+            ->map(fn (string $numero): string => (string) preg_replace('/\D+/', '', $numero))
+            ->filter(fn (string $numero): bool => strlen($numero) >= 6)
+            ->map(fn (string $numero): string => str_starts_with($numero, '09') ? '598'.substr($numero, 1) : $numero)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Guardar una conexión. Un secreto que llega vacío no se toca: el panel
+     * nunca lo muestra, así que vacío quiere decir «dejá el que está».
+     *
+     * @param  array<string, string|null>  $nuevos
+     */
+    public static function guardarConexion(string $clave, array $nuevos): self
+    {
+        $guardado = self::where('clave', $clave)->value('valor') ?? [];
+        $secretos = self::SECRETOS[$clave] ?? [];
+
+        foreach ($nuevos as $campo => $valor) {
+            $valor = $valor === null ? null : trim($valor);
+
+            if (in_array($campo, $secretos, true)) {
+                if ($valor === null || $valor === '') {
+                    continue;
+                }
+
+                $valor = Crypt::encryptString($valor);
+            }
+
+            $guardado[$campo] = $valor === '' ? null : $valor;
+        }
+
+        return self::guardar($clave, $guardado);
+    }
+
+    /**
+     * Borrar un secreto guardado: vuelve a valer el del `.env`, si hay.
+     */
+    public static function olvidarSecreto(string $clave, string $campo): void
+    {
+        $guardado = self::where('clave', $clave)->value('valor') ?? [];
+        unset($guardado[$campo]);
+
+        self::guardar($clave, $guardado);
+    }
+
+    /**
+     * Cómo se muestra un secreto en el panel: cargado o no, y sus últimos
+     * cuatro caracteres.
+     *
+     * @return array{cargado: bool, final: string|null, origen: 'panel'|'env'|null}
+     */
+    public static function resumenDeSecreto(string $clave, string $campo, ?string $valorEfectivo): array
+    {
+        $enPanel = isset((self::valor($clave))[$campo]);
+
+        return [
+            'cargado' => filled($valorEfectivo),
+            'final' => filled($valorEfectivo) ? mb_substr((string) $valorEfectivo, -4) : null,
+            'origen' => filled($valorEfectivo) ? ($enPanel ? 'panel' : 'env') : null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $respaldo
+     * @param  list<string>  $campos
+     * @return array<string, mixed>
+     */
+    private static function conexion(string $clave, array $respaldo, array $campos): array
+    {
+        $guardado = self::valor($clave);
+        $secretos = self::SECRETOS[$clave] ?? [];
+        $conexion = [];
+
+        foreach ($campos as $campo) {
+            $valor = $guardado[$campo] ?? null;
+
+            if ($valor !== null && in_array($campo, $secretos, true)) {
+                try {
+                    $valor = Crypt::decryptString((string) $valor);
+                } catch (DecryptException) {
+                    // Cambió el APP_KEY: el secreto ya no se puede leer.
+                    $valor = null;
+                }
+            }
+
+            $conexion[$campo] = filled($valor) ? $valor : ($respaldo[$campo] ?? null);
+        }
+
+        return $conexion;
     }
 
     /**
